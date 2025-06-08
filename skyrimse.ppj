@@ -1,0 +1,35 @@
+<?xml version='1.0'?><!-- Game is either sse, tesv, or fo4 -->
+<PapyrusProject xmlns="PapyrusProject.xsd" 
+    Flags="TESV_Papyrus_Flags.flg" 
+    Game="sse" 
+    Output="Scripts" 
+    Optimize="false" 
+    Release="false" 
+    Final="false">
+    <Variables>
+        <!-- Set the name of your mod: -->
+        <Variable Name="ModName" Value="SkyrimNet: Nina has a Debt Problem" />
+        <!-- The folder where you store all of your mods -->
+        <Variable Name="ModsFolder" Value="C:\Skyrim\dev\mods" />
+    </Variables>
+    <Imports>
+        <Import>.\Scripts\Source</Import>
+        <Import>@ModsFolder\SKSE64\Scripts\Source</Import>
+        <Import>@ModsFolder\SkyrimNet\Source\Scripts</Import>
+        <Import>@ModsFolder\powerofthree's Tweaks\Source\Scripts</Import>
+
+        <Import>@ModsFolder\MfgFix\Source\Scripts</Import>
+        <Import>@ModsFolder\FNIS Creature Pack SE\scripts\source</Import>
+        <Import>@ModsFolder\RaceMenu\scripts\source</Import>
+        <Import>@ModsFolder\JContainers\scripts\source</Import>
+        <Import>@ModsFolder\Fores New Idles in Skyrim SE - FNIS SE\scripts\source</Import>
+
+        <Import>@ModsFolder\SexLabFrameworkAE_v166b\scripts\Source</Import>
+
+        <Import>@ModsFolder\SexLab MatchMaker\scripts\source</Import>
+        <Import>C:\Skyrim\dev\skyrim\Data\Scripts\Source</Import>
+    </Imports>
+    <Folders>
+        <Folder>.\Scripts\Source</Folder>
+    </Folders>
+</PapyrusProject>
