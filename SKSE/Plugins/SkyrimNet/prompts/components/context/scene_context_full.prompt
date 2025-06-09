@@ -1,0 +1,28 @@
+{% block setup %}
+{% endblock %}
+{{ "# Scene Information" }}
+{% block situationSummary %}
+{% endblock %}
+
+{{ "## Nearby People" }}
+{% block nearbyNpcs %}
+{% endblock %}
+
+{% if get_short_lived_events_count() > 0 %}
+{{ "## Recent Events" }}
+{% block recentEvents %}
+{% endblock %}
+{% endif %}
+
+{% if get_active_sex_events_count(0) > 0 %}
+{{ "## Active Sexual Events" }} 
+{{ get_active_sex_events_prompt(0) }} 
+{% endif %}
+
+{{ "## Scene Summary " }}
+{% block npcStateSummary %}
+{% endblock %}
+
+{{ "## Triggering Event" }}
+{% block triggeringEvent %}
+{% endblock %}

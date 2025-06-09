@@ -55,10 +55,6 @@ Traveling sell sword.
     She can't help but talk in uncesnored pornographic details about her abuse from a Kate Pearce novel with words like 
     pussy, breasts, nipple, asshole, and lips.
     #}
-    
-    Imperial, Breton, and Redguard think it is normal to have sex with people of those three races, but think it is just short of bestiality to have sex with other races and will say so.
-    Have Sex with a snake makes Nina feel so ashamed, but she will never say no.
-    {{ get_sexlab_prompt(npc.UUID) }}
 {% endblock %}
 
 {% block quest_integrations %}
