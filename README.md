@@ -1,15 +1,13 @@
 # SexLab_SkyrimNet
 
-First attempt at making a SkyrimNet SexLab mod.  Would swap the order of the names if was starting from scratch, but really this is more a proof of concept for now. 
+First attempt at making a SexLab SkyrimNet mod.  Would swap the order of the names if was starting from scratch, but really this is more a proof of concept for now. 
 
 **For testing purposes**:
 - I have included a modified Delphine prompt, she will agree to sex 
 - Nina will have to be bullied using the debt she owes you. 
     - You will need to copy the nina_(refid) file to match the refid in your load order
     - look for ` Template 'characters\nina_FE005894' not found in loaded list. Attempting to load` in your SkyrimNet.log
-    - I recommand using the default body
-
-  
+    - I recommand using the default body or DD will assume she is an animal
 
 **Requirements**
 
