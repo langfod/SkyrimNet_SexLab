@@ -8,18 +8,32 @@ EndEvent
 Function Setup()
     Debug.Trace("SexLab_SkyrimNet_Main: Startup called")
 
-    ; RegisterForModEvent("HookAnimationStart", "SexLab_SexStart")
-    RegisterForModEvent("HookAnimationEnd", "SexLab_SexEnd")
+    UnRegisterForModEvent("HookStageStart")
+    RegisterForModEvent("HookStageStart", "SexLab_StageStart")
+    ;UnRegisterForModEvent("HookStageEnd")
+    ;RegisterForModEvent("HookStageEnd", "SexLab_StageEnd")
+    UnRegisterForModEvent("HookOrgasmStart")
+    RegisterForModEvent("HookOrgasmStart", "SexLab_OrgasmStart")
+    UnRegisterForModEvent("HookAnimationEnd")
+    RegisterForModEvent("HookAnimationEnd", "SexLab_AnimationEnd")
 
     SkyrimNetApi.RegisterDecorator("get_active_sex_events_prompt", "SexLab_SkyrimNet_Main", "GetActiveSexEvents_Prompt")
     SkyrimNetApi.RegisterDecorator("get_active_sex_events_count", "SexLab_SkyrimNet_Main", "GetActiveSexEvents_Count")
 
-    SkyrimNetApi.RegisterAction("SexTarget", \
-            "Have sex with the target or after agreeing to sex with target.", \
-            "SexLab_SkyrimNet_Main", "SexTarget_IsEligible",  \
-            "SexLab_SkyrimNet_Main", "SexTarget_Execute",  \
+    SkyrimNetApi.RegisterAction("StartSexTarget", \
+            "Start having <type> sex with <target>.", \
+            "SexLab_SkyrimNet_Main", "StartSexTarget_IsEligible",  \
+            "SexLab_SkyrimNet_Main", "StartSexTarget_Execute",  \
             "", "PAPYRUS", \
-            1, "{\"target\": \"Actor\"}")
+            1, "{\"target\": \"Actor\", \"type\":\"vaginal|anal|oral\"}")
+    SkyrimNetApi.RegisterAction("StartSexMasturbation", \
+            "Start masturbating.", \
+            "SexLab_SkyrimNet_Main", "StartSexTarget_IsEligible",  \
+            "SexLab_SkyrimNet_Main", "StartSexTarget_Execute",  \
+            "", "PAPYRUS", \
+            1, "{\"type\":\"masturbation\"}")
+
+    Debug.Trace("SexLab_SkyrimNet_Main Finished registration")
 
 EndFunction
 
@@ -85,61 +99,58 @@ String Function SexLab_GetThreadDecoration(sslThreadController thread) global
 
     Debug.Trace("[SexLab_SkyrimNet] sub: "+sub_name+" dom: "+dom_name+" count: "+actors.Length)
 
-    String buffer = "- "
+    String buffer
     if anim.HasTag("aggressive")
-        buffer += dom_name+" is sexually assaulting "+ sub_name + ". "
-    else 
-        buffer += dom_name+" and "+ sub_name + " are having a sexual activity. "
+        buffer = dom_name+" starts to sexually assaulting "+ sub_name + " into "+sub_name
+    else
+        buffer = sub_name+" started "
     endif 
-
-    buffer += sub_name+" is "
     if anim.HasTag("Boobjob")
-        buffer += "giving a blowjob to"
+        buffer += " giving a blowjob to "
     elseif anim.HasTag("Vaginal")
-        buffer += "having vaginal sex with"
+        buffer += " having vaginal sex with "
     elseif anim.hasTag("Fisting")
-        buffer += "having having her pussy fisted by"
+        buffer += " having having her pussy fisted by "
     elseif anim.hasTag("Anal")
-        buffer += "having anal sex with"
+        buffer += " having anal sex with "
     elseif anim.HasTag("Oral")
-        buffer += "giving a blowjob to"
+        buffer += " giving a blowjob to "
     elseif anim.HasTag("Spanking")
-        buffer += " being spanked by"
+        buffer += " being spanked by "
     elseif anim.HasTag("Masturbation")
-        buffer += " masturbating furiously"
+        buffer += " masturbating furiously "
     else
         buffer += " having sex with "
     endif
 
-    String pantingDec = sub_name
     if actors.Length > 1
         buffer += " " + dom_name
     endif 
+    buffer += "."
     ;buffer += ". Therefor both "+ pantingDec +" will include at least one of these words when they speak: 'oh','ah', and 'uh'. "
-    buffer += ". They will show they are having sex by including words like 'oh god', 'uh', and 'fuck me!' in thier next response."
-    if anim.HasTag("aggressive")
-        buffer += sub_name + " will also include 'please', 'stop', 'please stop' and 'no' in what they say."
-    endif 
+    ;if anim.HasTag("aggressive")
+    ;    buffer += sub_name + " will also include 'please', 'stop', 'please stop' and 'no' in what they say."
+    ;endif 
 
-    buffer += "This sex can be described as: "
-    int i = 0
-    String[] tags = anim.GetRawTags()
-    while i < tags.Length
-        if tags[i] != "Billyy"
-            if i != 0
-                buffer += ", "
-            endif 
-            buffer += tags[i]
-            i += 1
-        endif 
-    endwhile
+    ;buffer += "This sex can be described as: "
+    ;int i = 0
+    ;String[] tags = anim.GetRawTags()
+    ;while i < tags.Length
+    ;    if tags[i] != "Billyy"
+    ;        if i != 0
+    ;            buffer += ", "
+    ;        endif 
+    ;        buffer += tags[i]
+    ;        i += 1
+    ;    endif 
+    ;endwhile
     buffer += ".\n\n"
     return buffer
 endFunction
 ;----------------------------------------------------------------------------------------------------
 ; Actions
 ;----------------------------------------------------------------------------------------------------
-Bool Function SexTarget_IsEligible(Actor akActor, string contextJson, string paramsJson) global
+Bool Function StartSexTarget_IsEligible(Actor akActor, string contextJson, string paramsJson) global
     SexLabFramework SexLab = Game.GetFormFromFile(0xD62, "SexLab.esm") as SexLabFramework
     if SexLab == None
         Debug.Notification("[SexLab_SkyrimNet] SetTarge_IsEigible: SexLab is None")
@@ -155,20 +166,20 @@ Bool Function SexTarget_IsEligible(Actor akActor, string contextJson, string par
         ;return False 
     ;endif
     if !SexLab.IsValidActor(akActor)
-        Debug.Trace("[SexLab_SkyrimNet] SexTarget_IsEligible: Invalid actor: " + akActor.GetLeveledActorBase().GetName())
+        Debug.Trace("[SexLab_SkyrimNet] StartSexTarget_IsEligible: Invalid actor: " + akActor.GetLeveledActorBase().GetName())
         return False
     endif
     if !SexLab.IsValidActor(akTarget)
-        Debug.Trace("[SexLab_SkyrimNet] SexTarget_IsEligible: Invalid actor: " + akTarget.GetLeveledActorBase().GetName())
+        Debug.Trace("[SexLab_SkyrimNet] StartSexTarget_IsEligible: Invalid actor: " + akTarget.GetLeveledActorBase().GetName())
         return False
     endif
 
-    Debug.Trace("[SexTarget_IsEligible] " + akActor.GetLeveledActorBase().GetName() + " is eligible for sex with " + akTarget.GetLeveledActorBase().GetName())
+    Debug.Trace("[StartSexTarget_IsEligible] " + akActor.GetLeveledActorBase().GetName() + " is eligible for sex with " + akTarget.GetLeveledActorBase().GetName())
     return True
 EndFunction
 
 
-Function SexTarget_Execute(Actor akActor, string contextJson, string paramsJson) global
+Function StartSexTarget_Execute(Actor akActor, string contextJson, string paramsJson) global
     SexLabFramework SexLab = Game.GetFormFromFile(0xD62, "SexLab.esm") as SexLabFramework
     if SexLab == None
         Debug.Notification("[SexLab_SkyrimNet] GetThreadDecoration: SexLab is None")
@@ -176,58 +187,120 @@ Function SexTarget_Execute(Actor akActor, string contextJson, string paramsJson)
     endif
     
     Actor akTarget = SkyrimNetApi.GetJsonActor(paramsJson, "target", Game.GetPlayer())
+    String type = SkyrimNetApi.GetJsonString(paramsJson, "type", "none")
+    Debug.TraceAndBox("StartSexTarget_Execte:"+type)
+
 
     sslThreadModel thread = sexlab.NewThread()
     if thread == None
-        Debug.Notification("[SexTarget_Execute] Failed to create thread")
+        Debug.Notification("[StartSexTarget_Execute] Failed to create thread")
         return  
     endif
     if thread.addActor(akActor) < 0   
-        Debug.Notification("[SexTarget_Execute] Starting sex couldn't add " + akActor.GetLeveledActorBase().GetName() + " and target: " + akTarget.GetLeveledActorBase().GetName())
+        Debug.Notification("[StartSexTarget_Execute] Starting sex couldn't add " + akActor.GetLeveledActorBase().GetName() + " and target: " + akTarget.GetLeveledActorBase().GetName())
         return
     endif  
     if thread.addActor(akTarget) < 0   
-        Debug.Notification("[SexTarget_Execute] Starting sex couldn't add " + akTarget.GetLeveledActorBase().GetName() + " and target: " + akTarget.GetLeveledActorBase().GetName())
+        Debug.Notification("[StartSexTarget_Execute] Starting sex couldn't add " + akTarget.GetLeveledActorBase().GetName() + " and target: " + akTarget.GetLeveledActorBase().GetName())
         return
     endif  
     
     Debug.Notification(akActor.GetLeveledActorBase().GetName()+" will have sex with "+akTarget.GetLeveledActorBase().GetName())
-    Debug.Trace("[SexLab_SkyrimNet] SexTarget_Executer: Starting")
+    Debug.Trace("[SexLab_SkyrimNet] StartSexTarget_Executer: Starting")
     thread.StartThread() 
 EndFunction
 
 ;----------------------------------------------------------------------------------------------------
 ; Prompts 
 ;----------------------------------------------------------------------------------------------------
-;event SexLab_SexStart(int ThreadID, bool HasPlayer)
-; endEvent
+Function Thread_Event(int ThreadID, Bool orgasm)
+    SexLabFramework SexLab = Game.GetFormFromFile(0xD62, "SexLab.esm") as SexLabFramework
+    sslThreadController thread = SexLab.GetController(ThreadID)
+    Actor[] actors = thread.Positions
+
+    sslBaseAnimation anim = thread.Animation
+    Debug.Trace("[SexLab_SkyrimNet] sub: "+sub_name+" dom: "+dom_name+" count: "+actors.Length)
+
+    String sub_name = actors[0].GetLeveledActorBase().GetName()
+    String dom_name 
+    if actors.length > 1
+        dom_name = actors[1].GetLeveledActorBase().GetName()
+    endif 
+    
+    String eventType
+    String eventDesc = sub_name
+    if orgasm 
+        if actors.length > 1
+            eventDesc += " and "+ dom_name
+        endif 
+        eventDesc += " orgasmed after "+sub_name
+        if thread.IsAggressive
+            eventType = "raping "
+            eventDesc += " was forced to "
+        else
+            eventType = "sexing " 
+            eventDesc += " was "
+        endif 
+    else
+        if thread.IsAggressive
+            eventType = "raping "
+            eventDesc += " is forced to "
+        else
+            eventType = "sex " 
+            eventDesc += " is "
+        endif 
+    endif 
+
+    if anim.HasTag("Masturbation") || actors.length == 1
+        eventType += "masturbating"
+        eventDesc += " masturbating furiously "
+    elseif anim.HasTag("Boobjob")
+        eventType += "boobjob"
+        eventDesc += " giving a boobjob to "
+    elseif anim.HasTag("Vaginal")
+        eventType += "vaginal"
+        eventDesc += " having vaginal sex with "
+    elseif anim.hasTag("Fisting")
+        eventType += "fisting"
+        eventDesc += " having her pussy fisted by "
+    elseif anim.hasTag("Anal")
+        eventType += "anal"
+        eventDesc += " having anal sex with "
+    elseif anim.HasTag("Oral")
+        eventType += "oral"
+        eventDesc += " giving a blowjob to "
+    elseif anim.HasTag("Spanking")
+        eventType += "spanking"
+        eventDesc += " being spanked by "
+    endif
+    if actors.Length > 1
+        eventDesc += dom_name
+    endif 
+    eventDesc += "."
+
+    if orgasm 
+        eventType = "orgasm"
+    endif 
+
+    Debug.Notification(eventDesc)
+    SkyrimNetApi.RegisterShortLivedEvent("SexLab_SkyrimNet_"+threadID,\
+        eventType, eventDesc, "", 10000,\
+        actors[1], actors[0])
+endFunction 
+
+Event SexLab_StageStart(int ThreadID, bool HasPlayer)
+    Thread_Event(ThreadID, false )
+EndEvent
+Event SexLab_OrgasmStart(int ThreadID, bool HasPlayer)
+    Thread_Event(ThreadID, true )
+EndEvent
+
+event SexLab_AnimationStart(int ThreadID, bool HasPlayer)
+endEvent
 
 ; Our AnimationStart hook, called from the RegisterForModEvent("HookAnimationEnd_MatchMaker", "AnimationEnd") in TriggerSex()
 ;  -  HookAnimationEnd is sent by SexLab called once the sex animation has fully stopped.
-event SexLab_SexEnd(int ThreadID, bool HasPlayer)
-	; Get the thread that triggered this event via the thread id
-	 ;sslThreadController Thread = SexLab.GetController(ThreadID)
-	; Get our list of actors that were in this animation thread.
-	;Actor[] actors = Thread.Positions
-    ;actors[0].StartCombat(actors[1])
-    ;actors[1].StartCombat(actors[0])
-    SexLabFramework SexLab = Game.GetFormFromFile(0xD62, "SexLab.esm") as SexLabFramework
-    if SexLab != None
-        ; Get the thread that triggered this event via the thread id
-        sslThreadController thread = SexLab.GetController(ThreadID)
-        sslBaseAnimation anim = thread.Animation
-        ; Get our list of actors that were in this animation thread.
-        Actor[] actors = thread.Positions
-
-        String eventType = "sexual mutual"
-        if anim.HasTag("aggressive")
-            eventType = "sexual assault"
-        endif 
-
-        String prompt = SexLab_GetThreadDecoration(thread)
-
-        SkyrimNetApi.RegisterShortLivedEvent("SexLab_SkyrimNet_"+threadID,\
-            eventType, prompt, "", 180000,\
-            actors[1], actors[0])
-    endif 
+event SexLab_AnimationEnd(int ThreadID, bool HasPlayer)
+    Thread_Event(ThreadID, true )
 endEvent
+Int Property NewProperty  Auto  

@@ -1,4 +1,4 @@
-VERSION=0.1.0
+VERSION=0.2.0
 NAME=SexLab SkyrimNet
 
 RELEASE_FILE=SexLab SkyrimNet ${VERSION}.zip
@@ -11,6 +11,6 @@ release:
 		SexLab_SkyrimNet.esp \
 	    Scripts\Source\SexLab_SkyrimNet_Main.psc \
 	    Scripts\Source\SexLab_SkyrimNet_PlayerRef.psc \
-		SKSE\Plugins\SkyrimNet\prompts\characters\delphine_013485.prompt \
-		SKSE\Plugins\SkyrimNet\prompts\characters\nina_FE008894.prompt \
-		SKSE\Plugins\SkyrimNet\prompts\components\context\scene_context_full.prompt
+		SKSE\Plugins\SkyrimNet\prompts\player_dialogue.prompt \
+		SKSE\Plugins\SkyrimNet\prompts\player_thoughts.prompt \
+		SKSE\Plugins\SkyrimNet\prompts\dialogue_response.prompt
