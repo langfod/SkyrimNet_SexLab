@@ -1,11 +1,6 @@
 # SexLab_SkyrimNet
 
-First attempt at making a SkyrimNet SexLab mod.  Would swap the order of the names if was starting from scratch, but really this is more a proof of concept for now. 
-
-**For testing purposes**:
-Note that starting a sex animation is not enoough (SexLab Matchmaker .  
-The LLM will reject it, if it does't believe it is happening. 
-  
+First attempt at making a SexLab SkyrimNet mod.  Would swap the order of the names if was starting from scratch, but really this is more a proof of concept for now. 
 
 **Requirements**
 
