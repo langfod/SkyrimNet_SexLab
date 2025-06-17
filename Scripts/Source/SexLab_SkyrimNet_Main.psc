@@ -98,34 +98,69 @@ String Function SexLab_GetThreadDecoration(sslThreadController thread) global
     String dom_name = actors[1].GetLeveledActorBase().GetName()
 
     Debug.Trace("[SexLab_SkyrimNet] sub: "+sub_name+" dom: "+dom_name+" count: "+actors.Length)
-
     String buffer
-    if anim.HasTag("aggressive")
-        buffer = dom_name+" starts to sexually assaulting "+ sub_name + " into "+sub_name
-    else
-        buffer = sub_name+" started "
-    endif 
-    if anim.HasTag("Boobjob")
-        buffer += " giving a blowjob to "
-    elseif anim.HasTag("Vaginal")
-        buffer += " having vaginal sex with "
-    elseif anim.hasTag("Fisting")
-        buffer += " having having her pussy fisted by "
-    elseif anim.hasTag("Anal")
-        buffer += " having anal sex with "
-    elseif anim.HasTag("Oral")
-        buffer += " giving a blowjob to "
-    elseif anim.HasTag("Spanking")
-        buffer += " being spanked by "
-    elseif anim.HasTag("Masturbation")
-        buffer += " masturbating furiously "
-    else
-        buffer += " having sex with "
-    endif
 
-    if actors.Length > 1
-        buffer += " " + dom_name
-    endif 
+    If anim.HasTag("aggressive")
+        buffer = domName + " is sexually assaulting " + subName + ". "
+    Else
+        buffer = ""
+    EndIf
+    buffer += subName + " is"
+
+    If anim.HasTag("rough")
+        buffer += " roughly"
+    ElseIf anim.HasTag("loving")
+        buffer += " lovingly"
+    EndIf
+
+    If anim.HasTag("cowgirl")
+        buffer += ", cowgirl position,"
+    ElseIf anim.HasTag("missionary")
+        buffer += ", missionary position,"
+    ElseIf anim.HasTag("kneeling")
+        buffer += ", kneeling position,"
+    ElseIf anim.HasTag("standing")
+        buffer += ", standing position,"
+    EndIf
+
+    If anim.HasTag("anal")
+        buffer += " having anal sex with"
+    ElseIf anim.HasTag("assjob")
+        buffer += " having a assjob by"
+    ElseIf anim.HasTag("boobjob")
+        buffer += " giving a blowjob to"
+    ElseIf anim.HasTag("thighjob")
+        buffer += " givingt a thighjob to"
+    ElseIf anim.HasTag("vaginal")
+        buffer += " having vaginal sex with"
+    ElseIf anim.HasTag("fisting")
+        buffer += " having having her pussy fisted by"
+    ElseIf anim.HasTag("oral") || anim.HasTag("blowjob") || anim.HasTag("cunnilingus")
+        buffer += " giving a blowjob to"
+    ElseIf anim.HasTag("spanking")
+        buffer += " being spanked by"
+    ElseIf anim.HasTag("masturbation")
+        buffer += " masturbating furiously"
+    ElseIf anim.HasTag("fingering")
+        buffer += " being fingered by"
+    ElseIf anim.HasTag("footjob")
+        buffer += " giving a footjob to"
+    ElseIf anim.HasTag("handjob")
+        buffer += " giving a handjob to"
+    ElseIf anim.HasTag("kissing")
+        buffer += " kissing with"
+    ElseIf anim.HasTag("headpat")
+        buffer += " having head patted by"
+    ElseIf anim.HasTag("hugging")
+        buffer += " hugging"
+    Else
+        buffer += " having sex with"
+        Debug.Trace("no match!!!!!!!!!!!!!!")
+    EndIf
+
+    If actors.Length > 1
+        buffer += " " + domName
+    EndIf
     buffer += "."
     ;buffer += ". Therefor both "+ pantingDec +" will include at least one of these words when they speak: 'oh','ah', and 'uh'. "
     ;if anim.HasTag("aggressive")
