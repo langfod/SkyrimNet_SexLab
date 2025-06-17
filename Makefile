@@ -4,7 +4,7 @@ NAME=SexLab SkyrimNet
 RELEASE_FILE=SexLab SkyrimNet ${VERSION}.zip
 
 release:
-	python3 ./p_scripts/fomod-info.py -v ${VERSION} -n '${NAME}' -o fomod/info.xml fomod-source/info.xml
+	python3 ./python_scripts/fomod-info.py -v ${VERSION} -n '${NAME}' -o fomod/info.xml fomod-source/info.xml
 	if exist '${RELEASE_file}' rm /Q /S '${RELEASE_FILE}'
 	7z a '${RELEASE_FILE}' fomod Scripts fomod\info.json \
 		README.md \
