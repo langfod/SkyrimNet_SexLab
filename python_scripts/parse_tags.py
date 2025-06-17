@@ -26,21 +26,21 @@ class Animation:
 
 def main():
   files = files_find(sys.argv[1])
-          "Sexlab Skyrimnet/creature-descriptions.json", 
   creatures = set() 
   for file in files:
-    anims = parse_animation_file(file)
+#    anims = parse_animation_file(file)
+    anims = parse_json_file(file)
     for anim in anims:
-        if anim.has_tag('creature'):
-            creatures.add(anim.tags[1])
-        continue
+        #if anim.has_tag('creature'):
+            #creatures.add(anim.tags[1])
+        #continue
         print (json.dumps(anim.toDict()['tags'],indent=4))
         print (describe_animation(anim, "snake","nina", \
             [Actor("Nina"),Actor("Snake")]))
         print ("\n")
-  print ("Please provide a single sentence description of the physical look, physical feel, and emotioanl response a normal human would have of intimate contact with these skyrim creatrures:")
-  for creature in creatures:
-     print (creature)
+  #print ("Please provide a single sentence description of the physical look, physical feel, and emotioanl response a normal human would have of intimate contact with these skyrim creatrures:")
+  #for creature in creatures:
+  #   print (creature)
 
 
 def tags_load(fname):
@@ -51,7 +51,7 @@ def files_find(anim_dir):
     files = [] 
     for root, dirs, fs in os.walk(anim_dir):
         for f in fs:
-            if f.endswith(".txt"):
+            if f.endswith(".json"):
                 files.append(os.path.join(root, f))
     return files
 
@@ -63,10 +63,16 @@ def describe_animation(anim, dom_name, sub_name, actors):
       buffer = ""
     buffer += f"{sub_name} is"
 
+    if anim.has_tag('bound'):
+       buffer += " bound"
+
     if anim.has_tag("rough"):
       buffer += " roughly"
     elif anim.has_tag("loving"):
       buffer += " lovingly"
+
+    if anim.has_tag("bestiality"):
+      buffer += " bestaility "
 
     if anim.has_tag("cowgirl"):
        buffer += ", cowgirl position,"
@@ -76,6 +82,44 @@ def describe_animation(anim, dom_name, sub_name, actors):
        buffer += ", kneeling position,"
     elif anim.has_tag("standing"):
        buffer += ", standing position,"
+    elif anim.has_tag("doggy"):
+       buffer += ", doggy position,"
+    elif anim.has_tag("sitting"):
+       buffer += ", sitting position,"
+    if anim.has_tag("behind"):
+       buffer += " from behind"
+
+    on_furniture = ["Table", "LowTable",
+        "JavTable", "Pole", "wall", "horse",
+        "Pillory", "PilloryLow", "Cage",
+        "Haybale", "Xcross", "WoodenPony",
+        "EnchantingWB", "AlchemyWB", "FuckMachine",
+        "chair", "wheel", "DwemerChair", "NecroChair",
+        "Throne", "Stockade", "TortureRack",
+        "rack"
+    ]
+
+    i = 0
+    found = False
+    while i < len(on_furniture):
+        if anim.has_tag(on_furniture[i]):
+            buffer += " on a "+on_furniture[i]
+            found = True
+        i += 1
+    if anim.has_tag("Cage"):
+       buffer += " in a cage"
+    elif anim.has_tag("Gallows"):
+       buffer += " in a gallows"
+    elif anim.has_tag("coffin"):
+       buffer += " in a coffin"
+    elif anim.has_tag("floating"):
+       buffer += " floating in air"
+    elif anim.has_tag("tentacles"):
+       buffer += " with tentacles"
+    elif anim.has_tag("gloryhole") or anim.has_tag("gloryholem"):
+       buffer += " through a gloryhole"
+    elif not found and anim.has_tag("Furniture"):
+       print ("miss furniture")
 
     if anim.has_tag("anal"):
         buffer += " having anal sex with"
@@ -84,7 +128,7 @@ def describe_animation(anim, dom_name, sub_name, actors):
     elif anim.has_tag("boobjob"):
         buffer += " giving a blowjob to"
     elif anim.has_tag("thighjob"):
-        buffer += " givingt a thighjob to"
+        buffer += " giving a thighjob to"
     elif anim.has_tag("vaginal"):
         buffer += " having vaginal sex with"
     elif anim.has_tag("fisting"):
@@ -107,6 +151,10 @@ def describe_animation(anim, dom_name, sub_name, actors):
         buffer += " having head patted by"
     elif anim.has_tag("hugging"):
         buffer += " hugging"
+    elif anim.has_tag("dildo"):
+        buffer += " using a dildo"
+        if len(actors) > 1:
+           buffer += " with"
     else:
         buffer += " having sex with"
         print ("no match!!!!!!!!!!!!!!")
@@ -117,9 +165,18 @@ def describe_animation(anim, dom_name, sub_name, actors):
 
     return buffer
 
+def parse_json_file(filepath):
+    anims =[] 
+    with open(filepath) as f:
+      data = json.load(f)
+      for anim in data['animations']:
+         anims.append(Animation(anim))
+    return anims 
+
 def parse_animation_file(filepath):
     animations = []
-    with open(filepath, "r", encoding="utf-8") as f:
+    print (filepath)
+    with open(filepath, "r") as f:
         lines = f.readlines()
     current_anim = {}
     for line in lines:
