@@ -93,11 +93,12 @@ bool Function GetActiveSexEvents_True(Actor akActor) global
     int num_threads = 0
     while i < threads.length
         if (threads[i] as sslThreadModel).GetState() == "animating" && SexLab_Thread_LOS(akActor, threads[i])
+            Debug.Trace("[SexLab_SkyrimNet] GetActiveSexEvents_true: true")
             return True
         endif 
         i += 1
     endwhile
-    Debug.TraceAndBox("[SexLab_SkyrimNet] GetActiveSexEvents_true: false")
+    Debug.Trace("[SexLab_SkyrimNet] GetActiveSexEvents_true: false")
     return false 
 EndFunction
 
@@ -120,10 +121,6 @@ String[] Function SexLab_GetThreadDescription(sslThreadController thread,bool on
         return None
     endif
     SexLab_SkyrimNet_Main main = Game.GetFormFromFile(0x800, "SexLab_SkyrimNet.esp") as SexLab_SkyrimNet_Main
-    ;if akActor.IsInFaction(main.SexLabAnimatingFaction) 
-        ;Debug.Notification("[SexWithPlayer_IsEligible "+akActor.GetLeveledActorBase().GetName()+"] is sexting")
-        ;return False 
-    ;endif
 
     ; Get the thread that triggered this event via the thread id
     sslBaseAnimation anim = thread.Animation
