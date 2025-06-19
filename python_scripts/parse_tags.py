@@ -48,9 +48,12 @@ def tags_load(fname):
         return json.load(f)
     
 def files_find(anim_dir):
+    print (anim_dir)
     files = [] 
     for root, dirs, fs in os.walk(anim_dir):
+        print (root,dirs,fs)
         for f in fs:
+            print (f)
             if f.endswith(".json"):
                 files.append(os.path.join(root, f))
     return files
@@ -74,18 +77,15 @@ def describe_animation(anim, dom_name, sub_name, actors):
     if anim.has_tag("bestiality"):
       buffer += " bestaility "
 
-    if anim.has_tag("cowgirl"):
-       buffer += ", cowgirl position,"
-    elif anim.has_tag("missionary"):
-       buffer += ", missionary position,"
-    elif anim.has_tag("kneeling"):
-       buffer += ", kneeling position,"
-    elif anim.has_tag("standing"):
-       buffer += ", standing position,"
-    elif anim.has_tag("doggy"):
-       buffer += ", doggy position,"
-    elif anim.has_tag("sitting"):
-       buffer += ", sitting position,"
+    positions = ["69", "cowgirl", "missionary", "kneeling","doggy","sitting","standing"]
+    i = 0
+    found = False
+    while i < len(positions) and not found:
+        if anim.has_tag(positions[i]):
+            buffer += ", "+positions[i]+" position,"
+            found = True
+        i += 1
+
     if anim.has_tag("behind"):
        buffer += " from behind"
 
@@ -96,7 +96,7 @@ def describe_animation(anim, dom_name, sub_name, actors):
         "EnchantingWB", "AlchemyWB", "FuckMachine",
         "chair", "wheel", "DwemerChair", "NecroChair",
         "Throne", "Stockade", "TortureRack",
-        "rack"
+        "Rack"
     ]
 
     i = 0

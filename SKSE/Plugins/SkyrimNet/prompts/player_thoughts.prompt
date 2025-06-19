@@ -42,8 +42,9 @@ Respond with a single internal thought from {{ decnpc(npc.UUID).name }}'s perspe
 [ user ]
 Respond with a single brief internal thought from {{ decnpc(npc.UUID).name }}'s perspective.
 {% if decnpc(npc.UUID).isInCombat %}Focus the thought on immediate combat concerns and survival instincts.{% endif %}
-{% if get_active_sex_events_count(npc.UUID) > 0 %}
+{% if get_active_sex_events_true(npc.UUID) %}
     {{ get_active_sex_events_prompt(npc.UUID) }} 
-    Emphasize recent sexual events and dialogue that are related to this in your reponse. 
+{% else %}
+    No one is having sex right now.
 {% endif %}
 [ end user ] 
