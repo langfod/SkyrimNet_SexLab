@@ -47,9 +47,8 @@ Respond with an in-character line{% if is_narration_enabled() %} or necessary ac
 [ user ]
 Respond with only a single concise dialogue line{% if is_narration_enabled() %} or brief narrative action{% endif %} from {{ decnpc(npc.UUID).name }}, nothing else.
 {% if decnpc(npc.UUID).isInCombat %}You are currently in combat. Emphasize recent events and dialogue that are related to this in your response.{% endif %}
-{% if get_active_sex_events_true(npc.UUID) %}
+{% if get_active_sex_events_prompt(npc.UUID) != "" %}
     {{ get_active_sex_events_prompt(npc.UUID) }} 
-{% else %} 
-    No one is having sex right now.
+     Emphasize with a detailed emotional and physical response to the ongoing sexual activity.
 {% endif %}
 [ end user ]

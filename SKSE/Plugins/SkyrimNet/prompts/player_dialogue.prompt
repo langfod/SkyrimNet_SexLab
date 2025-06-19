@@ -47,9 +47,8 @@ Transform "{{ promptForDialogue }}" into a natural dialogue line that {{ decnpc(
 Speak as {{ decnpc(npc.UUID).name }} would in this moment, responding to the current situation.
 {% endif %}
 {% if decnpc(npc.UUID).isInCombat %}Make the response appropriately urgent and combat-focused.{% endif %}
-{% if get_active_sex_events_true(npc.UUID) %}
+{% if get_active_sex_events_prompt(npc.UUID) != "" %}
     {{ get_active_sex_events_prompt(npc.UUID) }} 
-{% else %}
-    No one is having sex right now.
+     Emphasize with a detailed emotional and physical response to the ongoing sexual activity.
 {% endif %}
 [ end user ] 

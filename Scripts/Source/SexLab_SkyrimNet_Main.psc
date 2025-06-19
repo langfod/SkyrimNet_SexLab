@@ -24,7 +24,7 @@ Function Setup()
     RegisterForModEvent("HookAnimationEnd", "SexLab_AnimationEnd")
 
     SkyrimNetApi.RegisterDecorator("get_active_sex_events_prompt", "SexLab_SkyrimNet_Main", "GetActiveSexEvents_Prompt")
-    SkyrimNetApi.RegisterDecorator("get_active_sex_events_true", "SexLab_SkyrimNet_Main", "GetActiveSexEvents_True")
+    SkyrimNetApi.RegisterDecorator("get_active_sex_events_count", "SexLab_SkyrimNet_Main", "GetActiveSexEvents_True")
 
     SkyrimNetApi.RegisterAction("StartSexTarget", \
             "Start having <type> sex with <target>.", \
@@ -77,10 +77,10 @@ String Function GetActiveSexEvents_Prompt(Actor akActor) global
     if prompt == ""
         return ""
     endif
-    return prompt+"\n    Emphasize with a detailed emotional and physical response to the ongoing sexual activity."
+    return prompt;+"\n    Emphasize with a detailed emotional and physical response to the ongoing sexual activity."
 EndFunction
 
-bool Function GetActiveSexEvents_True(Actor akActor) global
+bool Function GetActiveSexEvents_count(Actor akActor) global
     sslThreadSlots ThreadSlots = Game.GetFormFromFile(0xD62, "SexLab.esm") as sslThreadSlots
     if ThreadSlots == None
         Debug.Notification("[SexLab_SkyrimNet] GetSexLab_Prompt: ThreadSlots is None")
@@ -93,13 +93,12 @@ bool Function GetActiveSexEvents_True(Actor akActor) global
     int num_threads = 0
     while i < threads.length
         if (threads[i] as sslThreadModel).GetState() == "animating" && SexLab_Thread_LOS(akActor, threads[i])
-            Debug.Trace("[SexLab_SkyrimNet] GetActiveSexEvents_true: true")
-            return True
+            num_threads += 1
         endif 
         i += 1
     endwhile
-    Debug.Trace("[SexLab_SkyrimNet] GetActiveSexEvents_true: false")
-    return false 
+    Debug.Trace("[SexLab_SkyrimNet] GetActiveSexEvents_count: "+num_threads)
+    return num_threads 
 EndFunction
 
 bool Function SexLab_Thread_LOS(Actor akActor, sslThreadController thread) global
