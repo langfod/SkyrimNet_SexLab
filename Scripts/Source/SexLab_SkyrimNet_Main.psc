@@ -153,8 +153,8 @@ Function StartSexTarget_Execute(Actor akActor, string contextJson, string params
     String type = SkyrimNetApi.GetJsonString(paramsJson, "type", "none")
     Debug.Trace("StartSexTarget_Execte:"+type)
     Actor akTarget = None
-    if type != "masturbation"
-        akTarget = SkyrimNetApi.GetJsonActor(paramsJson, "target", Game.GetPlayer())
+    if type != "masturbation" && type != "masturbate"
+        akTarget = SkyrimNetApi.GetJsonActor(paramsJson, "target", None) 
     endif 
 
     sslThreadModel thread = sexlab.NewThread()
@@ -173,6 +173,7 @@ Function StartSexTarget_Execute(Actor akActor, string contextJson, string params
             return
         endif  
     endif 
+    Debug.MessageBox("[SexLab_SkyrimNet] StartSexTarget"+type+" "+akTarget)
     
     Debug.Notification(akActor.GetLeveledActorBase().GetName()+" will have sex with "+akTarget.GetLeveledActorBase().GetName())
     Debug.Trace("[SexLab_SkyrimNet] StartSexTarget_Executer: Starting")
