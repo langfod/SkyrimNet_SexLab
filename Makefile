@@ -1,7 +1,7 @@
-VERSION=0.4.0
+VERSION=0.4.1
 NAME=SexLab SkyrimNet
 
-RELEASE_FILE=SexLab SkyrimNet ${VERSION}.zip
+RELEASE_FILE=versions/SexLab SkyrimNet ${VERSION}.zip
 
 release:
 	python3 ./python_scripts/fomod-info.py -v ${VERSION} -n '${NAME}' -o fomod/info.xml fomod-source/info.xml

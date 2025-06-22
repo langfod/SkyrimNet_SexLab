@@ -1,5 +1,5 @@
 <fomod>
-  <!-- this file is generated from info.xml -->
+  <!-- this file is generated from $source -->
   <Name>$name</Name>
   <Version>$version</Version>
   <Id></Id>
