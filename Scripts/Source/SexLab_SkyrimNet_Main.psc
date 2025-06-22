@@ -173,7 +173,6 @@ Function StartSexTarget_Execute(Actor akActor, string contextJson, string params
             return
         endif  
     endif 
-    Debug.MessageBox("[SexLab_SkyrimNet] StartSexTarget"+type+" "+akTarget)
     
     Debug.Notification(akActor.GetLeveledActorBase().GetName()+" will have sex with "+akTarget.GetLeveledActorBase().GetName())
     Debug.Trace("[SexLab_SkyrimNet] StartSexTarget_Executer: Starting")
