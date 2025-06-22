@@ -1,4 +1,4 @@
-VERSION=0.4.1
+VERSION=0.4.0
 NAME=SexLab SkyrimNet
 
 RELEASE_FILE=versions/SexLab SkyrimNet ${VERSION}.zip
