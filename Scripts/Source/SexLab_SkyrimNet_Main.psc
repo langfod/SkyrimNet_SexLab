@@ -49,8 +49,30 @@ Function RegisterDecorators()
     SkyrimNetApi.RegisterDecorator("get_active_sex_events_prompt", "SexLab_SkyrimNet_Main", "GetActiveSexEvents_Prompt")
     SkyrimNetApi.RegisterDecorator("get_active_sex_events_count", "SexLab_SkyrimNet_Main", "GetActiveSexEvents_count")
 EndFunction
+
 String Function Get_Threads(Actor akActor) global
-    return "{\"threads\":[\"++thread1++\"]}"
+    Debug.Notification("[SexLab_SkyrimNet] Get_Threads called for "+akActor.GetLeveledActorBase().GetName())
+    sslThreadSlots ThreadSlots = Game.GetFormFromFile(0xD62, "SexLab.esm") as sslThreadSlots
+    if ThreadSlots == None
+        Debug.Notification("[SexLab_SkyrimNet] GetSexLab_Prompt: ThreadSlots is None")
+        return ""
+    endif
+
+    sslThreadController[] threads = ThreadSlots.Threads
+
+    Debug.Trace("[SexLab_SkyrimNet] Before loop")
+    int i = 0
+    threads_str = ""
+    while i < threads.length
+        if (threads[i] as sslThreadModel).GetState() == "animating" && SexLab_Thread_LOS(akActor, threads[i])
+            if threads_str != ""
+                threads_str += ", "+Thread_Json(threads[i[)
+            endif 
+        endif 
+        i += 1
+    endwhile
+    threads_str = "["+threads_str+"]"
+    return "{\"threads\":"+threads_str+"}"
 EndFunction 
 
 
