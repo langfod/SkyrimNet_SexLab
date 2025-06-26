@@ -14,15 +14,7 @@ EndEvent
 Function Setup()
     Debug.Trace("SexLab_SkyrimNet_Main: Startup called")
 
-    UnRegisterForModEvent("HookStageStart")
-    RegisterForModEvent("HookStageStart", "SexLab_StageStart")
-    ;UnRegisterForModEvent("HookStageEnd")
-    ;RegisterForModEvent("HookStageEnd", "SexLab_StageEnd")
-    UnRegisterForModEvent("HookOrgasmStart")
-    RegisterForModEvent("HookOrgasmStart", "SexLab_OrgasmStart")
-    UnRegisterForModEvent("HookAnimationEnd")
-    RegisterForModEvent("HookAnimationEnd", "SexLab_AnimationEnd")
-
+    RegisterSexlabEvents()
     RegisterDecorators() 
     RegisterActions()
 
@@ -33,21 +25,91 @@ Function Setup()
     endif 
 
     creature_description_fname = "Data/SexLab_SkyrimNet/creature-descriptions.json"
-    Debug.Notification("loading "+creature_description_fname)
+    ; Debug.Notification("loading "+creature_description_fname)
     creature_description_map = JValue.readFromFile(creature_description_fname)
     JValue.retain(creature_description_map)
 
 EndFunction
+;----------------------------------------------------------------------------------------------------
+; SexLab Events
+;----------------------------------------------------------------------------------------------------
+Function RegisterSexlabEvents()
+    Debug.Notification("SexLab_SkyrimNet_Main: RegisterSexlabEvents called")
+    ; SexLabFramework sexlab = Game.GetForm
+
+    UnRegisterForModEvent("HookAnimationStart")
+    RegisterForModEvent("HookAnimationStart", "AnimationStart")
+    ;UnRegisterForModEvent("HookStageStart")
+    ;RegisterForModEvent("HookStageStart", "StageStart")
+    ;UnRegisterForModEvent("HookStageEnd")
+    ;RegisterForModEvent("HookStageEnd", "SexLab_StageEnd")
+    UnRegisterForModEvent("HookOrgasmStart")
+    RegisterForModEvent("HookOrgasmStart", "SexLab_OrgasmStart")
+    UnRegisterForModEvent("HookAnimationEnd")
+    RegisterForModEvent("HookAnimationEnd", "SexLab_AnimationEnd")
+EndFunction 
+
+
+event AnimationStart(int ThreadID, bool HasPlayer)
+    Sex_Dialog(ThreadID, true )
+endEvent
+
+Event OrgasmStart(int ThreadID, bool HasPlayer)
+    Orgasm_Dialog(ThreadID)
+EndEvent
+
+; Our AnimationStart hook, called from the RegisterForModEvent("HookAnimationEnd_MatchMaker", "AnimationEnd") in TriggerSex()
+;  -  HookAnimationEnd is sent by SexLab called once the sex animation has fully stopped.
+event AnimationEnd(int ThreadID, bool HasPlayer)
+    Sex_Dialog(ThreadID, false )
+endEvent
+
+Function Sex_Dialog(int ThreadID, Bool starting) global
+    SexLabFramework SexLab = Game.GetFormFromFile(0xD62, "SexLab.esm") as SexLabFramework
+    if SexLab == None
+        Debug.Notification("[SexLab_SkyrimNet] Thread_Dialog: SexLab is None")
+        return  
+    endif
+    sslThreadController thread = SexLab.GetController(ThreadID)
+    Actor[] actors = thread.Positions
+    String dom_name = actors[1].GetLeveledActorBase().GetName()
+    String sub_name = actors[0].GetLeveledActorBase().GetName()
+    String type = ""
+    if starting
+        type = " starts "
+    else
+        type = " finished "
+    endif
+    if thread.IsAggressive
+        type += " raping "
+    else
+        type += " having sex with "
+    endif
+    String dialog = "*"+dom_name+type+sub_name+".*"
+    Debug.MessageBox(dialog)
+    SkyrimNetApi.RegisterDialogue(actors[0], dialog)
+EndFunction
+
+Function Orgasm_Dialog(int ThreadID) global
+    SexLabFramework SexLab = Game.GetFormFromFile(0xD62, "SexLab.esm") as SexLabFramework
+    if SexLab == None
+        Debug.Notification("[SexLab_SkyrimNet] Thread_Dialog: SexLab is None")
+        return  
+    endif
+    sslThreadController thread = SexLab.GetController(ThreadID)
+    Actor[] actors = thread.Positions
+    String dom_name = actors[0].GetLeveledActorBase().GetName()
+    String sub_name = actors[1].GetLeveledActorBase().GetName()
+    Debug.MessageBox(dom_name+" orgasmed")
+    SkyrimNetApi.RegisterDialogueToListener(actors[1], actors[0], "I'm cumming")
+EndFunction  
 
 ;----------------------------------------------------------------------------------------------------
 ; Decorators 
 ;----------------------------------------------------------------------------------------------------
 Function RegisterDecorators()
     Debug.Trace("SexLab_SkyrimNet_Main: RegisterDecorattors called")
-    ; SkyrimNetApi.RegisterDecorator("sexlab_get_threads", "SexLab_SkyrimNet_Main", "Get_Threads")
     SkyrimNetApi.RegisterDecorator("sexlab_get_threads", "SexLab_SkyrimNet_Main", "Get_Threads")
-    SkyrimNetApi.RegisterDecorator("get_active_sex_events_prompt", "SexLab_SkyrimNet_Main", "GetActiveSexEvents_Prompt")
-    SkyrimNetApi.RegisterDecorator("get_active_sex_events_count", "SexLab_SkyrimNet_Main", "GetActiveSexEvents_count")
 EndFunction
 
 String Function Get_Threads(Actor akActor) global
@@ -62,68 +124,45 @@ String Function Get_Threads(Actor akActor) global
 
     Debug.Trace("[SexLab_SkyrimNet] Before loop")
     int i = 0
-    threads_str = ""
+    String threads_str = ""
     while i < threads.length
-        if (threads[i] as sslThreadModel).GetState() == "animating" && SexLab_Thread_LOS(akActor, threads[i])
+        if (threads[i] as sslThreadModel).GetState() == "animating"
             if threads_str != ""
-                threads_str += ", "+Thread_Json(threads[i[)
+                threads_str += ", "
             endif 
+            threads_str += Thread_Json(threads[i])
+            Debug.MessageBox("Thread "+i+" is animating "+threads_str)
         endif 
         i += 1
     endwhile
-    threads_str = "["+threads_str+"]"
-    return "{\"threads\":"+threads_str+"}"
+    return "{\"threads\":["+threads_str+"]}"
 EndFunction 
 
+String Function Thread_Json(sslThreadController thread) global
+    Debug.MessageBox("I was called")
+    Actor[] actors = thread.Positions
+    String thread_str = "{" 
+    if thread.IsAggressive
+        thread_str += "\"is_aggressive\": true, "
+    else
+        thread_str += "\"is_aggressive\": false, "
+    endif 
 
-String Function GetActiveSexEvents_Prompt(Actor akActor) global
-    Debug.Notification("[SexLab_SkyrimNet] GetSexLab_Prompt called for "+akActor.GetLeveledActorBase().GetName())
-    sslThreadSlots ThreadSlots = Game.GetFormFromFile(0xD62, "SexLab.esm") as sslThreadSlots
-    if ThreadSlots == None
-        Debug.Notification("[SexLab_SkyrimNet] GetSexLab_Prompt: ThreadSlots is None")
-        return ""
-    endif
-
-    sslThreadController[] threads = ThreadSlots.Threads
-
-    Debug.Notification("Before loop")
-    Debug.Trace("[SexLab_SkyrimNet] Before loop")
+    sslBaseAnimation anim = thread.Animation
     int i = 0
-    String prompt = ""
-    while i < threads.length
-        if (threads[i] as sslThreadModel).GetState() == "animating" && SexLab_Thread_LOS(akActor, threads[i])
-            String[] desc_names = SexLab_GetThreadDescription(threads[i],true)
-            prompt += desc_names[0]+"\n"
+    String[] tags = anim.GetRawTags()
+    String tags_str = "" 
+    while i < tags.Length
+        if tags_str != ""
+            tags_str += ", "
         endif 
-        i += 1
+        tags_str += "\""+tags[i]+"\""
     endwhile
-    Debug.Notification("After loop "+prompt)
-    Debug.Trace("[SexLab_SkyrimNet] GetSexLab_Prompt"+prompt)
-    if prompt == ""
-        return ""
-    endif
-    return prompt
-EndFunction
-
-bool Function GetActiveSexEvents_count(Actor akActor) global
-    sslThreadSlots ThreadSlots = Game.GetFormFromFile(0xD62, "SexLab.esm") as sslThreadSlots
-    if ThreadSlots == None
-        Debug.Notification("[SexLab_SkyrimNet] GetSexLab_Prompt: ThreadSlots is None")
-        return -1
-    endif
-
-    sslThreadController[] threads = ThreadSlots.Threads
-
-    int i = 0
-    int num_threads = 0
-    while i < threads.length
-        if (threads[i] as sslThreadModel).GetState() == "animating" && SexLab_Thread_LOS(akActor, threads[i])
-            num_threads += 1
-        endif 
-        i += 1
-    endwhile
-    Debug.Trace("[SexLab_SkyrimNet] GetActiveSexEvents_count: "+num_threads)
-    return num_threads 
+    thread_str += "\"tags\": ["+tags_str+"], "
+    thread_str += "\"sub_name\": \""+actors[0].GetLeveledActorBase().GetName()+"\", "
+    thread_str += "\"dom_name\": \""+actors[1].GetLeveledActorBase().GetName()+"\" "
+    thread_str += "}"
+    return thread_str
 EndFunction
 
 bool Function SexLab_Thread_LOS(Actor akActor, sslThreadController thread) global
@@ -301,23 +340,6 @@ Function Thread_Event(int ThreadID, Bool orgasm, Bool ongoing)
             
 endFunction 
 
-Event SexLab_StageStart(int ThreadID, bool HasPlayer)
-    Thread_Event(ThreadID, false, true )
-EndEvent
-Event SexLab_OrgasmStart(int ThreadID, bool HasPlayer)
-    Thread_Event(ThreadID, true , true)
-EndEvent
-
-event SexLab_AnimationStart(int ThreadID, bool HasPlayer)
-endEvent
-
-; Our AnimationStart hook, called from the RegisterForModEvent("HookAnimationEnd_MatchMaker", "AnimationEnd") in TriggerSex()
-;  -  HookAnimationEnd is sent by SexLab called once the sex animation has fully stopped.
-event SexLab_AnimationEnd(int ThreadID, bool HasPlayer)
-    Thread_Event(ThreadID, true, false )
-
-endEvent
-Int Property NewProperty  Auto  
 
 ;----------------------------------------------------
 ; Parses the tags

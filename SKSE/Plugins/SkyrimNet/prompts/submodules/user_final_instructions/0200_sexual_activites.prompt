@@ -1,0 +1,14 @@
+ ++++++
+{% set sexlab = sexlab_get_threads(npc.UUID) -%}
+{%- if length(sexlab.threads) > 0 -%}
+{% for thread in sexlab.threads -%}
+     {{ thread.dom_name -}} 
+     {%- if thread.is_aggressive -%}
+          is raping 
+     {%- else -%}
+         is having sex with  
+     {%- endif -%}
+     {{- thread.sub_name }}.
+{%- endfor -%}
+     Emphasize with a detailed emotional and physical response to the ongoing sexual activity.
+{% endif %}

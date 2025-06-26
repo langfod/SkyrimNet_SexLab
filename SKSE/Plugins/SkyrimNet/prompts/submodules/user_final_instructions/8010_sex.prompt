@@ -1,3 +1,0 @@
-{% if get_active_sex_events_prompt(npc.UUID) != "" %}
-- {{ get_active_sex_events_prompt(npc.UUID) }}: Emphasize with a detailed emotional and physical response to the ongoing sexual activity.
-{% endif %}
