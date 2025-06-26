@@ -1,41 +1,39 @@
- ++++++
 {% set sexlab = sexlab_get_threads(npc.UUID) -%}
-length: {{ length(sexlab.threads) }} 
 {%- if length(sexlab.threads) > 0 -%}
      {% for thread in sexlab.threads -%}
-          {{ thread.dom_name -}}
+          {{ thread.dom_name  }} is 
           {%- if contains(thread.tags, "anal") or contains(thread.tags, "assjob") -%}
                fucking {{ thread.sub_name -}}'s ass.
-          {%- else if contains(thread.tags, "boobjob") -%}
+          {%- else if contains(thread.tags, "Boobjob") -%}
                getting a blowjob from {{thread.sub_name }}.
-          {%- else if contains(thread.tags, "thighjob") -%}
+          {%- else if contains(thread.tags, "Thighjob") -%}
                getting a thighjob from {{thread.sub_name }}.
-          {%- else if contains(thread.tags, "vaginal") -%}
+          {%- else if contains(thread.tags, "Vaginal") -%}
                fucking {{ thread.sub_name -}}'s pussy.
-          {%- else if contains(thread.tags, "fisting") -%}
+          {%- else if contains(thread.tags, "Fisting") -%}
                fisting {{ thread.sub_name -}}'s pussy.
-          {%- else if contains(thread.tags, "oral") or contains(thread.tags, "blowjob") or contains(thread.tags, "cunnilingus") -%}
+          {%- else if contains(thread.tags, "Oral") or contains(thread.tags, "blowjob") or contains(thread.tags, "cunnilingus") -%}
                getting a blowjob from {{thread.sub_name }}
-          {%- else if contains(thread.tags, "spanking") -%}
+          {%- else if contains(thread.tags, "Spanking") -%}
                spanking {{ thread.sub_name -}}'s ass.
-          {%- else if contains(thread.tags, "masturbation") -%}
-               is masturbating furiously.
-          {%- else if contains(thread.tags, "fingering") -%}
+          {%- else if contains(thread.tags, "Masturbation") -%}
+               masturbating furiously.
+          {%- else if contains(thread.tags, "Fingering") -%}
                fingering {{ thread.sub_name }}.
-          {%- else if contains(thread.tags, "footjob") -%}
+          {%- else if contains(thread.tags, "Footjob") -%}
                getting a footjob from {{thread.sub_name }}.
-          {%- else if contains(thread.tags, "handjob") -%}
+          {%- else if contains(thread.tags, "Handjob") -%}
                getting a handjob from {{thread.sub_name }}.
-          {%- else if contains(thread.tags, "kissing") -%}
+          {%- else if contains(thread.tags, "Kissing") -%}
                kissing {{ thread.sub_name -}}.
-          {%- else if contains(thread.tags, "headpat") -%}
+          {%- else if contains(thread.tags, "Headpat") -%}
                patting {{ thread.sub_name -}}'s head.
-          {%- else if contains(thread.tags, "hugging") -%}
+          {%- else if contains(thread.tags, "Hugging") -%}
                hugging {{ thread.sub_name -}}.
-          {%- else if contains(thread.tags, "dildo") -%}
+          {%- else if contains(thread.tags, "Dildo") -%}
                fucking {%- if actors_length > 1 -%} {{ thread.sub_name -}} {% endif %}with a dildo.
           {%- else -%}
-          having sex with {{ thread.sub_name -}}.
+               having sex with {{ thread.sub_name -}}.
           {%- endif -%}
      {%- endfor %}
      Emphasize with a detailed emotional and physical response to the ongoing sexual activity.

@@ -297,6 +297,7 @@ Function Thread_Event(int ThreadID, Bool orgasm, Bool ongoing)
             i += 1
         endif 
     endwhile
+    Debug.MessageBox(tags)
     
     String[] desc_names = SexLab_GetThreadDescription(thread, ongoing)
     String eventDesc = desc_names[0]
