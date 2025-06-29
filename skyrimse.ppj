@@ -17,11 +17,13 @@
         <Import>@ModsFolder\SKSE64\Scripts\Source</Import>
         <Import>@ModsFolder\SkyrimNet\Source\Scripts</Import>
         <Import>@ModsFolder\powerofthree's Tweaks\Source\Scripts</Import>
+        <Import>@ModsFolder\Papyrus MessageBox - SKSE NG\Scripts\Source</Import>
 
         <Import>@ModsFolder\MfgFix\Source\Scripts</Import>
         <Import>@ModsFolder\FNIS Creature Pack SE\scripts\source</Import>
         <Import>@ModsFolder\RaceMenu\scripts\source</Import>
         <Import>@ModsFolder\JContainers\scripts\source</Import>
+        <Import>@ModsFolder\UIExtensions\scripts\Source</Import>
         <Import>@ModsFolder\Fores New Idles in Skyrim SE - FNIS SE\scripts\source</Import>
 
         <Import>@ModsFolder\SexLabFrameworkAE_v166b\scripts\Source</Import>

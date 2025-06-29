@@ -3,7 +3,13 @@
 First attempt at making a SexLab SkyrimNet mod.  Would swap the order of the names if was starting from scratch, but really this is more a proof of concept for now. 
 
 **Requirements**
+The following and depedancies:
+    -   [Sexlab Framework](https://www.loverslab.com/files/category/228-sexlab-framework-se/)
+    -   [Papyrus MessageBox](https://www.nexusmods.com/skyrimspecialedition/mods/83578)
+    -   SkyrimNet
+ 
 
+**Recommendations**
 - **Utils**
     -  [SKSE](https://skse.silverlock.org/)
     -  [Address Library for SKSE Plugins](https://www.nexusmods.com/skyrimspecialedition/mods/32444)
@@ -17,6 +23,7 @@ First attempt at making a SexLab SkyrimNet mod.  Would swap the order of the nam
     -  [Alternate Start](https://www.nexusmods.com/skyrimspecialedition/mods/272) (nice, but not needed)
        - [Unofficial Skyrim Sepcial Edition Patch](https://www.nexusmods.com/skyrimspecialedition/mods/51073)
     -  [Stay At the System Page NG](https://www.nexusmods.com/skyrimspecialedition/mods/76927)
+    -  [Papyrus MessageBox](https://www.nexusmods.com/skyrimspecialedition/mods/83578)
     -   SkyrimNet 
 - **nude body (not required)**
     -   [Scholongs of Skyrim SE](https://www.loverslab.com/files/file/5355-schlongs-of-skyrim-se/)

@@ -1,4 +1,4 @@
-VERSION=0.4.0
+VERSION=0.5.0
 NAME=SexLab SkyrimNet
 
 RELEASE_FILE=versions/SexLab SkyrimNet ${VERSION}.zip
@@ -11,6 +11,4 @@ release:
 		SexLab_SkyrimNet.esp \
 	    Scripts\Source\SexLab_SkyrimNet_Main.psc \
 	    Scripts\Source\SexLab_SkyrimNet_PlayerRef.psc \
-		SKSE\Plugins\SkyrimNet\prompts\player_dialogue.prompt \
-		SKSE\Plugins\SkyrimNet\prompts\player_thoughts.prompt \
-		SKSE\Plugins\SkyrimNet\prompts\dialogue_response.prompt
+		SKSE\Plugins\SkyrimNet\prompts\submodules\user_final_instructions
