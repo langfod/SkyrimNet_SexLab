@@ -28,6 +28,15 @@
 
         <Import>@ModsFolder\SexLabFrameworkAE_v166b\scripts\Source</Import>
 
+        <Import>@ModsFolder\SLO Aroused NG\Source\Scripts</Import>
+            <Import>@ModsFolder\SkyUI\Scripts\Source</Import>
+            <Import>@ModsFolder\Devious Devices NG\Source\Scripts</Import>
+                <Import>@ModsFolder\Devious Devices for SE-AE-VR\Scripts\Source</Import>
+                    <Import>@ModsFolder\SexLab Inflation Framework\Scripts\Source</Import>
+                    <Import>@ModsFolder\XP32 Maximum Skeleton Special Extended\Scripts\Source</Import>
+                    <Import>@ModsFolder\Devious Devices for SE-AE-VR\PapyrusSourcesDD/SRC_OTHER</Import>
+            <Import>@ModsFolder/OStim Standalone - Advanced Adult Animation Framework/Scripts/Source</Import>
+
         <Import>@ModsFolder\SexLab MatchMaker\scripts\source</Import>
         <Import>C:\Skyrim\dev\skyrim\Data\Scripts\Source</Import>
     </Imports>

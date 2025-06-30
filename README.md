@@ -6,6 +6,7 @@ First attempt at making a SexLab SkyrimNet mod.  Would swap the order of the nam
 The following and depedancies:
     -   [Sexlab Framework](https://www.loverslab.com/files/category/228-sexlab-framework-se/)
     -   [Papyrus MessageBox](https://www.nexusmods.com/skyrimspecialedition/mods/83578)
+    -   [SLO Aroused NG](https://www.nexusmods.com/skyrimspecialedition/mods/151502)
     -   SkyrimNet
  
 

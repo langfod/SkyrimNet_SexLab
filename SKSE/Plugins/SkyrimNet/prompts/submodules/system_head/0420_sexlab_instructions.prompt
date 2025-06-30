@@ -1,0 +1,9 @@
+{% for nearbyNPC in nearbyNPCs %}
+{% set arousal = sexlab_get_arousal(nearbyNPC.UUID) %} 
+- {{ decnpc(nearbyNPC.UUID).name }}: arousal {{ arousal.arousal -}}% ({%
+    if arousal.arousal < 20 %} (no sexual desire) {%
+    else if arousal.arousal < 40 %} (little sexual desire) {%
+    else if arousal.arousal < 60 %} (has sexual desire ) {%
+    else if arousal.arousal < 80 %} (high sexual desire) {%
+    else %} (highest sexual desire ) {%endif%}
+{% endfor %}

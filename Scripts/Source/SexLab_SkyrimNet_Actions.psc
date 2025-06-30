@@ -32,24 +32,19 @@ Bool Function SexTarget_IsEligible(Actor akActor, string contextJson, string par
         Debug.Trace("[SexLab_SkyrimNet] SetTarge_IsEigible: SexLab is None")
         return false  
     endif
-    if !SexLab.IsValidActor(akActor)
+    if !SexLab.IsValidActor(akActor) || akActor.IsDead() || akActor.IsInCombat() || SexLab.IsActorActive(akActor)
         Debug.Trace("[SexLab_SkyrimNet] SexTarget_IsEligible: akActor: " + akActor.GetLeveledActorBase().GetName()+" can't have sex")
         return False
     endif
-    if akActor.IsDead() || akActor.IsInCombat() || akActor.IsInFaction(SexLab.AnimatingFaction)
-        Debug.Trace("[SexLab_SkyrimNet] SexTarget_IsEligible: akActor: " + akActor.GetLeveledActorBase().GetName()+" is dead, in combat or injured")
-        return False
-    endif
-
 
     Actor akTarget = SkyrimNetApi.GetJsonActor(paramsJson, "target", Game.GetPlayer())
     if akTarget == None
         Debug.Trace("[SexLab_SkyrimNet] SetTarge_IsEigible: akTarget is None "+paramsJson)
-        return false
-    endif
-    if !SexLab.IsValidActor(akTarget)
-        Debug.Trace("[SexLab_SkyrimNet] SexTarget_IsEligible: akTarget: " + akTarget.GetLeveledActorBase().GetName()+" can't have sex")
-        return False
+    else    
+        if !SexLab.IsValidActor(akTarget) || akTarget.IsDead() || akTarget.IsInCombat() || SexLab.IsActorActive(akTarget)
+            Debug.Trace("[SexLab_SkyrimNet] SexTarget_IsEligible: akTarget: " + akTarget.GetLeveledActorBase().GetName()+" can't have sex")
+            return False
+        endif
     endif
 
     Debug.Trace("[SexTarget_IsEligible] " + akActor.GetLeveledActorBase().GetName() + " is eligible for sex with " + akTarget.GetLeveledActorBase().GetName())

@@ -6,6 +6,21 @@ Scriptname SexLab_SkyrimNet_Decorators
 Function RegisterDecorators() global
     Debug.Trace("SexLab_SkyrimNet_Decorators: RegisterDecorattors called")
     SkyrimNetApi.RegisterDecorator("sexlab_get_threads", "SexLab_SkyrimNet_Decorators", "Get_Threads")
+    SkyrimNetApi.RegisterDecorator("sexlab_get_arousal", "SexLab_SkyrimNet_Decorators", "Get_Arousal")
+EndFunction
+
+String Function Get_Arousal(Actor akActor) global
+    Debug.Trace("[SexLab_SkyrimNet] Get_Arousal called for "+akActor.GetLeveledActorBase().GetName())
+
+    slaFrameworkScr sla = Game.GetFormFromFile(0x4290F, "SexLabAroused.esm") as slaFrameworkScr
+    int arousal
+    if sla == None
+        Debug.Notification("[SexLab_SkyrimNet] Get_Arousal: slaFrameworkScr is None")
+        arousal = -1 
+    else
+        arousal =  sla.GetActorArousal(akActor)
+    endif
+    return "{\"arousal\":"+arousal+"}"
 EndFunction
 
 String Function Get_Threads(Actor akActor) global
@@ -13,7 +28,7 @@ String Function Get_Threads(Actor akActor) global
 
     sslThreadSlots ThreadSlots = Game.GetFormFromFile(0xD62, "SexLab.esm") as sslThreadSlots
     if ThreadSlots == None
-        Debug.Notification("[SexLab_SkyrimNet] GetSexLab_Prompt: ThreadSlots is None")
+        Debug.Notification("[SexLab_SkyrimNet] Get_Threads: ThreadSlots is None")
         return ""
     endif
 
