@@ -18,7 +18,6 @@ Function Setup()
     if orgasmed_this_stage == None
         orgasmed_this_stage = new Bool[15]
     endif 
-    Debug.Trace("SexLab_SkyrimNet_Main: Startup called")
 
     RegisterSexlabEvents()
     SexLab_SkyrimNet_Decorators.RegisterDecorators() 
@@ -83,45 +82,23 @@ Function Sex_Dialog(int ThreadID, Bool starting) global
     Actor[] actors = thread.Positions
 
     String narration = thread_Narration(SexLab.GetController(ThreadID), starting)
-    if actors.length < 2 || actors[0] == actors[1]
-        SkyrimNetApi.RegisterDialogue(actors[0], "*"+narration+"*")
-       ; SkyrimNetApi.DirectNarration(narration, actors[0])
-    else
-        SkyrimNetApi.RegisterDialogueToListener(actors[1], actors[0], "*"+narration+"*")
-        ; SkyrimNetApi.DirectNarration(narration, actors[1], actors[0])
-    endif 
-EndFunction
-
-Function PlaeHolder(int ThreadID, Bool starting) global
-    SexLabFramework SexLab = Game.GetFormFromFile(0xD62, "SexLab.esm") as SexLabFramework
-    if SexLab == None
-        Debug.Notification("[SexLab_SkyrimNet] Thread_Dialog: SexLab is None")
-        return  
-    endif
-    sslThreadController thread = SexLab.GetController(ThreadID)
-    Actor[] actors = thread.Positions
-
-    String narration = actors[1].GetLeveledActorBase().GetName()
     if starting
-        narration += " starts "
-    else
-        narration += " finished "
+        debug.Notification(narration)
     endif
-    if actors.length == 1
-        if thread.isAggressive 
-            narration += " being forced "
-        endif
-        narration += " masturbating."
+    narration = "*"+narration+"*"
+
+    ; the Dialog narration is called so that it is stored in the timeline and captured in memories,
+    ; and will be responded by t
+    if actors.length < 2 || actors[0] == actors[1]
+       SkyrimNetApi.RegisterDialogue(actors[0], "*"+narration+"*")
+       ; SkyrimNetApi.DirectNarration(narration, actors[0])
+    elseif actors.length == 2
+       SkyrimNetApi.RegisterDialogueToListener(actors[1], actors[0], "*"+narration+"*")
+       ; SkyrimNetApi.DirectNarration(narration, actors[1], actors[0])
     else
-        if thread.IsAggressive
-            narration += " raping "
-        else
-            narration += " having sex with "
-        endif
-        narration += actors[0].GetLeveledActorBase().GetName()+"."
+       SkyrimNetApi.RegisterDialogue(actors[1], "*"+narration+"*")
+       ;SkyrimNetApi.DirectNarration(narration)
     endif 
-    ;SkyrimNetApi.RegisterDialogueToListener(actors[0], actors[1], "*"+narration+"*")
-    ;SkyrimNetApi.DirectNarration(dom_name+type+sub_name, actors[1], actors[0])
 EndFunction
 
 Function Orgasm_Dialog(int ThreadID) global
@@ -215,8 +192,14 @@ Function Orgasm_Dialog(int ThreadID) global
     if narration != ""
         narration = narration
     endif 
-    ; SkyrimNetApi.DirectNarration(narration, actors[1], actors[0])
-    SkyrimNetApi.RegisterDialogueToListener(actors[1], actors[0], " I'm cumming")
+    Debug.Notification(narration)
+    narration = "*"+narration+"*"
+    ;SkyrimNetApi.RegisterShortLivedEvent("sexLab orgasm "+threadId, narration, narration,
+    ;    "", 60000, actors[1], actors[0])
+    ; This adds it to the time line 
+    SkyrimNetApi.RegisterDialogueToListener(actors[1], actors[0], narration)
+    ; This makes the ackors respond
+    SkyrimNetApi.DirectNarration(narration, actors[1], actors[0])
 EndFunction  
 
 ;----------------------------------------------------------------------------------------------------
@@ -265,27 +248,46 @@ String Function Thread_Narration(sslThreadController thread,bool ongoing=False) 
     sslBaseAnimation anim = thread.Animation
     ; Get our list of actors that were in this animation thread.
     Actor[] actors = thread.Positions
+
+    ; Handle an orgy
+    String narration = "" 
+    if actors.length > 2
+        int k = 0
+        while k < actors.length
+            if k == actors.length - 1
+                narration += ", and "
+            elseif k > 1
+                narration += ", "
+            endif 
+            narration += actors[k].GetLeveledActorBase().GetName()
+        endwhile 
+        if ongoing
+            narration += " starts "
+        else
+            narration += " finished "
+        endif 
+        narration += "having an orgry, where "
+    endif 
+
     String[] names = new String[2]
     names[0] = actors[0].GetLeveledActorBase().GetName()
     names[1] = actors[1].GetLeveledActorBase().GetName()
 
-    String narration = "" 
-    int i = 0
-    while i < actors.length
-        Race r = actors[i].GetLeveledActorBase().GetRace()
-        if JMap.hasKey(main.creature_description_map, r.getName())
-            narration += actors[i].GetLeveledActorBase().GetName()+" is a "+r.getName()+". "\
-                +JMap.getStr(main.creature_description_map, r.getName())
-            names[i] = "a "+r.getName() 
-        endif
-        i += 1
-    endwhile
+    ;int i = 0
+    ;while i < actors.length
+        ;Race r = actors[i].GetLeveledActorBase().GetRace()
+        ;if JMap.hasKey(main.creature_description_map, r.getName())
+            ;narration += actors[i].GetLeveledActorBase().GetName()+" is a "+r.getName()+". "\
+                ;+JMap.getStr(main.creature_description_map, r.getName())
+            ;names[i] = "a "+r.getName() 
+        ;endif
+        ;i += 1
+    ;endwhile
     String sub_name = names[0]
     String dom_name = names[1]
     Debug.Trace("[SexLab_SkyrimNet] sub: "+sub_name+" dom: "+dom_name+" count: "+actors.Length)
-
-
     narration += dom_name
+
     if ongoing
         narration += " starts "
     else
@@ -366,7 +368,7 @@ String Function Thread_Narration(sslThreadController thread,bool ongoing=False) 
     positions[5] = "sitting"
     positions[6] = "standing"
 
-    i = 0
+    int i = 0
     bool found = false
     while i < positions.Length && !found
         if anim.HasTag(positions[i])

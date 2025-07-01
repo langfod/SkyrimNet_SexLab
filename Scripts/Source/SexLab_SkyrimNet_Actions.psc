@@ -5,31 +5,67 @@ Scriptname SexLab_SkyrimNet_Actions
 ;----------------------------------------------------------------------------------------------------
 Function RegisterActions() global
     Debug.Trace("SexLab_SkyrimNet_Main: RegisterActions called")
+    String[] types = GetTypes()
+    int i = 0
+    int count = types.Length 
+    String type = ""
+    while i < count 
+        if type != "" 
+            type += "|"
+        endif 
+        type += types[i]
+        i += 1
+    endwhile 
     SkyrimNetApi.RegisterAction("SexTarget", \
-            "Have {type} sex, or make love,  with {target}.", \
+            "{{ {{ decnpc(npc.UUID).name }} is/will have {type} consensual sex/love with {target}.", \
             "SexLab_SkyrimNet_Actions", "SexTarget_IsEligible",  \
             "SexLab_SkyrimNet_Actions", "SexTarget_Execute",  \
-            "", "PAPYRUS", \
-            1, "{\"target\": \"Actor\", \"type\":\"vaginal|anal|oral|fingering\", \"rape\":false}")
+            "", "PAPYRUS", 1, \
+            "{\"target\": \"Actor\", \"type\":\""+type+"\", \"rape\":false, \"victum\":true}")
+    SkyrimNetApi.RegisterAction("RapedByTarget", \
+            " {target} starts to {type} rape {{ decnpc(npc.UUID).name }}. {{ decnpc(npc.UUID).name }} must select if implied by narration.", \
+            "SexLab_SkyrimNet_Actions", "SexTarget_IsEligible",  \
+            "SexLab_SkyrimNet_Actions", "SexTarget_Execute",  \
+            "", "PAPYRUS", 1, \
+            "{\"target\": \"Actor\", \"type\":\""+type+"\", \"rape\":true, \"victum\":true}")
     SkyrimNetApi.RegisterAction("RapeTarget", \
-            "Starts being {type} raped by {target}.", \
+            " {{ decnpc(npc.UUID).name }} is/will {type} rape {target}.", \
             "SexLab_SkyrimNet_Actions", "SexTarget_IsEligible",  \
             "SexLab_SkyrimNet_Actions", "SexTarget_Execute",  \
-            "", "PAPYRUS", \
-            1, "{\"target\": \"Actor\", \"type\":\"vaginal|anal|oral|fingering\", \"rape\":true}")
+            "", "PAPYRUS", 1, \
+            "{\"target\": \"Actor\", \"type\":\""+type+"\", \"rape\":true, \"victum\":false}")
     SkyrimNetApi.RegisterAction("SexMasturbation", \
-            "Start masturbating.", \
+            " {{ decnpc(npc.UUID).name }} is/will masturbate.", \
             "SexLab_SkyrimNet_Actions", "SexTarget_IsEligible",  \
             "SexLab_SkyrimNet_Actions", "SexTarget_Execute",  \
-            "", "PAPYRUS", \
-            1, "{\"type\":\"masturbation\", \"rape\":{true|false}}")
+            "", "PAPYRUS", 1, \
+            "{\"type\":\"masturbation\", \"rape\":{true|false}}")
+EndFunction
+
+String[] Function GetTypes() global
+    String[] types = new String[14]
+    types[0] = "any"
+    types[1] = "oral"
+    types[2] = "boobjob"
+    types[3] = "thighjob"
+    types[4] = "vaginal"
+    types[5] = "fisting"
+    types[6] = "anal"
+    types[7] = "spanking"
+    types[8] = "fingering"
+    types[9] = "footjob"
+    types[10] = "handjob"
+    types[11] = "kissing"
+    types[12] = "headpat"
+    types[13] = "dildo"
+    return types
 EndFunction
 
 Bool Function SexTarget_IsEligible(Actor akActor, string contextJson, string paramsJson) global
+    Debug.Trace("[SexTarget_IsEligible] attempting "+akActor.GetLeveledActorBase().GetName())
     SexLabFramework SexLab = Game.GetFormFromFile(0xD62, "SexLab.esm") as SexLabFramework
     if SexLab == None
         Debug.Notification("[SexLab_SkyrimNet] SetTarge_IsEigible: SexLab is None")
-        Debug.Trace("[SexLab_SkyrimNet] SetTarge_IsEigible: SexLab is None")
         return false  
     endif
     if !SexLab.IsValidActor(akActor) || akActor.IsDead() || akActor.IsInCombat() || SexLab.IsActorActive(akActor)
@@ -80,6 +116,14 @@ Function SexTarget_Execute(Actor akActor, string contextJson, string paramsJson)
             return 
         endif 
     endif
+    
+    Actor subActor = akActor 
+    Actor domActor = akTarget
+    Bool victum = SkyrimNetApi.GetJsonBool(paramsJson, "victum", true)
+    if !victum 
+        subActor = akTarget
+        domActor = akActor
+    endif
 
     sslThreadModel thread = sexlab.NewThread()
     if thread == None
@@ -87,15 +131,15 @@ Function SexTarget_Execute(Actor akActor, string contextJson, string paramsJson)
         Debug.Trace("[SexTarget_Execute] Failed to create thread")
         return  
     endif
-    if thread.addActor(akActor) < 0   
-        Debug.Trace("[SexTarget_Execute] Starting sex couldn't add " + akActor.GetLeveledActorBase().GetName() + " and target: " + akTarget.GetLeveledActorBase().GetName())
+    if thread.addActor(subActor) < 0   
+        Debug.Trace("[SexTarget_Execute] Starting sex couldn't add " + subActor.GetLeveledActorBase().GetName() + " and target: " + akTarget.GetLeveledActorBase().GetName())
         return
     endif  
     int num_actors = 1
     if akTarget != None 
         num_actors = 2
-        if thread.addActor(akTarget) < 0   
-            Debug.Trace("[SexTarget_Execute] Starting sex couldn't add " + akTarget.GetLeveledActorBase().GetName() + " and target: " + akTarget.GetLeveledActorBase().GetName())
+        if thread.addActor(domActor) < 0   
+            Debug.Trace("[SexTarget_Execute] Starting sex couldn't add " + domActor.GetLeveledActorBase().GetName() + " and target: " + akTarget.GetLeveledActorBase().GetName())
             return
         endif  
     endif 
@@ -140,21 +184,7 @@ String function YesNoDialog(Bool rape, Actor domActor, Actor subActor, Actor pla
     
     String result = SkyMessage.Show(question, "Yes","No")
     if result == "Yes"
-        String[] types = new String[14]
-        types[0] = "any"
-        types[1] = "oral"
-        types[2] = "boobjob"
-        types[3] = "thighjob"
-        types[4] = "vaginal"
-        types[5] = "fisting"
-        types[6] = "anal"
-        types[7] = "spanking"
-        types[8] = "fingering"
-        types[9] = "footjob"
-        types[10] = "handjob"
-        types[11] = "kissing"
-        types[12] = "headpat"
-        types[13] = "dildo"
+        String[] types = GetTypes() 
         uilistmenu listMenu = uiextensions.GetMenu("UIListMenu") AS uilistmenu
         int i =  0
         int count = types.Length
