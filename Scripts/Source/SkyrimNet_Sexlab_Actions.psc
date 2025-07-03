@@ -1,84 +1,99 @@
-Scriptname SexLab_SkyrimNet_Actions
+Scriptname SkyrimNet_SexLab_Actions
 
 ;----------------------------------------------------------------------------------------------------
 ; Actions
 ;----------------------------------------------------------------------------------------------------
 Function RegisterActions() global
-    Debug.Trace("SexLab_SkyrimNet_Main: RegisterActions called")
+    Debug.Trace("SkyrimNet_SexLab_Main: RegisterActions called")
     String[] types = GetTypes()
     int i = 0
     int count = types.Length 
     String type = ""
     while i < count 
-        if type != "" 
-            type += "|"
+        if type != "any" && type != "bondge"
+            if type != "" 
+                type += "|"
+            endif 
+            type += types[i]
         endif 
-        type += types[i]
         i += 1
     endwhile 
     SkyrimNetApi.RegisterAction("SexTarget", \
             "{{ {{ decnpc(npc.UUID).name }} is/will have {type} consensual sex/love with {target}.", \
-            "SexLab_SkyrimNet_Actions", "SexTarget_IsEligible",  \
-            "SexLab_SkyrimNet_Actions", "SexTarget_Execute",  \
+            "SkyrimNet_SexLab_Actions", "SexTarget_IsEligible",  \
+            "SkyrimNet_SexLab_Actions", "SexTarget_Execute",  \
             "", "PAPYRUS", 1, \
             "{\"target\": \"Actor\", \"type\":\""+type+"\", \"rape\":false, \"victum\":true}")
     SkyrimNetApi.RegisterAction("RapedByTarget", \
             " {target} starts to {type} rape {{ decnpc(npc.UUID).name }}. {{ decnpc(npc.UUID).name }} must select if implied by narration.", \
-            "SexLab_SkyrimNet_Actions", "SexTarget_IsEligible",  \
-            "SexLab_SkyrimNet_Actions", "SexTarget_Execute",  \
+            "SkyrimNet_SexLab_Actions", "SexTarget_IsEligible",  \
+            "SkyrimNet_SexLab_Actions", "SexTarget_Execute",  \
             "", "PAPYRUS", 1, \
             "{\"target\": \"Actor\", \"type\":\""+type+"\", \"rape\":true, \"victum\":true}")
     SkyrimNetApi.RegisterAction("RapeTarget", \
             " {{ decnpc(npc.UUID).name }} is/will {type} rape {target}.", \
-            "SexLab_SkyrimNet_Actions", "SexTarget_IsEligible",  \
-            "SexLab_SkyrimNet_Actions", "SexTarget_Execute",  \
+            "SkyrimNet_SexLab_Actions", "SexTarget_IsEligible",  \
+            "SkyrimNet_SexLab_Actions", "SexTarget_Execute",  \
             "", "PAPYRUS", 1, \
             "{\"target\": \"Actor\", \"type\":\""+type+"\", \"rape\":true, \"victum\":false}")
     SkyrimNetApi.RegisterAction("SexMasturbation", \
             " {{ decnpc(npc.UUID).name }} is/will masturbate.", \
-            "SexLab_SkyrimNet_Actions", "SexTarget_IsEligible",  \
-            "SexLab_SkyrimNet_Actions", "SexTarget_Execute",  \
+            "SkyrimNet_SexLab_Actions", "SexTarget_IsEligible",  \
+            "SkyrimNet_SexLab_Actions", "SexTarget_Execute",  \
             "", "PAPYRUS", 1, \
             "{\"type\":\"masturbation\", \"rape\":{true|false}}")
 EndFunction
 
 String[] Function GetTypes() global
-    String[] types = new String[14]
+    String[] types = new String[15]
     types[0] = "any"
-    types[1] = "oral"
-    types[2] = "boobjob"
-    types[3] = "thighjob"
-    types[4] = "vaginal"
-    types[5] = "fisting"
-    types[6] = "anal"
-    types[7] = "spanking"
-    types[8] = "fingering"
-    types[9] = "footjob"
-    types[10] = "handjob"
-    types[11] = "kissing"
-    types[12] = "headpat"
-    types[13] = "dildo"
+    types[1] = "bondage"
+    types[2] = "oral"
+    types[3] = "boobjob"
+    types[4] = "thighjob"
+    types[5] = "vaginal"
+    types[6] = "fisting"
+    types[7] = "anal"
+    types[8] = "spanking"
+    types[9] = "fingering"
+    types[10] = "footjob"
+    types[11] = "handjob"
+    types[12] = "kissing"
+    types[13] = "headpat"
+    types[14] = "dildo"
     return types
+EndFunction
+
+String[] Function GetBondages() global
+    string[] bondages = new String[9]
+    bondages[0] = "armbinder"
+    bondages[1] = "cuffs"
+    bondages[2] = "cuffed"
+    bondages[3] = "yoke"
+    bondages[6] = "hogtied"
+    bondages[7] = "chastity"
+    bondages[8] = "chasitybelt"
+    return bondages
 EndFunction
 
 Bool Function SexTarget_IsEligible(Actor akActor, string contextJson, string paramsJson) global
     Debug.Trace("[SexTarget_IsEligible] attempting "+akActor.GetLeveledActorBase().GetName())
     SexLabFramework SexLab = Game.GetFormFromFile(0xD62, "SexLab.esm") as SexLabFramework
     if SexLab == None
-        Debug.Notification("[SexLab_SkyrimNet] SetTarge_IsEigible: SexLab is None")
+        Debug.Notification("[SkyrimNet_SexLab] SetTarge_IsEigible: SexLab is None")
         return false  
     endif
     if !SexLab.IsValidActor(akActor) || akActor.IsDead() || akActor.IsInCombat() || SexLab.IsActorActive(akActor)
-        Debug.Trace("[SexLab_SkyrimNet] SexTarget_IsEligible: akActor: " + akActor.GetLeveledActorBase().GetName()+" can't have sex")
+        Debug.Trace("[SkyrimNet_SexLab] SexTarget_IsEligible: akActor: " + akActor.GetLeveledActorBase().GetName()+" can't have sex")
         return False
     endif
 
     Actor akTarget = SkyrimNetApi.GetJsonActor(paramsJson, "target", Game.GetPlayer())
     if akTarget == None
-        Debug.Trace("[SexLab_SkyrimNet] SetTarge_IsEigible: akTarget is None "+paramsJson)
+        Debug.Trace("[SkyrimNet_SexLab] SetTarge_IsEigible: akTarget is None "+paramsJson)
     else    
         if !SexLab.IsValidActor(akTarget) || akTarget.IsDead() || akTarget.IsInCombat() || SexLab.IsActorActive(akTarget)
-            Debug.Trace("[SexLab_SkyrimNet] SexTarget_IsEligible: akTarget: " + akTarget.GetLeveledActorBase().GetName()+" can't have sex")
+            Debug.Trace("[SkyrimNet_SexLab] SexTarget_IsEligible: akTarget: " + akTarget.GetLeveledActorBase().GetName()+" can't have sex")
             return False
         endif
     endif
@@ -89,10 +104,10 @@ EndFunction
 
 
 Function SexTarget_Execute(Actor akActor, string contextJson, string paramsJson) global
-    Debug.Notification("[SexLab_SkyrimNet] SexTarget_Execute called with params: "+paramsJson)
+    Debug.Notification("[SkyrimNet_SexLab] SexTarget_Execute called with params: "+paramsJson)
     SexLabFramework SexLab = Game.GetFormFromFile(0xD62, "SexLab.esm") as SexLabFramework
     if SexLab == None
-        Debug.Notification("[SexLab_SkyrimNet] SexTarget_Execute: SexLab is None")
+        Debug.Notification("[SkyrimNet_SexLab] SexTarget_Execute: SexLab is None")
         return
     endif
     
@@ -112,7 +127,7 @@ Function SexTarget_Execute(Actor akActor, string contextJson, string paramsJson)
     if akActor == player || akTarget == player
         type = YesNoDialog(rape, akTarget, akActor, player)
         if type == "No"
-            Debug.Trace("[SexLab_SkyrimNet] SexTarget_Execute: User declined")
+            Debug.Trace("[SkyrimNet_SexLab] SexTarget_Execute: User declined")
             return 
         endif 
     endif
@@ -152,14 +167,14 @@ Function SexTarget_Execute(Actor akActor, string contextJson, string paramsJson)
     endif 
     
     ; Debug.Notification(akActor.GetLeveledActorBase().GetName()+" will have sex with "+akTarget.GetLeveledActorBase().GetName())
-    Debug.Trace("[SexLab_SkyrimNet] SexTarget_Executer: Starting")
+    Debug.Trace("[SkyrimNet_SexLab] SexTarget_Executer: Starting")
     thread.addTag(type)
     if rape
         thread.IsAggressive = true
-        Debug.Trace("[SexLab_SkyrimNet] SexTarget_Execute: Thread is aggressive")
+        Debug.Trace("[SkyrimNet_SexLab] SexTarget_Execute: Thread is aggressive")
     else
         thread.IsAggressive = false
-        Debug.Trace("[SexLab_SkyrimNet] SexTarget_Execute: Thread is not aggressive")
+        Debug.Trace("[SkyrimNet_SexLab] SexTarget_Execute: Thread is not aggressive")
     endif 
     thread.StartThread() 
 EndFunction
@@ -193,7 +208,20 @@ String function YesNoDialog(Bool rape, Actor domActor, Actor subActor, Actor pla
             i += 1
         endwhile
         listMenu.OpenMenu()
-        return listmenu.GetResultString()
+        String type =  listmenu.GetResultString()
+        if type == "bondage"
+            String[] bondages = GetBondages()
+            listMenu = uiextensions.GetMenu("UIListMenu") AS uilistmenu
+            i =  0
+            count = bondages.Length
+            while i < count
+                listMenu.AddEntryItem(bondages[i])
+                i += 1
+            endwhile
+            listMenu.OpenMenu()
+            type =  listmenu.GetResultString()
+        endif 
+        return type
     endif 
     return "No"
 EndFunction

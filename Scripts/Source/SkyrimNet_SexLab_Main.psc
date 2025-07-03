@@ -1,4 +1,4 @@
-Scriptname SexLab_SkyrimNet_Main extends Quest
+Scriptname SkyrimNet_SexLab_Main extends Quest
 
 import JContainers
 import UIExtensions
@@ -7,40 +7,42 @@ Bool[] orgasmed_this_stage
 
 int property creature_description_map Auto
 
-String creature_description_fname = "Data/SexLab_SkyrimNet/creature-descriptions.json"
+String creature_description_fname = "Data/SkyrimNet_SexLab/creature-descriptions.json"
 
 Event OnInit()
+    Debug.Trace("[SkyrimNet_SexLab] OnInit")
     ; Register for all SexLab events using the framework's RegisterForAllEvents function
     Setup() 
 EndEvent
 
 Function Setup()
+    Debug.Trace("[SkyrimNet_SexLab] SetUp")
     if orgasmed_this_stage == None
         orgasmed_this_stage = new Bool[15]
     endif 
 
     RegisterSexlabEvents()
-    SexLab_SkyrimNet_Decorators.RegisterDecorators() 
-    SexLab_SkyrimNet_Actions.RegisterActions()
+    SkyrimNet_SexLab_Decorators.RegisterDecorators() 
+    SkyrimNet_SexLab_Actions.RegisterActions()
     RegisterSexLabEvents()
 
-    Debug.Trace("SexLab_SkyrimNet_Main Finished registration")
+    Debug.Trace("SkyrimNet_SexLab_Main Finished registration")
 
-    if creature_description_map != 0
-        JValue.release(creature_description_map)
-    endif 
+;    if creature_description_map != 0
+;        JValue.release(creature_description_map)
+;    endif 
 
-    creature_description_fname = "Data/SexLab_SkyrimNet/creature-descriptions.json"
+;    creature_description_fname = "Data/SkyrimNet_SexLab/creature-descriptions.json"
     ; Debug.Notification("loading "+creature_description_fname)
-    creature_description_map = JValue.readFromFile(creature_description_fname)
-    JValue.retain(creature_description_map)
+;    creature_description_map = JValue.readFromFile(creature_description_fname)
+;    JValue.retain(creature_description_map)
 
 EndFunction
 ;----------------------------------------------------------------------------------------------------
 ; SexLab Events
 ;----------------------------------------------------------------------------------------------------
 Function RegisterSexlabEvents() 
-    Debug.Trace("SexLab_SkyrimNet_Main: RegisterSexlabEvents called")
+    Debug.Trace("SkyrimNet_SexLab_Main: RegisterSexlabEvents called")
     ; SexLabFramework sexlab = Game.GetForm
 
     UnRegisterForModEvent("HookAnimationStart")
@@ -75,7 +77,7 @@ endEvent
 Function Sex_Dialog(int ThreadID, Bool starting) global
     SexLabFramework SexLab = Game.GetFormFromFile(0xD62, "SexLab.esm") as SexLabFramework
     if SexLab == None
-        Debug.Notification("[SexLab_SkyrimNet] Thread_Dialog: SexLab is None")
+        Debug.Notification("[SkyrimNet_SexLab] Thread_Dialog: SexLab is None")
         return  
     endif
     sslThreadController thread = SexLab.GetController(ThreadID)
@@ -104,7 +106,7 @@ EndFunction
 Function Orgasm_Dialog(int ThreadID) global
     SexLabFramework SexLab = Game.GetFormFromFile(0xD62, "SexLab.esm") as SexLabFramework
     if SexLab == None
-        Debug.Notification("[SexLab_SkyrimNet] Thread_Dialog: SexLab is None")
+        Debug.Notification("[SkyrimNet_SexLab] Thread_Dialog: SexLab is None")
         return  
     endif
     sslThreadController thread = SexLab.GetController(ThreadID)
@@ -225,7 +227,7 @@ Function Thread_Event(int ThreadID, Bool orgasm, Bool ongoing)
     ;names[0] = desc_names[1]
     ;names[1] = desc_names[2]
     ;Debug.Notification(eventDesc)
-    ;SkyrimNetApi.RegisterShortLivedEvent("SexLab_SkyrimNet_"+threadID,\
+    ;SkyrimNetApi.RegisterShortLivedEvent("SkyrimNet_SexLab_"+threadID,\
         ;eventType, eventDesc, "", 10000,\
         ;actors[1], actors[0])
 
@@ -239,10 +241,10 @@ endFunction
 String Function Thread_Narration(sslThreadController thread,bool ongoing=False) global
     SexLabFramework SexLab = Game.GetFormFromFile(0xD62, "SexLab.esm") as SexLabFramework
     if SexLab == None
-        Debug.Notification("[SexLab_SkyrimNet] GetThreadDescription: SexLab is None")
+        Debug.Notification("[SkyrimNet_SexLab] GetThreadDescription: SexLab is None")
         return None
     endif
-    SexLab_SkyrimNet_Main main = Game.GetFormFromFile(0x800, "SexLab_SkyrimNet.esp") as SexLab_SkyrimNet_Main
+    SkyrimNet_SexLab_Main main = Game.GetFormFromFile(0x800, "SkyrimNet_SexLab.esp") as SkyrimNet_SexLab_Main
 
     ; Get the thread that triggered this event via the thread id
     sslBaseAnimation anim = thread.Animation
@@ -285,7 +287,26 @@ String Function Thread_Narration(sslThreadController thread,bool ongoing=False) 
     ;endwhile
     String sub_name = names[0]
     String dom_name = names[1]
-    Debug.Trace("[SexLab_SkyrimNet] sub: "+sub_name+" dom: "+dom_name+" count: "+actors.Length)
+    Debug.Trace("[SkyrimNet_SexLab] sub: "+sub_name+" dom: "+dom_name+" count: "+actors.Length)
+
+    String bondage = "" 
+    if anim.HasTag("bound")
+        bondage += " a bound"
+        String[] b_types = SkyrimNet_SexLab_Actions.GetBondages()
+        int j = 0 
+        int num = b_types.Length
+        while j < num
+            if anim.HasTag(b_types[j])
+                bondage += " with a "+b_types[j]+" "
+                j = num 
+            endif 
+            j += 1
+        endwhile
+        if actors.length == 0
+            narration += bondage 
+        endif 
+    endif
+
     narration += dom_name
 
     if ongoing
@@ -355,9 +376,7 @@ String Function Thread_Narration(sslThreadController thread,bool ongoing=False) 
         type = " sex with"
     endif
 
-    if anim.HasTag("bound")
-        narration += " bound"
-    endif
+
 
     String[] positions = new String[7]
     positions[0] = "69"
@@ -379,7 +398,7 @@ String Function Thread_Narration(sslThreadController thread,bool ongoing=False) 
     endwhile
 
     if actors.Length > 1
-        narration += sexing+type + sub_name
+        narration += sexing+type + bondage + sub_name
     endif
 
     String[] on_furniture = new String[21]
