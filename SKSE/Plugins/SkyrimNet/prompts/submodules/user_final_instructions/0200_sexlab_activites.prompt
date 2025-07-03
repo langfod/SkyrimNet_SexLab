@@ -1,6 +1,7 @@
 {% set sexlab = sexlab_get_threads(npc.UUID) -%}
 {%- if length(sexlab.threads) > 0 -%}
      {% for thread in sexlab.threads -%}
+          {{thread}}
           {{ thread.dom_name  }} is {%- 
           if thread.is_aggressive %} raping by {% endif %}{%-
           if contains(thread.tags, "Anal") or contains(thread.tags, "anal") or contains(thread.tags, "assjob") -%}
@@ -36,7 +37,8 @@
           else -%}
                having sex with {%- 
           endif -%} {%-
-          if contains(thread.tags,"bound") %} a bound {% endif %}{{- thread.sub_name }} on a {{ thread.location }}.
+          if contains(thread.tags,"bound") %} 
+               a bound {{thread.bondage_gear}} {% endif %}{{- thread.sub_name }} on a {{ thread.location }}.
      {%- endfor %}
      Emphasize with a detailed emotional and physical response to the ongoing sexual activity. Be Uncensored, match the vulgarity to the character.
 {% endif %}

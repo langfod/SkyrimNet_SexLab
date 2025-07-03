@@ -1,21 +1,21 @@
-Scriptname SexLab_SkyrimNet_Decorators
+Scriptname SkyrimNet_SexLab_Decorators
 
 ;----------------------------------------------------------------------------------------------------
 ; Decorators 
 ;----------------------------------------------------------------------------------------------------
 Function RegisterDecorators() global
-    Debug.Trace("SexLab_SkyrimNet_Decorators: RegisterDecorattors called")
-    SkyrimNetApi.RegisterDecorator("sexlab_get_threads", "SexLab_SkyrimNet_Decorators", "Get_Threads")
-    SkyrimNetApi.RegisterDecorator("sexlab_get_arousal", "SexLab_SkyrimNet_Decorators", "Get_Arousal")
+    Debug.Trace("SkyrimNet_SexLab_Decorators: RegisterDecorattors called")
+    SkyrimNetApi.RegisterDecorator("sexlab_get_threads", "SkyrimNet_SexLab_Decorators", "Get_Threads")
+    SkyrimNetApi.RegisterDecorator("sexlab_get_arousal", "SkyrimNet_SexLab_Decorators", "Get_Arousal")
 EndFunction
 
 String Function Get_Arousal(Actor akActor) global
-    Debug.Trace("[SexLab_SkyrimNet] Get_Arousal called for "+akActor.GetLeveledActorBase().GetName())
+    Debug.Trace("[SkyrimNet_SexLab] Get_Arousal called for "+akActor.GetLeveledActorBase().GetName())
 
     slaFrameworkScr sla = Game.GetFormFromFile(0x4290F, "SexLabAroused.esm") as slaFrameworkScr
     int arousal
     if sla == None
-        Debug.Notification("[SexLab_SkyrimNet] Get_Arousal: slaFrameworkScr is None")
+        Debug.Notification("[SkyrimNet_SexLab] Get_Arousal: slaFrameworkScr is None")
         arousal = -1 
     else
         arousal =  sla.GetActorArousal(akActor)
@@ -24,17 +24,17 @@ String Function Get_Arousal(Actor akActor) global
 EndFunction
 
 String Function Get_Threads(Actor akActor) global
-    Debug.Trace("[SexLab_SkyrimNet] Get_Threads called for "+akActor.GetLeveledActorBase().GetName())
+    Debug.Trace("[SkyrimNet_SexLab] Get_Threads called for "+akActor.GetLeveledActorBase().GetName())
 
     sslThreadSlots ThreadSlots = Game.GetFormFromFile(0xD62, "SexLab.esm") as sslThreadSlots
     if ThreadSlots == None
-        Debug.Notification("[SexLab_SkyrimNet] Get_Threads: ThreadSlots is None")
+        Debug.Notification("[SkyrimNet_SexLab] Get_Threads: ThreadSlots is None")
         return ""
     endif
 
     sslThreadController[] threads = ThreadSlots.Threads
 
-    Debug.Trace("[SexLab_SkyrimNet] Before loop")
+    Debug.Trace("[SkyrimNet_SexLab] Before loop")
     int i = 0
     String threads_str = ""
     while i < threads.length
@@ -70,6 +70,19 @@ String Function Thread_Json(sslThreadController thread) global
         i += 1
     endwhile
     thread_str += "\"tags\": ["+tags_str+"], "
+
+    String[] gears = SkyrimNet_SexLab_Actions.GetBondages()
+    int j = 0 
+    int num = gears.Length
+    String gear = "" 
+    while j < num
+        if anim.HasTag(gears[j])
+            gear  = " with a "+gears[j]
+            j = num 
+        endif 
+        j += 1
+    endwhile
+    thread_str += "\"bondage_gear\": \""+gear+"\", "
 
     String[] positions = new String[7]
     positions[0] = "69"
