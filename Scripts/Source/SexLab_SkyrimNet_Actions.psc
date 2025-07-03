@@ -10,10 +10,12 @@ Function RegisterActions() global
     int count = types.Length 
     String type = ""
     while i < count 
-        if type != "" 
-            type += "|"
+        if type != "any" && type != "bondge"
+            if type != "" 
+                type += "|"
+            endif 
+            type += types[i]
         endif 
-        type += types[i]
         i += 1
     endwhile 
     SkyrimNetApi.RegisterAction("SexTarget", \
@@ -43,22 +45,37 @@ Function RegisterActions() global
 EndFunction
 
 String[] Function GetTypes() global
-    String[] types = new String[14]
+    String[] types = new String[15]
     types[0] = "any"
-    types[1] = "oral"
-    types[2] = "boobjob"
-    types[3] = "thighjob"
-    types[4] = "vaginal"
-    types[5] = "fisting"
-    types[6] = "anal"
-    types[7] = "spanking"
-    types[8] = "fingering"
-    types[9] = "footjob"
-    types[10] = "handjob"
-    types[11] = "kissing"
-    types[12] = "headpat"
-    types[13] = "dildo"
+    types[1] = "bondage"
+    types[2] = "oral"
+    types[3] = "boobjob"
+    types[4] = "thighjob"
+    types[5] = "vaginal"
+    types[6] = "fisting"
+    types[7] = "anal"
+    types[8] = "spanking"
+    types[9] = "fingering"
+    types[10] = "footjob"
+    types[11] = "handjob"
+    types[12] = "kissing"
+    types[13] = "headpat"
+    types[14] = "dildo"
     return types
+EndFunction
+
+String[] Function GetBondages() global
+    string[] bondages = new String[9]
+    bondages[0] = "armbinder"
+    bondages[1] = "cuffs"
+    bondages[2] = "cuffed"
+    bondages[3] = "yoke"
+    bondages[4] = "pillory"
+    bondages[5] = "gallows"
+    bondages[6] = "hogtied"
+    bondages[7] = "chastity"
+    bondages[8] = "chasitybelt"
+    return bondages
 EndFunction
 
 Bool Function SexTarget_IsEligible(Actor akActor, string contextJson, string paramsJson) global
@@ -193,7 +210,20 @@ String function YesNoDialog(Bool rape, Actor domActor, Actor subActor, Actor pla
             i += 1
         endwhile
         listMenu.OpenMenu()
-        return listmenu.GetResultString()
+        String type =  listmenu.GetResultString()
+        if type == "bondage"
+            String[] bondages = GetBondages()
+            listMenu = uiextensions.GetMenu("UIListMenu") AS uilistmenu
+            i =  0
+            count = bondages.Length
+            while i < count
+                listMenu.AddEntryItem(bondages[i])
+                i += 1
+            endwhile
+            listMenu.OpenMenu()
+            type =  listmenu.GetResultString()
+        endif 
+        return type
     endif 
     return "No"
 EndFunction
