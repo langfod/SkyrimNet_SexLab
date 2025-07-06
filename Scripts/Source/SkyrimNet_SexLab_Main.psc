@@ -5,6 +5,9 @@ import UIExtensions
 import SkyrimNet_SexLab_Decorators
 import SkyrimNet_SexLab_Actions
 
+int Property actorLock = 0 Auto 
+float Property actorLockTimeout = 60.0 Auto
+
 Event OnInit()
     Debug.Trace("[SkyrimNet_SexLab] OnInit")
     ; Register for all SexLab events using the framework's RegisterForAllEvents function
@@ -14,6 +17,12 @@ EndEvent
 Function Setup()
     Debug.Trace("[SkyrimNet_SexLab] SetUp")
 
+    if actorLock == 0 
+        actorLock = JFormMap.object() 
+        JValue.retain(actorLock)
+        ActorLockTimeout = 60.0
+    endif 
+
     RegisterSexlabEvents()
     SkyrimNet_SexLab_Actions.RegisterActions()
     SkyrimNet_SexLab_Decorators.RegisterDecorators() 
@@ -22,6 +31,56 @@ Function Setup()
     Debug.Trace("SkyrimNet_SexLab_Main Finished registration")
 
 EndFunction
+;----------------------------------------------------------------------------------------------------
+; Utility function
+;----------------------------------------------------------------------------------------------------
+
+Function Trace(String msg, Bool notification=False) global
+    msg = "[SkyrimNet_SexLab_Main] "+msg
+    Debug.Trace(msg)
+    if notification
+        Debug.Notification(msg)
+    endif 
+EndFunction
+
+
+;----------------------------------------------------------------------------------------------------
+; Actor Lock
+;----------------------------------------------------------------------------------------------------
+
+Bool Function IsActorLocked(Actor akActor) 
+    bool locked = False
+    if akActor == None 
+        if JFormMap.hasKey(actorLock, akActor) 
+            float time = JFormMap.getFlt(actorLock, akActor) 
+            if Utility.GetCurrentGameTime() - time > actorLockTimeout
+                JFormMap.removeKey(actorLock, akActor)
+                locked = False
+            else
+                locked = True
+            endif 
+        endif 
+        Trace("IsActorLocked: "+akActor.GetLeveledActorBase().GetName()+" "+locked)
+    endif 
+    return locked 
+EndFunction
+
+Function SetActorLock(Actor akActor) 
+    if akActor == None 
+        return 
+    endif 
+    Trace("SetActorLock: "+akActor.GetLeveledActorBase().GetName())
+    JFormMap.setFlt(actorLock, akActor, Utility.GetCurrentGameTime())
+EndFunction
+
+Function ReleaseActorLock(Actor akActor) 
+    if akActor == None 
+        return 
+    endif 
+    Trace("ReleaseActorLock: "+akActor.GetLeveledActorBase().GetName())
+    JFormMap.removeKey(actorLock, akActor)
+EndFunction
+
 ;----------------------------------------------------------------------------------------------------
 ; SexLab Events
 ;----------------------------------------------------------------------------------------------------

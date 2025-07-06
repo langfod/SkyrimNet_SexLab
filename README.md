@@ -7,6 +7,7 @@ The following and depedancies:
 - [Sexlab Framework](https://www.loverslab.com/files/category/228-sexlab-framework-se/)
 - [Papyrus MessageBox](https://www.nexusmods.com/skyrimspecialedition/mods/83578)
 - [OSL Aroused](https://www.nexusmods.com/skyrimspecialedition/mods/65454)
+- [JContainers](https://www.nexusmods.com/skyrimspecialedition/mods/16495)
 - SkyrimNet
    - You must have narration enabled
 - **SkyrimNet**
@@ -19,7 +20,6 @@ The following and depedancies:
     -  [Address Library for SKSE Plugins](https://www.nexusmods.com/skyrimspecialedition/mods/32444)
     -  [Unofficial Skyrim Special Edition Patch - USSEP](https://www.nexusmods.com/skyrimspecialedition/mods/266)
     -  [UIExtensions](https://www.nexusmods.com/skyrimspecialedition/mods/17561)
-    -  [JContainers](https://www.nexusmods.com/skyrimspecialedition/mods/16495)
     -  [SkyUI SE](https://www.nexusmods.com/skyrimspecialedition/mods/12604)
     -  [PapyrusUtil SE](https://www.nexusmods.com/skyrimspecialedition/mods/13048)
     -  [Powerof three Papyrus Extender](https://www.nexusmods.com/skyrimspecialedition/mods/22854)

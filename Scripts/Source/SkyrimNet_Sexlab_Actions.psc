@@ -1,10 +1,19 @@
-Scriptname SkyrimNet_SexLab_Actions
+Scriptname SkyrimNet_SexLab_Actions 
+
+Function Trace(String msg, Bool notification=False) global
+    msg = "[SkyrimNet_SexLab_Actions] "+msg
+    Debug.Trace(msg)
+    if notification
+        Debug.Notification(msg)
+    endif 
+EndFunction
 
 ;----------------------------------------------------------------------------------------------------
 ; Actions
 ;----------------------------------------------------------------------------------------------------
 Function RegisterActions() global
-    Debug.Trace("SkyrimNet_SexLab_Main: RegisterActions called")
+    Trace("RegisterActions called")
+
     String[] types = GetTypes()
     int i = 0
     int count = types.Length 
@@ -18,6 +27,8 @@ Function RegisterActions() global
         endif 
         i += 1
     endwhile 
+;    SkyrimNetApi.RegisterTag("animation", "Skyrimet_SexLab_Actions", "Animation_IsEligible")
+
             ; "{{ {{ decnpc(npc.UUID).name }} is/will have {type} consensual sex/love with {target}.", \
     SkyrimNetApi.RegisterAction("SexTarget", \
             "have consensual sex", \
@@ -25,28 +36,59 @@ Function RegisterActions() global
             "SkyrimNet_SexLab_Actions", "SexTarget_Execute",  \
             "", "PAPYRUS", 1, \
             "{\"target\": \"Actor\", \"type\":\""+type+"\", \"rape\":false, \"victum\":true}")
-            ;" {{ decnpc(npc.UUID).name }} is/will {type} rape {target}.", \
     SkyrimNetApi.RegisterAction("RapeTarget", \
-            "be the victum of nonconsensual sex",\
-            "SkyrimNet_SexLab_Actions", "SexTarget_IsEligible",  \
-            "SkyrimNet_SexLab_Actions", "SexTarget_Execute",  \
-            "", "PAPYRUS", 1, \
-            "{\"target\": \"Actor\", \"type\":\""+type+"\", \"rape\":true, \"victum\":false}")
-            ;" {target} starts to {type} rape {{ decnpc(npc.UUID).name }}. {{ decnpc(npc.UUID).name }} must select if implied by narration.", \
-    SkyrimNetApi.RegisterAction("RapedByTarget", \
             "be the assailant of nonconsensual sex",\
             "SkyrimNet_SexLab_Actions", "SexTarget_IsEligible",  \
             "SkyrimNet_SexLab_Actions", "SexTarget_Execute",  \
             "", "PAPYRUS", 1, \
+            "{\"target\": \"Actor\", \"type\":\""+type+"\", \"rape\":true, \"victum\":false}")
+    SkyrimNetApi.RegisterAction("RapedByTarget", \
+            "be the victum of nonconsensual sex",\
+            "SkyrimNet_SexLab_Actions", "SexTarget_IsEligible",  \
+            "SkyrimNet_SexLab_Actions", "SexTarget_Execute",  \
+            "", "PAPYRUS", 1, \
             "{\"target\": \"Actor\", \"type\":\""+type+"\", \"rape\":true, \"victum\":true}")
-            ;" {{ decnpc(npc.UUID).name }} is/will masturbate.", \
     SkyrimNetApi.RegisterAction("SexMasturbation", \
             "masturbate",\
             "SkyrimNet_SexLab_Actions", "SexTarget_IsEligible",  \
             "SkyrimNet_SexLab_Actions", "SexTarget_Execute",  \
             "", "PAPYRUS", 1, \
             "{\"type\":\"masturbation\", \"rape\":{true|false}}")
+
 EndFunction
+
+; -------------------------------------------------
+; Tags 
+; -------------------------------------------------
+Bool Function Animation_IsEligible(Actor akActor, string contextJson, string paramsJson) global
+    SkyrimNet_SexLab_Main main = Game.GetFormFromFile(0x800, "SkyrimNet_SexLab.esp") as SkyrimNet_SexLab_Main
+    SexLabFramework SexLab = Game.GetFormFromFile(0xD62, "SexLab.esm") as SexLabFramework
+    if SexLab == None || main == None 
+        return false
+    endif 
+
+    if SexLab.IsActorActive(akActor) || main.IsActorLocked(akActor)
+        Trace("Animation_IsEligible: akActor: " + akActor.GetLeveledActorBase().GetName()+" is already captured by an animation")
+        return False
+    endif
+
+    Actor akTarget = SkyrimNetApi.GetJsonActor(paramsJson, "target", Game.GetPlayer())
+    if akTarget != None && (SexLab.IsActorActive(akTarget) || main.IsActorLocked(akTarget))
+        Trace("Animation_IsEligible: akTarget: " + akTarget.GetLeveledActorBase().GetName()+" is already captured by an animation")
+        return False
+    endif
+
+    String nameTarget = "" 
+    if akTarget != None 
+        nameTarget = akTarget.GetLeveledActorBase().GetName() 
+    endif 
+    Trace("Animation_IsEligible: " + akActor.GetLeveledActorBase().GetName()+" and "+nameTarget+" can have sex")
+    return true 
+EndFunction 
+
+; -------------------------------------------------
+; ACtions 
+; -------------------------------------------------
 
 String[] Function GetTypes() global
     String[] types = new String[15]
@@ -81,41 +123,46 @@ String[] Function GetBondages() global
 EndFunction
 
 Bool Function SexTarget_IsEligible(Actor akActor, string contextJson, string paramsJson) global
-    Debug.Trace("[SexTarget_IsEligible] attempting "+akActor.GetLeveledActorBase().GetName())
+    Trace("SexTaget_IsEligible: attempting "+akActor.GetLeveledActorBase().GetName())
     SexLabFramework SexLab = Game.GetFormFromFile(0xD62, "SexLab.esm") as SexLabFramework
-    if SexLab == None
-        Debug.Notification("[SkyrimNet_SexLab] SetTarge_IsEigible: SexLab is None")
-        return false  
-    endif
-    if !SexLab.IsValidActor(akActor) || akActor.IsDead() || akActor.IsInCombat() || SexLab.IsActorActive(akActor)
-        Debug.Trace("[SkyrimNet_SexLab] SexTarget_IsEligible: akActor: " + akActor.GetLeveledActorBase().GetName()+" can't have sex")
+    SkyrimNet_SexLab_Main main = Game.GetFormFromFile(0x800, "SkyrimNet_SexLab.esp") as SkyrimNet_SexLab_Main
+    if SexLab == None || main == None 
+        return false
+    endif 
+
+    if !SexLab.IsValidActor(akActor) || akActor.IsDead() || akActor.IsInCombat() || SexLab.IsActorActive(akActor) || main.IsActorLocked(akActor)
+        Trace("SexTarget_IsEligible: akActor: " + akActor.GetLeveledActorBase().GetName()+" can't have sex")
         return False
     endif
 
     Actor akTarget = SkyrimNetApi.GetJsonActor(paramsJson, "target", Game.GetPlayer())
     if akTarget == None
-        Debug.Trace("[SkyrimNet_SexLab] SetTarge_IsEigible: akTarget is None "+paramsJson)
+        Trace("SetTarget_IsEigible: akTarget is None "+paramsJson)
     else    
-        if !SexLab.IsValidActor(akTarget) || akTarget.IsDead() || akTarget.IsInCombat() || SexLab.IsActorActive(akTarget)
-            Debug.Trace("[SkyrimNet_SexLab] SexTarget_IsEligible: akTarget: " + akTarget.GetLeveledActorBase().GetName()+" can't have sex")
+        if !SexLab.IsValidActor(akTarget) || akTarget.IsDead() || akTarget.IsInCombat() || SexLab.IsActorActive(akTarget) || main.IsActorLocked(akTarget)
+            Trace("SexTarget_IsEligible: akTarget: " + akTarget.GetLeveledActorBase().GetName()+" can't have sex")
             return False
         endif
     endif
 
-    Debug.Trace("[SexTarget_IsEligible] " + akActor.GetLeveledActorBase().GetName() + " is eligible for sex with " + akTarget.GetLeveledActorBase().GetName())
+    Trace("SexTarget_IsEligible: " + akActor.GetLeveledActorBase().GetName() + " is eligible for sex with " + akTarget.GetLeveledActorBase().GetName())
     return True
 EndFunction
 
 
 Function SexTarget_Execute(Actor akActor, string contextJson, string paramsJson) global
-    Debug.Notification("[SkyrimNet_SexLab] "+paramsJson)
-    Debug.Trace("[SkyrimNet_SexLab] SexTarget_Execute "+paramsJson)
+    Trace("SexTarget_Execute: "+paramsJson, true)
     SexLabFramework SexLab = Game.GetFormFromFile(0xD62, "SexLab.esm") as SexLabFramework
     if SexLab == None
-        Debug.Notification("[SkyrimNet_SexLab] SexTarget_Execute: SexLab is None")
+        Trace("SexTarget_Execute: SexLab is None", true)
         return
     endif
-    
+    SkyrimNet_SexLab_Main main = Game.GetFormFromFile(0x800, "SkyrimNet_SexLab.esp") as SkyrimNet_SexLab_Main
+    if main == None
+        Trace("SexTarget_Execute: main is None", true)
+        return
+    endif
+
     bool rape = SkyrimNetApi.GetJsonBool(paramsJson, "rape", false)
     String type = SkyrimNetApi.GetJsonString(paramsJson, "type","vaginal")
     Actor akTarget = None
@@ -127,15 +174,24 @@ Function SexTarget_Execute(Actor akActor, string contextJson, string paramsJson)
         akTarget = None
     endif 
 
+    if main.IsActorLocked(akActor) || main.IsActorLocked(akTarget)
+        return 
+    endif 
+
+    main.SetActorLock(akActor)
+    main.SetActorLock(akTarget)
     Actor player = Game.GetPlayer()
     Debug.Trace("[SkyrimNet_SexLab] SexTarget_Execute type:"+type+" akTarget:"+akTarget)
     if akActor == player || (akTarget != None && akTarget == player)
         type = YesNoDialog(rape, akTarget, akActor, player)
-        if type == "No"
-            Debug.Trace("[SkyrimNet_SexLab] SexTarget_Execute: User declined")
-            return 
-        endif 
     endif
+    main.ReleaseActorLock(akActor)
+    main.ReleaseActorLock(akTarget)
+
+    if type == "No"
+        Trace("SexTarget_Execute: User declined")
+        return 
+    endif 
     
     Actor subActor = akActor 
     Actor domActor = akTarget
@@ -147,19 +203,18 @@ Function SexTarget_Execute(Actor akActor, string contextJson, string paramsJson)
 
     sslThreadModel thread = sexlab.NewThread()
     if thread == None
-        Debug.Notification("[SexTarget_Execute] Failed to create thread")
-        Debug.Trace("[SexTarget_Execute] Failed to create thread")
+        Trace("SexTarget_Execute: Failed to create thread")
         return  
     endif
     if thread.addActor(subActor) < 0   
-        Debug.Trace("[SexTarget_Execute] Starting sex couldn't add " + subActor.GetLeveledActorBase().GetName() + " and target: " + akTarget.GetLeveledActorBase().GetName())
+        Trace("SexTarget_Execute: Starting sex couldn't add " + subActor.GetLeveledActorBase().GetName() + " and target: " + akTarget.GetLeveledActorBase().GetName())
         return
     endif  
     int num_actors = 1
     if akTarget != None 
         num_actors = 2
         if thread.addActor(domActor) < 0   
-            Debug.Trace("[SexTarget_Execute] Starting sex couldn't add " + domActor.GetLeveledActorBase().GetName() + " and target: " + akTarget.GetLeveledActorBase().GetName())
+            Trace("SexTarget_Execute: Starting sex couldn't add " + domActor.GetLeveledActorBase().GetName() + " and target: " + akTarget.GetLeveledActorBase().GetName())
             return
         endif  
     endif 
@@ -168,19 +223,17 @@ Function SexTarget_Execute(Actor akActor, string contextJson, string paramsJson)
         sslBaseAnimation[] anims =  SexLab.GetAnimationsByTags(num_actors, type, "", true)
         if anims.length > 0
             thread.SetAnimations(anims)
+            thread.addTag(type)
         endif 
     endif 
     
     ; Debug.Notification(akActor.GetLeveledActorBase().GetName()+" will have sex with "+akTarget.GetLeveledActorBase().GetName())
-    Debug.Trace("[SkyrimNet_SexLab] SexTarget_Executer: Starting")
-    thread.addTag(type)
     if rape
         thread.IsAggressive = true
-        Debug.Trace("[SkyrimNet_SexLab] SexTarget_Execute: Thread is aggressive")
     else
         thread.IsAggressive = false
-        Debug.Trace("[SkyrimNet_SexLab] SexTarget_Execute: Thread is not aggressive")
     endif 
+    Trace("SexTarget_Executer: Starting type:"+type+" aggressive:"+thread.IsAggressive)
     thread.StartThread() 
 EndFunction
 
