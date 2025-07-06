@@ -2,12 +2,8 @@ Scriptname SkyrimNet_SexLab_Main extends Quest
 
 import JContainers
 import UIExtensions
-
-Bool[] orgasmed_this_stage
-
-int property creature_description_map Auto
-
-String creature_description_fname = "Data/SkyrimNet_SexLab/creature-descriptions.json"
+import SkyrimNet_SexLab_Decorators
+import SkyrimNet_SexLab_Actions
 
 Event OnInit()
     Debug.Trace("[SkyrimNet_SexLab] OnInit")
@@ -17,25 +13,13 @@ EndEvent
 
 Function Setup()
     Debug.Trace("[SkyrimNet_SexLab] SetUp")
-    if orgasmed_this_stage == None
-        orgasmed_this_stage = new Bool[15]
-    endif 
 
     RegisterSexlabEvents()
-    SkyrimNet_SexLab_Decorators.RegisterDecorators() 
     SkyrimNet_SexLab_Actions.RegisterActions()
+    SkyrimNet_SexLab_Decorators.RegisterDecorators() 
     RegisterSexLabEvents()
 
     Debug.Trace("SkyrimNet_SexLab_Main Finished registration")
-
-;    if creature_description_map != 0
-;        JValue.release(creature_description_map)
-;    endif 
-
-;    creature_description_fname = "Data/SkyrimNet_SexLab/creature-descriptions.json"
-    ; Debug.Notification("loading "+creature_description_fname)
-;    creature_description_map = JValue.readFromFile(creature_description_fname)
-;    JValue.retain(creature_description_map)
 
 EndFunction
 ;----------------------------------------------------------------------------------------------------
@@ -48,7 +32,7 @@ Function RegisterSexlabEvents()
     UnRegisterForModEvent("HookAnimationStart")
     RegisterForModEvent("HookAnimationStart", "AnimationStart")
     UnRegisterForModEvent("HookStageStart")
-    RegisterForModEvent("HookStageStart", "StageStart")
+    ;RegisterForModEvent("HookStageStart", "StageStart")
     ;UnRegisterForModEvent("HookStageEnd")
     ;RegisterForModEvent("HookStageEnd", "SexLab_StageEnd")
     UnRegisterForModEvent("HookOrgasmStart")
@@ -61,12 +45,10 @@ event AnimationStart(int ThreadID, bool HasPlayer)
     Sex_Dialog(ThreadID, true )
 endEvent
 
-Event StartStage(int ThreadID, bool HasPlayer)
-    orgasmed_this_stage[ThreadID] = false
-EndEvent
+;Event StartStage(int ThreadID, bool HasPlayer)
+;EndEvent
 
 Event OrgasmStart(int ThreadID, bool HasPlayer)
-    orgasmed_this_stage[ThreadID] = true
     Orgasm_Dialog(ThreadID)
 EndEvent
 
@@ -275,16 +257,6 @@ String Function Thread_Narration(sslThreadController thread,bool ongoing=False) 
     names[0] = actors[0].GetLeveledActorBase().GetName()
     names[1] = actors[1].GetLeveledActorBase().GetName()
 
-    ;int i = 0
-    ;while i < actors.length
-        ;Race r = actors[i].GetLeveledActorBase().GetRace()
-        ;if JMap.hasKey(main.creature_description_map, r.getName())
-            ;narration += actors[i].GetLeveledActorBase().GetName()+" is a "+r.getName()+". "\
-                ;+JMap.getStr(main.creature_description_map, r.getName())
-            ;names[i] = "a "+r.getName() 
-        ;endif
-        ;i += 1
-    ;endwhile
     String sub_name = names[0]
     String dom_name = names[1]
     Debug.Trace("[SkyrimNet_SexLab] sub: "+sub_name+" dom: "+dom_name+" count: "+actors.Length)

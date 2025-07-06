@@ -12,14 +12,24 @@ EndFunction
 String Function Get_Arousal(Actor akActor) global
     Debug.Trace("[SkyrimNet_SexLab] Get_Arousal called for "+akActor.GetLeveledActorBase().GetName())
 
-    slaFrameworkScr sla = Game.GetFormFromFile(0x4290F, "SexLabAroused.esm") as slaFrameworkScr
-    int arousal
-    if sla == None
-        Debug.Notification("[SkyrimNet_SexLab] Get_Arousal: slaFrameworkScr is None")
-        arousal = -1 
-    else
-        arousal =  sla.GetActorArousal(akActor)
-    endif
+    int arousal = -1
+
+    ; Form api = Game.GetFormFromFile(0x00000D61, "DiaryOfMine.esm")
+    ; if api != None 
+    ;    DOM_Actor slave = (api as DOM_API).GetDOMActor(akActor)
+    ;    if slave != None 
+    ;        arousal = slave.mind.arousal_factor as Int
+    ;    endif 
+    ;endif 
+
+    if arousal == -1
+        slaFrameworkScr sla = Game.GetFormFromFile(0x4290F, "SexLabAroused.esm") as slaFrameworkScr
+        if sla == None
+            Debug.Notification("[SkyrimNet_SexLab] Get_Arousal: slaFrameworkScr is None")
+        else
+            arousal =  sla.GetActorArousal(akActor)
+        endif
+    endif 
     return "{\"arousal\":"+arousal+"}"
 EndFunction
 
@@ -34,7 +44,6 @@ String Function Get_Threads(Actor akActor) global
 
     sslThreadController[] threads = ThreadSlots.Threads
 
-    Debug.Trace("[SkyrimNet_SexLab] Before loop")
     int i = 0
     String threads_str = ""
     while i < threads.length

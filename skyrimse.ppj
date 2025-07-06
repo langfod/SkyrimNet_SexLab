@@ -14,6 +14,7 @@
     </Variables>
     <Imports>
         <Import>.\Scripts\Source</Import>
+        <Import>.\Headers\PAH Diary Of Mine</Import>
         <Import>@ModsFolder\SKSE64\Scripts\Source</Import>
         <Import>@ModsFolder\SkyrimNet\Source\Scripts</Import>
         <Import>@ModsFolder\powerofthree's Tweaks\Source\Scripts</Import>

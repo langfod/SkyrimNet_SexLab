@@ -18,26 +18,30 @@ Function RegisterActions() global
         endif 
         i += 1
     endwhile 
+            ; "{{ {{ decnpc(npc.UUID).name }} is/will have {type} consensual sex/love with {target}.", \
     SkyrimNetApi.RegisterAction("SexTarget", \
-            "{{ {{ decnpc(npc.UUID).name }} is/will have {type} consensual sex/love with {target}.", \
+            "have consensual sex", \
             "SkyrimNet_SexLab_Actions", "SexTarget_IsEligible",  \
             "SkyrimNet_SexLab_Actions", "SexTarget_Execute",  \
             "", "PAPYRUS", 1, \
             "{\"target\": \"Actor\", \"type\":\""+type+"\", \"rape\":false, \"victum\":true}")
-    SkyrimNetApi.RegisterAction("RapedByTarget", \
-            " {target} starts to {type} rape {{ decnpc(npc.UUID).name }}. {{ decnpc(npc.UUID).name }} must select if implied by narration.", \
-            "SkyrimNet_SexLab_Actions", "SexTarget_IsEligible",  \
-            "SkyrimNet_SexLab_Actions", "SexTarget_Execute",  \
-            "", "PAPYRUS", 1, \
-            "{\"target\": \"Actor\", \"type\":\""+type+"\", \"rape\":true, \"victum\":true}")
+            ;" {{ decnpc(npc.UUID).name }} is/will {type} rape {target}.", \
     SkyrimNetApi.RegisterAction("RapeTarget", \
-            " {{ decnpc(npc.UUID).name }} is/will {type} rape {target}.", \
+            "be the victum of nonconsensual sex",\
             "SkyrimNet_SexLab_Actions", "SexTarget_IsEligible",  \
             "SkyrimNet_SexLab_Actions", "SexTarget_Execute",  \
             "", "PAPYRUS", 1, \
             "{\"target\": \"Actor\", \"type\":\""+type+"\", \"rape\":true, \"victum\":false}")
+            ;" {target} starts to {type} rape {{ decnpc(npc.UUID).name }}. {{ decnpc(npc.UUID).name }} must select if implied by narration.", \
+    SkyrimNetApi.RegisterAction("RapedByTarget", \
+            "be the assailant of nonconsensual sex",\
+            "SkyrimNet_SexLab_Actions", "SexTarget_IsEligible",  \
+            "SkyrimNet_SexLab_Actions", "SexTarget_Execute",  \
+            "", "PAPYRUS", 1, \
+            "{\"target\": \"Actor\", \"type\":\""+type+"\", \"rape\":true, \"victum\":true}")
+            ;" {{ decnpc(npc.UUID).name }} is/will masturbate.", \
     SkyrimNetApi.RegisterAction("SexMasturbation", \
-            " {{ decnpc(npc.UUID).name }} is/will masturbate.", \
+            "masturbate",\
             "SkyrimNet_SexLab_Actions", "SexTarget_IsEligible",  \
             "SkyrimNet_SexLab_Actions", "SexTarget_Execute",  \
             "", "PAPYRUS", 1, \
@@ -104,7 +108,8 @@ EndFunction
 
 
 Function SexTarget_Execute(Actor akActor, string contextJson, string paramsJson) global
-    Debug.Notification("[SkyrimNet_SexLab] SexTarget_Execute called with params: "+paramsJson)
+    Debug.Notification("[SkyrimNet_SexLab] "+paramsJson)
+    Debug.Trace("[SkyrimNet_SexLab] SexTarget_Execute "+paramsJson)
     SexLabFramework SexLab = Game.GetFormFromFile(0xD62, "SexLab.esm") as SexLabFramework
     if SexLab == None
         Debug.Notification("[SkyrimNet_SexLab] SexTarget_Execute: SexLab is None")
@@ -113,7 +118,6 @@ Function SexTarget_Execute(Actor akActor, string contextJson, string paramsJson)
     
     bool rape = SkyrimNetApi.GetJsonBool(paramsJson, "rape", false)
     String type = SkyrimNetApi.GetJsonString(paramsJson, "type","vaginal")
-    Debug.Trace("SexTarget_Execte:"+type)
     Actor akTarget = None
     if type != "masturbation" && type != "masturbate"
         akTarget = SkyrimNetApi.GetJsonActor(paramsJson, "target", None)
@@ -124,7 +128,8 @@ Function SexTarget_Execute(Actor akActor, string contextJson, string paramsJson)
     endif 
 
     Actor player = Game.GetPlayer()
-    if akActor == player || akTarget == player
+    Debug.Trace("[SkyrimNet_SexLab] SexTarget_Execute type:"+type+" akTarget:"+akTarget)
+    if akActor == player || (akTarget != None && akTarget == player)
         type = YesNoDialog(rape, akTarget, akActor, player)
         if type == "No"
             Debug.Trace("[SkyrimNet_SexLab] SexTarget_Execute: User declined")
