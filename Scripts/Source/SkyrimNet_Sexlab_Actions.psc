@@ -151,7 +151,7 @@ EndFunction
 
 
 Function SexTarget_Execute(Actor akActor, string contextJson, string paramsJson) global
-    Trace("SexTarget_Execute: "+paramsJson, true)
+    Trace("SexTarget_Execute: "+paramsJson)
     SexLabFramework SexLab = Game.GetFormFromFile(0xD62, "SexLab.esm") as SexLabFramework
     if SexLab == None
         Trace("SexTarget_Execute: SexLab is None", true)
