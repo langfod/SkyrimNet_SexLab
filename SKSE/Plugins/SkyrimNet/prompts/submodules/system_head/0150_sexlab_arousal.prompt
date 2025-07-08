@@ -1,5 +1,5 @@
-{% set arousal = sexlab_get_arousal(actorUUID) %} 
-- {{ decnpc(actorUUID).name }}'s arousal is {{ arousal.arousal -}}% {%
+{% set arousal = sexlab_get_arousal(npc.UUID) %} 
+- {{ decnpc(npc.UUID).name }}'s arousal is {{ arousal.arousal -}}% {%
     if arousal.arousal < 20 %} (no sexual desire) {%
     else if arousal.arousal < 40 %} (little sexual desire) {%
     else if arousal.arousal < 60 %} (has sexual desire ) {%
