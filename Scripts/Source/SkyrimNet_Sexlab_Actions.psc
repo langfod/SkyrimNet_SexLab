@@ -13,6 +13,7 @@ EndFunction
 ;----------------------------------------------------------------------------------------------------
 Function RegisterActions() global
     Trace("RegisterActions called")
+    SkyrimNet_SexLab_Main main = Game.GetFormFromFile(0x800, "SkyrimNet_SexLab.esp") as SkyrimNet_SexLab_Main
 
     String[] types = GetTypes()
     int i = 0
@@ -36,18 +37,20 @@ Function RegisterActions() global
             "SkyrimNet_SexLab_Actions", "SexTarget_Execute",  \
             "", "PAPYRUS", 1, \
             "{\"target\": \"Actor\", \"type\":\""+type+"\", \"rape\":false, \"victum\":true}")
-    SkyrimNetApi.RegisterAction("RapeTarget", \
-            "be the assailant of nonconsensual sex",\
-            "SkyrimNet_SexLab_Actions", "SexTarget_IsEligible",  \
-            "SkyrimNet_SexLab_Actions", "SexTarget_Execute",  \
-            "", "PAPYRUS", 1, \
-            "{\"target\": \"Actor\", \"type\":\""+type+"\", \"rape\":true, \"victum\":false}")
-    SkyrimNetApi.RegisterAction("RapedByTarget", \
-            "be the victum of nonconsensual sex",\
-            "SkyrimNet_SexLab_Actions", "SexTarget_IsEligible",  \
-            "SkyrimNet_SexLab_Actions", "SexTarget_Execute",  \
-            "", "PAPYRUS", 1, \
-            "{\"target\": \"Actor\", \"type\":\""+type+"\", \"rape\":true, \"victum\":true}")
+    if main.rape_allowed
+        SkyrimNetApi.RegisterAction("RapeTarget", \
+                "be the assailant of nonconsensual sex",\
+                "SkyrimNet_SexLab_Actions", "SexTarget_IsEligible",  \
+                "SkyrimNet_SexLab_Actions", "SexTarget_Execute",  \
+                "", "PAPYRUS", 1, \
+                "{\"target\": \"Actor\", \"type\":\""+type+"\", \"rape\":true, \"victum\":false}")
+        SkyrimNetApi.RegisterAction("RapedByTarget", \
+                "be the victum of nonconsensual sex",\
+                "SkyrimNet_SexLab_Actions", "SexTarget_IsEligible",  \
+                "SkyrimNet_SexLab_Actions", "SexTarget_Execute",  \
+                "", "PAPYRUS", 1, \
+                "{\"target\": \"Actor\", \"type\":\""+type+"\", \"rape\":true, \"victum\":true}")
+    endif 
     SkyrimNetApi.RegisterAction("SexMasturbation", \
             "masturbate",\
             "SkyrimNet_SexLab_Actions", "SexTarget_IsEligible",  \

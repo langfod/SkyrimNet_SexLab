@@ -5,10 +5,13 @@ import UIExtensions
 import SkyrimNet_SexLab_Decorators
 import SkyrimNet_SexLab_Actions
 
+bool Property rape_allowed = true Auto
+
 int Property actorLock = 0 Auto 
 float Property actorLockTimeout = 60.0 Auto
 
 Event OnInit()
+    rape_allowed = true
     Debug.Trace("[SkyrimNet_SexLab] OnInit")
     ; Register for all SexLab events using the framework's RegisterForAllEvents function
     Setup() 
