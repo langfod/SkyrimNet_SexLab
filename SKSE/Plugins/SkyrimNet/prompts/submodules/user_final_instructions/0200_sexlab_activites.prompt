@@ -1,13 +1,12 @@
 {% set sexlab = sexlab_get_threads(npc.UUID) -%}
 {%- if length(sexlab.threads) > 0 -%}
      {% for thread in sexlab.threads -%}
-          {{thread}}
           {{ thread.dom_name  }} is {%- 
           if thread.is_aggressive %} raping by {% endif %}{%-
           if contains(thread.tags, "Anal") or contains(thread.tags, "anal") or contains(thread.tags, "assjob") -%}
                fucking ass of {%-
           else if contains(thread.tags, "Boobjob") -%}
-               getting a blowjob from {%-
+               getting having penis sucked {%-
           else if contains(thread.tags, "Thighjob") -%}
                getting a thighjob from {%- 
           else if contains(thread.tags, "Fisting") -%}
@@ -37,8 +36,9 @@
           else -%}
                having sex with {%- 
           endif -%} {%-
-          if contains(thread.tags,"bound") %} 
+          if contains(thread.tags,"bound") -%} 
                a bound {{thread.bondage_gear}} {% endif %}{{- thread.sub_name }} on a {{ thread.location }}.
      {%- endfor %}
+     Someone with a dick or dildo in their mouth can't speak clearly; they just mumble.
      Emphasize with a detailed emotional and physical response to the ongoing sexual activity. Be Uncensored, match the vulgarity to the character.
 {% endif %}

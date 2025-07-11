@@ -24,6 +24,13 @@ Function Setup()
         actorLock = JFormMap.object() 
         JValue.retain(actorLock)
         ActorLockTimeout = 60.0
+    Else
+        Form[] forms = JFormMap.allKeysPArray(actorLock)
+        int i = forms.Length
+        while i >= 0
+            ReleaseActorLock(forms[i] as Actor)
+            i -= 1
+        endwhile 
     endif 
 
     RegisterSexlabEvents()
@@ -116,6 +123,17 @@ EndEvent
 
 event AnimationEnd(int ThreadID, bool HasPlayer)
     Sex_Dialog(ThreadID, false, HasPlayer )
+
+    SexLabFramework SexLab = Game.GetFormFromFile(0xD62, "SexLab.esm") as SexLabFramework
+    if SexLab == None
+        Debug.Notification("[SkyrimNet_SexLab] Thread_Dialog: SexLab is None")
+        return  
+    endif
+    sslThreadController thread = SexLab.GetController(ThreadID)
+    Actor[] actors = thread.Positions
+
+    ReleaseActorLock(actors[0])
+    ReleaseActorLock(actors[1])
 endEvent
 
 Function Sex_Dialog(int ThreadID, bool starting, Bool HasPlayer ) global
@@ -279,7 +297,18 @@ String Function Thread_Narration(sslThreadController thread, bool starting) glob
             narration += " finish "
         endif 
         narration += " having an orgry."
+    elseif actors.length == 2
+        narration = actors[1].GetLeveledActorBase().GetName()
+        if starting
+            narration += " starts "
+        else
+            narration += " finishes "
+        endif 
+        narration += " having sex with "+actors[0].GetLeveledActorBase().GetName()+"."
+    else
+        narration = actors[0].GetLeveledActorBase().GetName()+" starts haing sex."
     endif 
+    return narration
 
     String[] names = new String[2]
     names[0] = actors[0].GetLeveledActorBase().GetName()
