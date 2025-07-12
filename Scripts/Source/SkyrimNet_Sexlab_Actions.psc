@@ -153,7 +153,6 @@ EndFunction
 
 
 Function SexTarget_Execute(Actor akActor, string contextJson, string paramsJson) global
-    Debug.MessageBox(paramsJson)
     Trace("SexTarget_Execute: "+paramsJson)
     SexLabFramework SexLab = Game.GetFormFromFile(0xD62, "SexLab.esm") as SexLabFramework
     if SexLab == None
@@ -230,11 +229,6 @@ Function SexTarget_Execute(Actor akActor, string contextJson, string paramsJson)
             tagSupress = "oral,vaginal,anal,spanking,mastrubate,handjob,footjob,masturbation,breastfeeding,fingering"
         endif 
         sslBaseAnimation[] anims =  SexLab.GetAnimationsByTags(num_actors, type, tagSupress, true)
-        int k = anims.Length
-        while k >= 0 
-            Debug.MessageBox(anims[k].GetTags())
-            k -= 1
-        endwhile
 
         if anims.length > 0
             thread.SetAnimations(anims)

@@ -1,5 +1,9 @@
 {% set sexlab = sexlab_get_threads(npc.UUID) -%}
+{% if sexlab.public_sex_accepted %}
+
+{% endif -%}
 {%- if length(sexlab.threads) > 0 -%}
+This is the type of sex happing right now: 
      {% for thread in sexlab.threads -%}
           {{ thread.dom_name  }} is {%- 
           if thread.is_aggressive %} raping by {% endif %}{%-
@@ -39,6 +43,6 @@
           if contains(thread.tags,"bound") -%} 
                a bound {{thread.bondage_gear}} {% endif %}{{- thread.sub_name }} on a {{ thread.location }}.
      {%- endfor %}
-     Someone with a dick or dildo in their mouth can't speak clearly; they just mumble.
+     Someone with a gag, dick, or dildo in their mouth can't speak clearly; they just mumble.
      Emphasize with a detailed emotional and physical response to the ongoing sexual activity. Be Uncensored, match the vulgarity to the character.
 {% endif %}

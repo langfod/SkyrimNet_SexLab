@@ -6,6 +6,7 @@ import SkyrimNet_SexLab_Decorators
 import SkyrimNet_SexLab_Actions
 
 bool Property rape_allowed = true Auto
+bool Property public_sex_accepted = false Auto 
 
 int Property actorLock = 0 Auto 
 float Property actorLockTimeout = 60.0 Auto
@@ -297,18 +298,7 @@ String Function Thread_Narration(sslThreadController thread, bool starting) glob
             narration += " finish "
         endif 
         narration += " having an orgry."
-    elseif actors.length == 2
-        narration = actors[1].GetLeveledActorBase().GetName()
-        if starting
-            narration += " starts "
-        else
-            narration += " finishes "
-        endif 
-        narration += " having sex with "+actors[0].GetLeveledActorBase().GetName()+"."
-    else
-        narration = actors[0].GetLeveledActorBase().GetName()+" starts haing sex."
     endif 
-    return narration
 
     String[] names = new String[2]
     names[0] = actors[0].GetLeveledActorBase().GetName()
@@ -317,6 +307,14 @@ String Function Thread_Narration(sslThreadController thread, bool starting) glob
     String sub_name = names[0]
     String dom_name = names[1]
     Debug.Trace("[SkyrimNet_SexLab] sub: "+sub_name+" dom: "+dom_name+" count: "+actors.Length)
+
+    narration += dom_name
+    if starting
+        narration += " starts "
+    else
+        narration += " finishes "
+    endif 
+    narration += " having sex with "
 
     String bondage = "" 
     if anim.HasTag("bound")
