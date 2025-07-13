@@ -4,15 +4,27 @@ sslThreadSlots ThreadSlots
 
 String animations_fold = "Data/SkyrimNet_SexLab/animations"
 
-int _description_edit_key = 27
+int _description_edit_key = 40 ; '
 int Property description_edit_key 
     int Function get()
         return _description_edit_key
     EndFunction
     Function set(int key_code)
+        Debug.MessageBox("dek1: "+_description_edit_key)
         UnregisterForKey(_description_edit_key)
         _description_edit_key = key_code
         RegisterForKey(_description_edit_key)
+        Debug.MessageBox("dek2: "+_description_edit_key)
+    EndFunction
+EndProperty
+
+int _sex_start_key = 39 ; '
+int Property sex_start_key
+    int Function get()
+        return _sex_start_key
+    EndFunction
+    Function set(int key_code)
+        _sex_start_key = key_code
     EndFunction
 EndProperty
 
@@ -24,7 +36,7 @@ Function Setup()
     endif
    
     if _description_edit_key == 0
-        _description_edit_key = 27
+        _description_edit_key = 40
     endif 
     RegisterForKey(_description_edit_key)
 EndFunction
@@ -39,10 +51,11 @@ Event OnKeyDown(int key_code)
         sslThreadController thread = None
         bool has_player = false 
         int i = threads.length - 1
+        Debug.Notification("OnKeyDown")
         while 0 <= i 
             if (threads[i] as sslThreadModel).GetState() == "animating"
                 Actor[] actors = threads[i].Positions
-                int j = actors.Length
+                int j = actors.Length - 1
                 while 0 <= j 
                     if !has_player && actors[j] == target
                         thread = threads[i]
@@ -55,6 +68,7 @@ Event OnKeyDown(int key_code)
             endif 
             i -= 1
         endwhile
+        Debug.Notification("thread "+thread)
         if thread == None 
             return 
         endif 
@@ -92,7 +106,9 @@ Event OnKeyDown(int key_code)
         endwhile 
         JValue.writeToFile(stage_descs, animations_fold+"/"+fname)
 
-;        Debug.MessageBox(folders)
+;        Debug.MessageBox(folders)  
+    elseif key_code == _sex_start_key
+        StartSex()
     endif 
 EndEvent 
 
@@ -111,3 +127,54 @@ String Function GetFilename(sslBaseAnimation anim)
     endwhile 
     return anim.Name+"_"+id_str+".json"
 EndFunction 
+
+Function StartSex()
+    Debug.Notification("SexTarget_Execute:")
+    SexLabFramework SexLab = Game.GetFormFromFile(0xD62, "SexLab.esm") as SexLabFramework
+    if SexLab == None
+        Trace("SexTarget_Execute: SexLab is None", true)
+        return
+    endif
+    SkyrimNet_SexLab_Main main = Game.GetFormFromFile(0x800, "SkyrimNet_SexLab.esp") as SkyrimNet_SexLab_Main
+    if main == None
+        Trace("SexTarget_Execute: main is None", true)
+        return
+    endif
+
+    sslThreadModel thread = sexlab.NewThread()
+    Actor sub_actor = Game.GetCurrentCrosshairRef() as Actor 
+    thread.addActor(sub_actor)
+    thread.addActor(Game.GetPlayer())
+    String tages = "cuffs,fingering"
+    if type != "any"
+        String tagSupress = ""
+        if type == "kissing"
+            tagSupress = "oral,vaginal,anal,spanking,mastrubate,handjob,footjob,masturbation,breastfeeding,fingering"
+        endif 
+        sslBaseAnimation[] anims =  SexLab.GetAnimationsByTags(num_actors, type, tagSupress, true)
+
+        if anims.length > 0
+            thread.SetAnimations(anims)
+            thread.addTag(type)
+        elseif type == "kissing"
+            Debug.Notification("No kissing animation found")
+            return 
+        endif 
+    endif 
+    
+    ; Debug.Notification(akActor.GetDisplayName()+" will have sex with "+akTarget.GetDisplayName())
+    if rape
+        thread.IsAggressive = true
+    else
+        thread.IsAggressive = false
+    endif 
+    Trace("SexTarget_Executer: Starting type:"+type+" aggressive:"+thread.IsAggressive)
+
+    if failure
+        main.ReleaseActorLock(akActor)
+        main.ReleaseActorLock(akTarget)
+        return
+    endif
+
+    thread.StartThread() 
+EndFunction

@@ -12,7 +12,14 @@ Event OnConfigOpen()
 
 EndEvent
 
+int sex_key = 26
+
 Event OnPageReset(string page)
+
+    if stages == None 
+       stages = Game.GetFormFromFile(0x800, "SkyrimNet_SexLab.esp") as SkyrimNet_SexLab_Stages
+    endif
+
 
     SetCursorFillMode(LEFT_TO_RIGHT)
     SetCursorPosition(0)
@@ -25,7 +32,8 @@ Event OnPageReset(string page)
     AddToggleOptionST("RapeAllowedToggle","Add rape actions (must toggle/save/reload)",main.rape_allowed)
     AddToggleOptionST("PublicSexAcceptedToggle","Public sex accepted",main.public_sex_accepted)
     AddKeyMapOptionST("DescriptionEditKeyMap", "Edit Stage Descriptions", stages.description_edit_key)
-    Debug.MessageBox("dek:"+stages.description_edit_key)
+    AddKeyMapOptionST("StartSex", "Start Sex", sex_key)
+    Debug.MessageBox("key: "+stages.description_edit_key)
 
 EndEvent
 
@@ -63,6 +71,7 @@ State DescriptionEditKeyMap
         endif 
         if continue 
             stages.description_edit_key = keyCode
+            Debug.MessageBox("keyCode: "+stages.description_edit_key+" "+keycode)
             SetKeymapOptionValueST(keyCode)
         endif 
     EndEvent

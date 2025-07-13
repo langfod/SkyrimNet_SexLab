@@ -127,7 +127,6 @@ Event OrgasmStart(int ThreadID, bool HasPlayer)
 EndEvent
 
 event AnimationEnd(int ThreadID, bool HasPlayer)
-    Sex_Dialog(ThreadID, false, HasPlayer )
 
     SexLabFramework SexLab = Game.GetFormFromFile(0xD62, "SexLab.esm") as SexLabFramework
     if SexLab == None
@@ -139,6 +138,8 @@ event AnimationEnd(int ThreadID, bool HasPlayer)
 
     ReleaseActorLock(actors[0])
     ReleaseActorLock(actors[1])
+
+    Sex_Dialog(ThreadID, false, HasPlayer )
 endEvent
 
 Function Sex_Dialog(int ThreadID, bool starting, Bool HasPlayer ) global
@@ -151,18 +152,20 @@ Function Sex_Dialog(int ThreadID, bool starting, Bool HasPlayer ) global
     Actor[] actors = thread.Positions
 
     String narration = thread_Narration(SexLab.GetController(ThreadID), starting)
-    if starting && HasPlayer
+    if starting
         debug.Notification(narration)
     endif
 
     ; the Dialog narration is called so that it is stored in the timeline and captured in memories,
     ; and will be responded by t
     if actors.length < 2 || actors[0] == actors[1]
-        SkyrimNetApi.DirectNarration(narration, actors[0])
+        ;SkyrimNetApi.DirectNarration(narration, actors[0])
+        SkyrimNetApi.RegisterShortLivedEvent("sex"+Utility.GetCurrentGameTime(),"sexlab",narration,narration,16000,actors[0],None)
     elseif actors.length == 2
-        SkyrimNetApi.DirectNarration(narration, actors[1], actors[0])
+        ;SkyrimNetApi.DirectNarration(narration, actors[1], actors[0])
+        SkyrimNetApi.RegisterShortLivedEvent("sex"+Utility.GetCurrentGameTime(),"sexlab",narration,narration,16000,actors[1],actors[0])
     else
-        SkyrimNetApi.DirectNarration(narration)
+        SkyrimNetApi.RegisterShortLivedEvent("sex"+Utility.GetCurrentGameTime(),"sexlab",narration,narration,16000,None,None)
     endif 
 EndFunction
 
