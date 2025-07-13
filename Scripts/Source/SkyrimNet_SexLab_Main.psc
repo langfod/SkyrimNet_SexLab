@@ -21,17 +21,6 @@ Event OnInit()
     Setup() 
 EndEvent
 
-int debug_key = 40 ; "'"
-Event OnKeyDown(int key_code)
-    if debug_key == key_code 
-        Actor target = Game.GetCurrentCrosshairRef() as ACtor 
-        if target != None 
-            SkyrimNet_SexLab_Actions.SexTarget_Execute(target, "", "{\"target\":\""+Game.GetPlayer().GetDisplayName()+"\"}")
-        endif
-    endif 
-EndEvent 
-
-
 
 
 Function Setup()

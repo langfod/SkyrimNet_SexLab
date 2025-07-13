@@ -59,6 +59,8 @@ State SexKeyToggle
         SetToggleOptionValueST(sex_key_toggle)
         if !sex_key_toggle
             UnregisterForKey(sex_key)
+        else
+            RegisterForKey(sex_key)
         endif
         ForcePageReset()
     EndEvent
@@ -92,8 +94,9 @@ State SexKeySet
 EndState
 
 Event OnKeyDown(int key_code)
-    if sex_key == key_code && 
-        Actor target = Game.GetCurrentCrosshairRef() as ACtor 
+    if sex_key == key_code
+        Actor target = Game.GetCurrentCrosshairRef() as Actor 
+        Debug.MessageBox("key:"+key_code+" sex:"+sex_key+" target:"+target)
         if target != None 
             SkyrimNet_SexLab_Actions.SexTarget_Execute(target, "", "{\"target\":\""+Game.GetPlayer().GetDisplayName()+"\"}")
         endif
