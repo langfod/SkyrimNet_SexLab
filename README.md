@@ -2,6 +2,32 @@
 
 Adds SkyrimNet support to SexLab.
 
+# Animation Stage descriptions 
+
+`SkyrimNet_SexLab\animations\local\file.json
+~~~
+{
+    id:String 
+    name:String,
+    stages:[
+        {
+            stage:Int,
+            descriptions:[
+                {
+                    source:String
+                    version:middle|inja
+                    description:String 
+                }
+            ]
+        }
+    ]
+}
+~~~
+
+
+
+# Install 
+
 **Requirements**
 The following and depedancies:
 - [Sexlab Framework](https://www.loverslab.com/files/category/228-sexlab-framework-se/)

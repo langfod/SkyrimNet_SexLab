@@ -11,6 +11,7 @@ bool Property public_sex_accepted = false Auto
 int Property actorLock = 0 Auto 
 float Property actorLockTimeout = 60.0 Auto
 
+
 Event OnInit()
     rape_allowed = true
     Debug.Trace("[SkyrimNet_SexLab] OnInit")
@@ -20,6 +21,9 @@ EndEvent
 
 Function Setup()
     Debug.Trace("[SkyrimNet_SexLab] SetUp")
+
+    SkyrimNet_SexLab_Stages stages = (self as Quest) as SkyrimNet_SexLab_Stages
+    stages.Setup() 
 
     if actorLock == 0 
         actorLock = JFormMap.object() 
@@ -33,6 +37,7 @@ Function Setup()
             i -= 1
         endwhile 
     endif 
+
 
     RegisterSexlabEvents()
     SkyrimNet_SexLab_Actions.RegisterActions()
@@ -54,7 +59,6 @@ Function Trace(String msg, Bool notification=False) global
     endif 
 EndFunction
 
-
 ;----------------------------------------------------------------------------------------------------
 ; Actor Lock
 ;----------------------------------------------------------------------------------------------------
@@ -71,7 +75,7 @@ Bool Function IsActorLocked(Actor akActor)
                 locked = True
             endif 
         endif 
-        Trace("IsActorLocked: "+akActor.GetLeveledActorBase().GetName()+" "+locked)
+        Trace("IsActorLocked: "+akActor.GetDisplayName()+" "+locked)
     endif 
     return locked 
 EndFunction
@@ -80,7 +84,7 @@ Function SetActorLock(Actor akActor)
     if akActor == None 
         return 
     endif 
-    Trace("SetActorLock: "+akActor.GetLeveledActorBase().GetName())
+    Trace("SetActorLock: "+akActor.GetDisplayName())
     JFormMap.setFlt(actorLock, akActor, Utility.GetCurrentGameTime())
 EndFunction
 
@@ -88,7 +92,7 @@ Function ReleaseActorLock(Actor akActor)
     if akActor == None 
         return 
     endif 
-    Trace("ReleaseActorLock: "+akActor.GetLeveledActorBase().GetName())
+    Trace("ReleaseActorLock: "+akActor.GetDisplayName())
     JFormMap.removeKey(actorLock, akActor)
 EndFunction
 
@@ -171,8 +175,8 @@ Function Orgasm_Dialog(int ThreadID) global
     sslThreadController thread = SexLab.GetController(ThreadID)
     Actor[] actors = thread.Positions
     String[] names = new String[2]
-    names[0] = actors[0].GetLeveledActorBase().GetName()
-    names[1] = actors[1].GetLeveledActorBase().GetName()
+    names[0] = actors[0].GetDisplayName()
+    names[1] = actors[1].GetDisplayName()
     bool[] can_ejaculate = new Bool[2]
     can_ejaculate[0] = actors[0].GetLeveledActorBase().GetSex() != 1
     can_ejaculate[1] = actors[1].GetLeveledActorBase().GetSex() != 1
@@ -289,7 +293,7 @@ String Function Thread_Narration(sslThreadController thread, bool starting) glob
             elseif k > 0
                 narration += ", "
             endif 
-            narration += actors[k].GetLeveledActorBase().GetName()
+            narration += actors[k].GetDisplayName()
             k += 1
         endwhile 
         if starting
@@ -301,8 +305,8 @@ String Function Thread_Narration(sslThreadController thread, bool starting) glob
     endif 
 
     String[] names = new String[2]
-    names[0] = actors[0].GetLeveledActorBase().GetName()
-    names[1] = actors[1].GetLeveledActorBase().GetName()
+    names[0] = actors[0].GetDisplayName()
+    names[1] = actors[1].GetDisplayName()
 
     String sub_name = names[0]
     String dom_name = names[1]
