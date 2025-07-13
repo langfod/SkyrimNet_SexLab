@@ -20,6 +20,8 @@ Event OnPageReset(string page)
     AddHeaderOption("Options")
     AddHeaderOption("")
 
+    Debug.MessageBox("key: "+stages.description_edit_key)
+
     AddToggleOptionST("RapeAllowedToggle","Add rape actions (must toggle/save/reload)",main.rape_allowed)
     AddToggleOptionST("PublicSexAcceptedToggle","Public sex accepted",main.public_sex_accepted)
     AddKeyMapOptionST("DescriptionEditKeyMap", "Edit Stage Descriptions", stages.description_edit_key)
