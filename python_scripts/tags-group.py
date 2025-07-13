@@ -25,10 +25,6 @@ class Animation:
 
 
 def main():
-  files = files_find(sys.argv[1])
-  for file in files:
-#    anims = parse_animation_file(file)
-    anims = parse_json_file(file)
     group_tag = {
         "bondage": ["bound", "yoke","armbinder","bondage", "rope", "chains", "cuffs", "collar",
                     "hogtied"],
@@ -47,7 +43,7 @@ def main():
                 "masturbation", "fingering", "footjob", "handjob",
                 "kissing", "headpat", "hugging", "dildo","pussyslap","milking"],
         "styles": ["aggressive", "rough", "loving", "dirty","necro","lesdom",'denial'],
-        "genders": ["mf","ff", "mm", "futa", "mmf","mff", "fmm", "mfm", "fmmf","mmmf","mmmmf"],
+        "genders": ["f","m","mf","ff", "mm", "futa", "mmf","mff", "fmm", "mfm", "fmmf","mmmf","mmmmf"],
         "authors": ["funnybizness", "babo","billy","nelson"],
         "ignored": ["sex", "gangbang", "group", "creature", "bestiality",
                     "creaturefucking", "creaturefucked", "creaturefucker",
@@ -66,9 +62,9 @@ def main():
         "oral": ["blowjob", "cunnilingus","cunnullingus","cunullingus"],
         "aggressive": ["rape", "domsub","assault","forced","defeated","defeat","conquering",
                  "aggressivedefault","fbrape"],
-        "mf": ["straight"],
-        "ff": ["lesbian"],
-        "masturbation": ["f","m","masurbation","solo"],
+        "masturbation": ["masurbation","solo"],
+        "ff":["lesbian"],
+        "mf":["straight"],
         "billy": ["billyy"],
         "doggy": ["doggystyle"],
         "necro": ["snuff"],
@@ -77,8 +73,12 @@ def main():
         "denial": ["noclimax","chastity"]
     }
 
-    tag_group = {}
+    tag_group = {
+        "_order":["actions","positions","tools","styles","bondage","furniture","authors"]
+    }
     for group, tags in group_tag.items():
+        if group not in tag_group["_order"] and group != "ignored":
+            tag_group["_order"].append(group)
         for tag in tags:
             tag_group[tag] = group
     for syn, tags in synyonyms.items():
@@ -88,18 +88,30 @@ def main():
             exit(1)
         for tag in tags:
             tag_group[tag] = group
-    for anim in anims:
-        #if anim.has_tag('creature'):
-            #creatures.add(anim.tags[1])
-        #continue
-        if anim.has_tag('bound'):
-            missing = set()
-            for tag in anim.tags: 
-                if tag not in tag_group:
-                    missing.add(tag)
-            if len(missing) > 0:
-                print ("Missing tags:", missing, file=sys.stderr)
+
+    files = files_find(sys.argv[1])
+    for file in files:
+        anims = parse_json_file(file)
+        for anim in anims:
+            #if anim.has_tag('creature'):
+                #creatures.add(anim.tags[1])
+            #continue
+            if anim.has_tag('bound'):
+                missing = set()
+                for tag in anim.tags: 
+                    if tag not in tag_group:
+                        missing.add(tag)
+                if len(missing) > 0:
+                    print ("Missing tags:", missing, file=sys.stderr)
+
+    ignored = []
+    for tag,group in tag_group.items():
+        if group == "ignored":
+            ignored.append(tag)
+    for tag in ignored:
+        del tag_group[tag]
     
+    print ("creaing file",file=sys.stderr)
     print (json.dumps(tag_group, indent=2, ensure_ascii=False))
 
 def tags_load(fname):
@@ -107,7 +119,7 @@ def tags_load(fname):
         return json.load(f)
     
 def files_find(anim_dir):
-    print (anim_dir)
+    print ("searching directory",anim_dir,file=sys.stderr)
     files = [] 
     for root, dirs, fs in os.walk(anim_dir):
         for f in fs:
