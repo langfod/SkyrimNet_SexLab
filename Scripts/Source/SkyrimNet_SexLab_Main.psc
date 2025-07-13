@@ -14,6 +14,8 @@ Event OnInit()
     Setup() 
 EndEvent
 
+int tag_group = 0
+
 Function Setup()
     Debug.Trace("[SkyrimNet_SexLab] SetUp")
 
@@ -22,6 +24,15 @@ Function Setup()
         JValue.retain(actorLock)
         ActorLockTimeout = 60.0
     endif 
+
+    if tag_group == 0
+        tag_group = JValue.readFromFile("Data/SkyrimNet_Sexlab/tag_group.json")
+        JValue.retain(tag_group)
+    else
+        Jvalue.unretain(tag_group)
+        tag_group = JValue.readFromFile("Data/SkyrimNet_Sexlab/tag_group.json")
+        JValue.retain(tag_group)
+    endif
 
     RegisterSexlabEvents()
     SkyrimNet_SexLab_Actions.RegisterActions()
