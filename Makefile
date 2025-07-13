@@ -1,5 +1,10 @@
+<<<<<<< HEAD
 VERSION=0.11.1
 NAME=SkyrimNet SexLab
+=======
+VERSION=0.13.0
+NAME=SkyrimNet_SexLab
+>>>>>>> e93f4053c347dd6bdff1ab7c16e820dfdbaa6f31
 
 RELEASE_FILE=versions/SkyrimNet_SexLab ${VERSION}.zip
 

@@ -5,12 +5,22 @@ Scriptname SkyrimNet_SexLab_Decorators
 ;----------------------------------------------------------------------------------------------------
 Function RegisterDecorators() global
     Debug.Trace("SkyrimNet_SexLab_Decorators: RegisterDecorattors called")
+    SkyrimNetApi.RegisterDecorator("sexlab_get_public_sex_accepted", "SkyrimNet_SexLab_Decorators", "Get_Public_Sex_Accepted")
     SkyrimNetApi.RegisterDecorator("sexlab_get_threads", "SkyrimNet_SexLab_Decorators", "Get_Threads")
     SkyrimNetApi.RegisterDecorator("sexlab_get_arousal", "SkyrimNet_SexLab_Decorators", "Get_Arousal")
 EndFunction
 
+String Function Get_Public_Sex_Accepted(Actor akActor) global
+    SkyrimNet_SexLab_Main main = Game.GetFormFromFile(0x800, "SkyrimNet_SexLab.esp") as SkyrimNet_SexLab_Main
+    if main.public_sex_accepted
+        return "{\"public_sex_accepted\":true}"
+    else
+        return "{\"public_sex_accepted\":false}"
+    endif
+EndFunction
+
 String Function Get_Arousal(Actor akActor) global
-    Debug.Trace("[SkyrimNet_SexLab] Get_Arousal called for "+akActor.GetLeveledActorBase().GetName())
+    Debug.Trace("[SkyrimNet_SexLab] Get_Arousal called for "+akActor.GetDisplayName())
 
     int arousal = -1
 
@@ -34,7 +44,12 @@ String Function Get_Arousal(Actor akActor) global
 EndFunction
 
 String Function Get_Threads(Actor akActor) global
-    Debug.Trace("[SkyrimNet_SexLab] Get_Threads called for "+akActor.GetLeveledActorBase().GetName())
+    Debug.Trace("[SkyrimNet_SexLab] Get_Threads called for "+akActor.GetDisplayName())
+    SkyrimNet_SexLab_Main main = Game.GetFormFromFile(0x800, "SkyrimNet_SexLab.esp") as SkyrimNet_SexLab_Main
+    if main == None
+        Debug.Notification("[SkyrimNet_SexLab] Get_Threads: main is None")
+        return ""
+    endif
 
     sslThreadSlots ThreadSlots = Game.GetFormFromFile(0xD62, "SexLab.esm") as sslThreadSlots
     if ThreadSlots == None
@@ -55,8 +70,16 @@ String Function Get_Threads(Actor akActor) global
         endif 
         i += 1
     endwhile
-    return "{\"threads\":["+threads_str+"]}"
+    String json = ""
+    if main.public_sex_accepted
+        json = "{\"public_sex_accepted\":true"
+    else
+        json = "{\"public_sex_accepted\":false"
+    endif
+    json += ",\"threads\":["+threads_str+"]}"
+    return json
 EndFunction 
+
 
 String Function Thread_Json(sslThreadController thread) global
 
@@ -185,8 +208,8 @@ String Function Thread_Json(sslThreadController thread) global
     thread_str += "\"emotion\":\""+emotion+"\","
 
     Actor[] actors = thread.Positions
-    thread_str += "\"sub_name\": \""+actors[0].GetLeveledActorBase().GetName()+"\", "
-    thread_str += "\"dom_name\": \""+actors[1].GetLeveledActorBase().GetName()+"\" "
+    thread_str += "\"sub_name\": \""+actors[0].GetDisplayName()+"\", "
+    thread_str += "\"dom_name\": \""+actors[1].GetDisplayName()+"\" "
 
     thread_str += "}"
     return thread_str

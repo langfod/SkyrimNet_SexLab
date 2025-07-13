@@ -26,6 +26,7 @@
         <Import>@ModsFolder\FNIS Creature Pack SE\scripts\source</Import>
         <Import>@ModsFolder\RaceMenu\scripts\source</Import>
         <Import>@ModsFolder\JContainers\scripts\source</Import>
+        <Import>@ModsFolder\SkyUI\scripts\Source</Import>
         <Import>@ModsFolder\UIExtensions\scripts\Source</Import>
         <Import>@ModsFolder\Fores New Idles in Skyrim SE - FNIS SE\scripts\source</Import>
 

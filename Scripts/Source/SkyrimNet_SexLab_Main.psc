@@ -5,10 +5,14 @@ import UIExtensions
 import SkyrimNet_SexLab_Decorators
 import SkyrimNet_SexLab_Actions
 
+bool Property rape_allowed = true Auto
+bool Property public_sex_accepted = false Auto 
+
 int Property actorLock = 0 Auto 
 float Property actorLockTimeout = 60.0 Auto
 
 Event OnInit()
+    rape_allowed = true
     Debug.Trace("[SkyrimNet_SexLab] OnInit")
     ; Register for all SexLab events using the framework's RegisterForAllEvents function
     Setup() 
@@ -23,6 +27,13 @@ Function Setup()
         actorLock = JFormMap.object() 
         JValue.retain(actorLock)
         ActorLockTimeout = 60.0
+    Else
+        Form[] forms = JFormMap.allKeysPArray(actorLock)
+        int i = forms.Length
+        while i >= 0
+            ReleaseActorLock(forms[i] as Actor)
+            i -= 1
+        endwhile 
     endif 
 
     if tag_group == 0
@@ -71,7 +82,7 @@ Bool Function IsActorLocked(Actor akActor)
                 locked = True
             endif 
         endif 
-        Trace("IsActorLocked: "+akActor.GetLeveledActorBase().GetName()+" "+locked)
+        Trace("IsActorLocked: "+akActor.GetDisplayName()+" "+locked)
     endif 
     return locked 
 EndFunction
@@ -80,7 +91,7 @@ Function SetActorLock(Actor akActor)
     if akActor == None 
         return 
     endif 
-    Trace("SetActorLock: "+akActor.GetLeveledActorBase().GetName())
+    Trace("SetActorLock: "+akActor.GetDisplayName())
     JFormMap.setFlt(actorLock, akActor, Utility.GetCurrentGameTime())
 EndFunction
 
@@ -88,7 +99,7 @@ Function ReleaseActorLock(Actor akActor)
     if akActor == None 
         return 
     endif 
-    Trace("ReleaseActorLock: "+akActor.GetLeveledActorBase().GetName())
+    Trace("ReleaseActorLock: "+akActor.GetDisplayName())
     JFormMap.removeKey(actorLock, akActor)
 EndFunction
 
@@ -112,7 +123,7 @@ Function RegisterSexlabEvents()
 EndFunction 
 
 event AnimationStart(int ThreadID, bool HasPlayer)
-    Sex_Dialog(ThreadID, true )
+    Sex_Dialog(ThreadID, true, HasPlayer )
 endEvent
 
 ;Event StartStage(int ThreadID, bool HasPlayer)
@@ -123,10 +134,21 @@ Event OrgasmStart(int ThreadID, bool HasPlayer)
 EndEvent
 
 event AnimationEnd(int ThreadID, bool HasPlayer)
-    Sex_Dialog(ThreadID, false )
+    Sex_Dialog(ThreadID, false, HasPlayer )
+
+    SexLabFramework SexLab = Game.GetFormFromFile(0xD62, "SexLab.esm") as SexLabFramework
+    if SexLab == None
+        Debug.Notification("[SkyrimNet_SexLab] Thread_Dialog: SexLab is None")
+        return  
+    endif
+    sslThreadController thread = SexLab.GetController(ThreadID)
+    Actor[] actors = thread.Positions
+
+    ReleaseActorLock(actors[0])
+    ReleaseActorLock(actors[1])
 endEvent
 
-Function Sex_Dialog(int ThreadID, Bool starting) global
+Function Sex_Dialog(int ThreadID, bool starting, Bool HasPlayer ) global
     SexLabFramework SexLab = Game.GetFormFromFile(0xD62, "SexLab.esm") as SexLabFramework
     if SexLab == None
         Debug.Notification("[SkyrimNet_SexLab] Thread_Dialog: SexLab is None")
@@ -136,22 +158,18 @@ Function Sex_Dialog(int ThreadID, Bool starting) global
     Actor[] actors = thread.Positions
 
     String narration = thread_Narration(SexLab.GetController(ThreadID), starting)
-    if starting
+    if starting && HasPlayer
         debug.Notification(narration)
     endif
-    narration = "*"+narration+"*"
 
     ; the Dialog narration is called so that it is stored in the timeline and captured in memories,
     ; and will be responded by t
     if actors.length < 2 || actors[0] == actors[1]
-       ; SkyrimNetApi.RegisterDialogue(actors[0], narration)
-       SkyrimNetApi.DirectNarration(narration, actors[0])
+        SkyrimNetApi.DirectNarration(narration, actors[0])
     elseif actors.length == 2
-       ; SkyrimNetApi.RegisterDialogueToListener(actors[1], actors[0], narration)
-       SkyrimNetApi.DirectNarration(narration, actors[1], actors[0])
+        SkyrimNetApi.DirectNarration(narration, actors[1], actors[0])
     else
-       ;SkyrimNetApi.RegisterDialogue(actors[1], "*"+narration+"*")
-       SkyrimNetApi.DirectNarration(narration)
+        SkyrimNetApi.DirectNarration(narration)
     endif 
 EndFunction
 
@@ -164,8 +182,8 @@ Function Orgasm_Dialog(int ThreadID) global
     sslThreadController thread = SexLab.GetController(ThreadID)
     Actor[] actors = thread.Positions
     String[] names = new String[2]
-    names[0] = actors[0].GetLeveledActorBase().GetName()
-    names[1] = actors[1].GetLeveledActorBase().GetName()
+    names[0] = actors[0].GetDisplayName()
+    names[1] = actors[1].GetDisplayName()
     bool[] can_ejaculate = new Bool[2]
     can_ejaculate[0] = actors[0].GetLeveledActorBase().GetSex() != 1
     can_ejaculate[1] = actors[1].GetLeveledActorBase().GetSex() != 1
@@ -256,41 +274,10 @@ Function Orgasm_Dialog(int ThreadID) global
     SkyrimNetApi.DirectNarration(narration, actors[1], actors[0])
 EndFunction  
 
-;----------------------------------------------------------------------------------------------------
-; Thread Prompt 
-;----------------------------------------------------------------------------------------------------
-Function Thread_Event(int ThreadID, Bool orgasm, Bool ongoing)
-    SexLabFramework SexLab = Game.GetFormFromFile(0xD62, "SexLab.esm") as SexLabFramework
-    sslThreadController thread = SexLab.GetController(ThreadID)
-    sslBaseAnimation anim = thread.Animation
-    Actor[] actors = thread.Positions
-
-    String eventType = "" 
-    if thread.IsAggressive
-        eventType = "rape: "
-    else
-        eventType = "sex: " 
-    endif 
-    int i = 0
-    
-    ;String[] desc_names = SexLab_GetThreadDescription(thread, ongoing)
-    ;String eventDesc = desc_names[0]
-    ;String[] names = new String[2]
-    ;names[0] = desc_names[1]
-    ;names[1] = desc_names[2]
-    ;Debug.Notification(eventDesc)
-    ;SkyrimNetApi.RegisterShortLivedEvent("SkyrimNet_SexLab_"+threadID,\
-        ;eventType, eventDesc, "", 10000,\
-        ;actors[1], actors[0])
-
-            
-endFunction 
-
-
 ;----------------------------------------------------
 ; Parses the tags
 ;----------------------------------------------------
-String Function Thread_Narration(sslThreadController thread,bool ongoing=False) global
+String Function Thread_Narration(sslThreadController thread, bool starting) global
     SexLabFramework SexLab = Game.GetFormFromFile(0xD62, "SexLab.esm") as SexLabFramework
     if SexLab == None
         Debug.Notification("[SkyrimNet_SexLab] GetThreadDescription: SexLab is None")
@@ -310,30 +297,39 @@ String Function Thread_Narration(sslThreadController thread,bool ongoing=False) 
         while k < actors.length
             if k == actors.length - 1
                 narration += ", and "
-            elseif k > 1
+            elseif k > 0
                 narration += ", "
             endif 
-            narration += actors[k].GetLeveledActorBase().GetName()
+            narration += actors[k].GetDisplayName()
+            k += 1
         endwhile 
-        if ongoing
-            narration += " starts "
+        if starting
+            narration += " start "
         else
-            narration += " finished "
+            narration += " finish "
         endif 
-        narration += "having an orgry, where "
+        narration += " having an orgry."
     endif 
 
     String[] names = new String[2]
-    names[0] = actors[0].GetLeveledActorBase().GetName()
-    names[1] = actors[1].GetLeveledActorBase().GetName()
+    names[0] = actors[0].GetDisplayName()
+    names[1] = actors[1].GetDisplayName()
 
     String sub_name = names[0]
     String dom_name = names[1]
     Debug.Trace("[SkyrimNet_SexLab] sub: "+sub_name+" dom: "+dom_name+" count: "+actors.Length)
 
+    narration += dom_name
+    if starting
+        narration += " starts "
+    else
+        narration += " finishes "
+    endif 
+    narration += " having sex with "
+
     String bondage = "" 
     if anim.HasTag("bound")
-        bondage += " a bound"
+        bondage += " a bound "
         String[] b_types = SkyrimNet_SexLab_Actions.GetBondages()
         int j = 0 
         int num = b_types.Length
@@ -351,15 +347,15 @@ String Function Thread_Narration(sslThreadController thread,bool ongoing=False) 
 
     narration += dom_name
 
-    if ongoing
+    if starting 
         narration += " starts "
     else
         narration += " finished "
     endif 
     if anim.HasTag("rough")
-        narration += " roughly"
+        narration += " roughly "
     elseif anim.HasTag("loving")
-        narration += " lovingly"
+        narration += " lovingly "
     endif
 
     if anim.HasTag("bestiality")
@@ -373,7 +369,6 @@ String Function Thread_Narration(sslThreadController thread,bool ongoing=False) 
     if thread.IsAggressive
         sexing = " raping "
     endif
-
 
     string type = "" 
     if anim.HasTag("anal") || anim.HasTag("assjob")
