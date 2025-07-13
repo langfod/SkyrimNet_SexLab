@@ -36,7 +36,6 @@ EndEvent
 
 Function Setup()
     Debug.Trace("[SkyrimNet_SexLab] SetUp")
-    RegisterForKey(debug_key)
 
     if actorLock == 0 
         actorLock = JFormMap.object() 

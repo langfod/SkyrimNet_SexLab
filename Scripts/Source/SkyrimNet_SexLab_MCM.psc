@@ -90,3 +90,13 @@ State SexKeySet
         SetInfoText("Will start sex between the player and the actor in the crosshairs")
     EndEvent
 EndState
+
+Event OnKeyDown(int key_code)
+    if sex_key == key_code && 
+        Actor target = Game.GetCurrentCrosshairRef() as ACtor 
+        if target != None 
+            SkyrimNet_SexLab_Actions.SexTarget_Execute(target, "", "{\"target\":\""+Game.GetPlayer().GetDisplayName()+"\"}")
+        endif
+    endif 
+EndEvent 
+
