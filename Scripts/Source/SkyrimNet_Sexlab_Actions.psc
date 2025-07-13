@@ -43,6 +43,29 @@ Function RegisterActions() global
             "SkyrimNet_SexLab_Actions", "SexTarget_Execute",  \
             "", "PAPYRUS", 1, \
             "{\"type\":\"masturbation\", \"rape\":{true|false}}")
+
+    ;----------------
+    ; This is for dialogue driven arousal, so should happen during sex
+    ;----------------
+    int amount_value = GetArousal_AmountValues()
+    String[] amounts = JMap.allKeysPArray(amount_value)
+    i = amounts.length - 1
+    String amounts_str = ""
+    while 0 <= i 
+        if amounts_str != ""
+            amounts_str += "|"
+        endif 
+        amounts_str += amounts[i]
+        i -= 1
+    endwhile
+
+    SkyrimNetApi.RegisterAction("ArousalIncrease", \
+            "sexual arousal increased by a {how_much} amount",\
+            "SkyrimNet_SexLab_Actions", "SexTarget_IsEligible",  \
+            "SkyrimNet_SexLab_Actions", "ArousalIncrease_Execute",  \
+            "", "PAPYRUS", 1, \
+            "{\"how_much\":\""+amounts_str+"\"}")
+
     if main.rape_allowed
         SkyrimNetApi.RegisterAction("RapeTarget", \
                 "be the assailant of nonconsensual sex",\
@@ -113,7 +136,7 @@ String[] Function GetTypes() global
 EndFunction
 
 String[] Function GetBondages() global
-    string[] bondages = new String[9]
+    string[] bondages = new String[10]
     bondages[0] = "armbinder"
     bondages[1] = "cuffs"
     bondages[2] = "cuffed"
@@ -121,6 +144,8 @@ String[] Function GetBondages() global
     bondages[6] = "hogtied"
     bondages[7] = "chastity"
     bondages[8] = "chasitybelt"
+    bondages[9] = "wheel"
+    bondages[10] = "cross"
     return bondages
 EndFunction
 
@@ -307,4 +332,27 @@ String function YesNoDialog(String type, Bool rape, Actor domActor, Actor subAct
         return type
     endif 
     return "No"
+EndFunction
+
+; ---------------------
+; Arousal
+; ---------------------
+
+int Function GetArousal_AmountValues() global
+    int amount_value = JMap.object()
+    JMap.setFlt(amount_value,"tiny",1.0)
+    JMap.setFlt(amount_value,"small",5.0)
+    JMap.setFlt(amount_value,"medium",10.0)
+    JMap.setFlt(amount_value,"large",15.0)
+    JMap.setFlt(amount_value,"enourmous",20.0)
+    JMap.setFlt(amount_value,"gigantic",25.0)
+    return amount_value
+EndFunction
+
+Function ArousalIncrease_Execute(Actor akActor, string contextJson, string paramsJson) global
+    String amount = SkyrimNetApi.GetJsonString(paramsJson, "how_much","tiny")
+    int amount_value = GetArousal_AmountValues()
+    float value = JMap.getFlt(amount_value,amount)
+    Trace("ArousalIncrease_Execute: "+paramsJson+" amount:"+amount+" value:"+value)
+    OSLAroused_ModInterface.MOdifyArousal(target=akActor, value=value, reason="dailogue")
 EndFunction
