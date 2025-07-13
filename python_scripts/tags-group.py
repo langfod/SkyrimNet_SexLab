@@ -74,11 +74,15 @@ def main():
     }
 
     tag_group = {
-        "_order":["actions","positions","tools","styles","bondage","furniture","authors"]
+        "_order":["actions","positions","tools","styles","bondage","furniture","authors"],
+        "_button_group":{}
+
     }
     for group, tags in group_tag.items():
-        if group not in tag_group["_order"] and group != "ignored":
-            tag_group["_order"].append(group)
+        if group != "ignored":
+            if group not in tag_group["_order"]:
+                tag_group["_order"].append(group)
+            tag_group["_button_group"][group+">"] = group
         for tag in tags:
             tag_group[tag] = group
     for syn, tags in synyonyms.items():
@@ -111,7 +115,6 @@ def main():
     for tag in ignored:
         del tag_group[tag]
     
-    print ("creaing file",file=sys.stderr)
     print (json.dumps(tag_group, indent=2, ensure_ascii=False))
 
 def tags_load(fname):

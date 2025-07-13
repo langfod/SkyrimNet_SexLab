@@ -208,18 +208,27 @@ Function SexTarget_Execute(Actor akActor, string contextJson, string paramsJson)
     main.SetActorLock(akActor)
     main.SetActorLock(akTarget)
 
+    int num_actors = 1
+    if !failure && akTarget != None 
+        num_actors = 2
+    endif 
+
     Actor player = Game.GetPlayer()
     Debug.Trace("[SkyrimNet_SexLab] SexTarget_Execute type:"+type+" akTarget:"+akTarget)
+    String tags = type 
     if akActor == player || (akTarget != None && akTarget == player)
-        type = YesNoDialog(type, rape, akTarget, akActor, player)
+        String answer = YesNoDialog(type, rape, akTarget, akActor, player)
+        if answer == "No"
+            Trace("SexTarget_Execute: User declined")
+            main.ReleaseActorLock(akActor)
+            main.ReleaseActorLock(akTarget)
+            return 
+        else 
+            if tags != "kissing"
+                tags = TagsDialog(sexlab, num_actors, tags)
+            endif 
+        endif 
     endif
-
-    if type == "No"
-        Trace("SexTarget_Execute: User declined")
-        main.ReleaseActorLock(akActor)
-        main.ReleaseActorLock(akTarget)
-        return 
-    endif 
     
     Actor subActor = akActor 
     Actor domActor = akTarget
@@ -239,16 +248,14 @@ Function SexTarget_Execute(Actor akActor, string contextJson, string paramsJson)
         Trace("SexTarget_Execute: Starting sex couldn't add " + subActor.GetDisplayName() + " and target: " + akTarget.GetDisplayName())
         failure = true 
     endif  
-    int num_actors = 1
     if !failure && akTarget != None 
-        num_actors = 2
         if thread.addActor(domActor) < 0   
             Trace("SexTarget_Execute: Starting sex couldn't add " + domActor.GetDisplayName() + " and target: " + akTarget.GetDisplayName())
             failure = true 
         endif  
     endif 
     
-    if type != "any"
+    if tags != ""
         String tagSupress = ""
         if type == "kissing"
             tagSupress = "oral,vaginal,anal,spanking,mastrubate,handjob,footjob,masturbation,breastfeeding,fingering"
@@ -281,7 +288,7 @@ Function SexTarget_Execute(Actor akActor, string contextJson, string paramsJson)
     thread.StartThread() 
 EndFunction
 
-String function YesNoDialog(String type, Bool rape, Actor domActor, Actor subActor, Actor player) global
+String function YesNoDialog(String tag, Bool rape, Actor domActor, Actor subActor, Actor player) global
     String name = None 
     if subActor == player
         name = domActor.GetDisplayName()
@@ -295,43 +302,157 @@ String function YesNoDialog(String type, Bool rape, Actor domActor, Actor subAct
         else
             question = "Would like to be raped by "+name+"?"
         endif 
-    elseif type == "kissing"
+    elseif tag == "kissing"
         question = "Would like to kissing "+name+"?"
     else
         question = "Would like to have sex "+name+"?"
     endif 
     
-    String result = SkyMessage.Show(question, "Yes","No")
-    if result == "Yes"
-        if type == "kissing"
-            return type
+    return SkyMessage.Show(question, "Yes","No")
+EndFunction 
+
+String Function TagsDialog(SexLabFramework sexlab, int num_actors, String tag) global
+    SkyrimNet_SexLab_Main main = Game.GetFormFromFile(0x800, "SkyrimNet_SexLab.esp") as SkyrimNet_SexLab_Main
+
+    ; Current set of tags
+    String[] tags = new String[10]
+    int count_max = 10
+    int next = 0
+    if tag != ""
+        tags[next] = tag
+        next += 1
+    endif 
+
+    ; the order of the groups 
+    int groups_ordered = JMap.getObj(main.tag_group,"_order",0)
+    ; button to group "genders>" -> "genders"
+    int button_group = JMap.getObj(main.tag_group,"_button_group",0)
+    if button_group == 0 
+        Trace("TagsDialog button_group not found in tag_group.json")
+        return ""
+    endif 
+
+    String tags_str= ""
+    while next < count_max
+
+        ; build the current tags
+        tags_str = "" 
+        int i = 0
+        while i < next
+            if i > 0 
+                tags_str += ","
+            endif 
+            tags_str += tags[i]
+            i += 1
+        endwhile 
+
+        sslBaseAnimation[] anims =  SexLab.GetAnimationsByTags(num_actors, tags_str, "", true)
+        Debug.Notification("tags_str:"+tags_str+" anims.length:"+anims.length)
+
+        ; Map tags to groups 
+        int group_tags = JMap.object() 
+        i = anims.length - 1
+        while 0 <= i 
+            String[] ts = anims[i].GetRawTags()
+            int j = ts.length 
+            while 0 <= j 
+                String group = JMap.getStr(main.tag_group, ts[j], "other")
+                JValue.solveIntSetter(group_tags, "."+group+"."+ts[j], 1)
+                j -= 1
+            endwhile 
+            i -= 1
+        endwhile 
+
+        ; First try to use the order group
+        ; otherwise use a random order 
+        int groups = groups_ordered
+        if groups == 0
+            groups = JMap.allKeys(group_tags)
+        endif 
+            
+        uilistmenu listMenu = uiextensions.GetMenu("UIListMenu") AS uilistmenu
+        ; Use the current set of tags 
+        listMenu.AddEntryItem("use:"+tags)
+        ; Remove one tag 
+        if 0 < next 
+            listMenu.AddEntryItem("<back")
         endif 
 
-        String[] types = GetTypes() 
-        uilistmenu listMenu = uiextensions.GetMenu("UIListMenu") AS uilistmenu
-        int i =  0
-        int count = types.Length
+        ; The maximum number of tags a group has to be displayed as tags
+        int tags_max_individual = 3
+
+        ; Add the groups with more then 3 entries 
+        int count = JArray.count(groups)
+        i =  0
         while i < count
-            listMenu.AddEntryItem(types[i])
+            String group = JArray.getStr(groups,i)
+            int g_tags = JMap.getObj(group_tags, group, 0)
+            if g_tags != 0 
+                if JMap.count(g_tags) > tags_max_individual
+                    listMenu.AddEntryItem(group+">")
+                endif 
+            endif 
             i += 1
         endwhile
+
+        ; Add the tags rathern the group if they have more 
+        i =  0
+        while i < count
+            String group = JArray.getStr(groups,i)
+            int g_tags = JMap.getObj(group_tags, group, 0)
+            if g_tags != 0 && JMap.count(g_tags) <= tags_max_individual
+                String[] g_tags_keys = JMap.allKeysPArray(g_tags)
+                int k = g_tags_keys.length - 1
+                while 0 <= k
+                    listMenu.AddEntryItem(g_tags_keys[k])
+                    k -= 1
+                endwhile 
+            endif 
+            i += 1
+        endwhile
+
         listMenu.OpenMenu()
-        type =  listmenu.GetResultString()
-        if type == "bondage"
-            String[] bondages = GetBondages()
-            listMenu = uiextensions.GetMenu("UIListMenu") AS uilistmenu
-            i =  0
-            count = bondages.Length
-            while i < count
-                listMenu.AddEntryItem(bondages[i])
-                i += 1
-            endwhile
-            listMenu.OpenMenu()
-            type =  listmenu.GetResultString()
+        String button =  listmenu.GetResultString()
+        if JMap.hasKey(button_group, button)
+            button = GroupDialog(button_group, group_tags, button)
         endif 
-        return type
+
+        if button == "<back"
+            next -= 1
+        elseif button == "use:"+tags_str
+            return tags_str
+        elseif button != "-continue-"
+            tags[next] = button 
+            next += 1
+        endif 
+    endwhile 
+    return tags_str
+EndFunction
+
+String Function GroupDialog(int button_group, int group_tags, String button)  global
+    uilistmenu listMenu = uiextensions.GetMenu("UIListMenu") AS uilistmenu
+    listMenu.AddEntryItem("<back")
+    
+    String group = JMap.getStr(button_group, button)
+
+    int tags_hash = JMap.getObj(group_tags, group, 0)
+    if tags_hash != 0 
+        int tags = JMap.allKeys(tags_hash)
+        int i = JArray.count(tags) - 1
+        while 0 <= i
+            String tag = JArray.getStr(tags, i, "")
+            if tag != ""
+                listMenu.AddEntryItem(tag)
+            endif
+            i -= 1
+        endwhile 
     endif 
-    return "No"
+    listMenu.OpenMenu()
+    button =  listmenu.GetResultString()
+    if button == "<back"
+        button = "-continue-"
+    endif 
+    return button
 EndFunction
 
 ; ---------------------

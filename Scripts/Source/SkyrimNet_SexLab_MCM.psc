@@ -6,6 +6,9 @@ String[] Pages
 
 SkyrimNet_SexLab_Main Property main Auto  
 
+bool sex_key_toggle = False 
+int sex_key = 40
+
 Event OnConfigOpen()
 
     Pages = None ; new String[0]
@@ -23,6 +26,9 @@ Event OnPageReset(string page)
 
     AddToggleOptionST("RapeAllowedToggle","Add rape actions (must toggle/save/reload)",main.rape_allowed)
     AddToggleOptionST("PublicSexAcceptedToggle","Public sex accepted",main.public_sex_accepted)
+    AddToggleOptionST("SexKeyToggle","Enable sex hotkey",sex_key_toggle)
+    if sex_key_toggle 
+    endif
 EndEvent
 
 State RapeAllowedToggle

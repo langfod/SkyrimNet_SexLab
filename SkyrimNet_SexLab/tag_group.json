@@ -9,6 +9,16 @@
     "authors",
     "genders"
   ],
+  "_button_group": {
+    "bondage>": "bondage",
+    "tools>": "tools",
+    "furniture>": "furniture",
+    "positions>": "positions",
+    "actions>": "actions",
+    "styles>": "styles",
+    "genders>": "genders",
+    "authors>": "authors"
+  },
   "yoke": "bondage",
   "armbinder": "bondage",
   "bondage": "bondage",

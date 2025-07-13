@@ -11,6 +11,9 @@ bool Property public_sex_accepted = false Auto
 int Property actorLock = 0 Auto 
 float Property actorLockTimeout = 60.0 Auto
 
+int Property tag_group = 0 Auto
+int Property group_ordered = 0 Auto
+
 Event OnInit()
     rape_allowed = true
     Debug.Trace("[SkyrimNet_SexLab] OnInit")
@@ -18,10 +21,22 @@ Event OnInit()
     Setup() 
 EndEvent
 
-int tag_group = 0
+int debug_key = 40 ; "'"
+Event OnKeyDown(int key_code)
+    if debug_key == key_code 
+        Actor target = Game.GetCurrentCrosshairRef() as ACtor 
+        if target != None 
+            SkyrimNet_SexLab_Actions.SexTarget_Execute(target, "", "{\"target\":\""+Game.GetPlayer().GetDisplayName()+"\"}")
+        endif
+    endif 
+EndEvent 
+
+
+
 
 Function Setup()
     Debug.Trace("[SkyrimNet_SexLab] SetUp")
+    RegisterForKey(debug_key)
 
     if actorLock == 0 
         actorLock = JFormMap.object() 
@@ -38,10 +53,12 @@ Function Setup()
 
     if tag_group == 0
         tag_group = JValue.readFromFile("Data/SkyrimNet_Sexlab/tag_group.json")
+        group_ordered
         JValue.retain(tag_group)
     else
-        Jvalue.unretain(tag_group)
-        tag_group = JValue.readFromFile("Data/SkyrimNet_Sexlab/tag_group.json")
+        int tag_group_new = JValue.readFromFile("Data/SkyrimNet_Sexlab/tag_group.json")
+        Jvalue.releaseAndRetain(tag_group, tag_group_new)
+        tag_group = tag_group_new
         JValue.retain(tag_group)
     endif
 
