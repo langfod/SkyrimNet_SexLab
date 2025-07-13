@@ -20,7 +20,7 @@ String Function Get_Public_Sex_Accepted(Actor akActor) global
 EndFunction
 
 String Function Get_Arousal(Actor akActor) global
-    Debug.Trace("[SkyrimNet_SexLab] Get_Arousal called for "+akActor.GetLeveledActorBase().GetName())
+    Debug.Trace("[SkyrimNet_SexLab] Get_Arousal called for "+akActor.GetDisplayName())
 
     int arousal = -1
 
@@ -44,7 +44,7 @@ String Function Get_Arousal(Actor akActor) global
 EndFunction
 
 String Function Get_Threads(Actor akActor) global
-    Debug.Trace("[SkyrimNet_SexLab] Get_Threads called for "+akActor.GetLeveledActorBase().GetName())
+    Debug.Trace("[SkyrimNet_SexLab] Get_Threads called for "+akActor.GetDisplayName())
     SkyrimNet_SexLab_Main main = Game.GetFormFromFile(0x800, "SkyrimNet_SexLab.esp") as SkyrimNet_SexLab_Main
     if main == None
         Debug.Notification("[SkyrimNet_SexLab] Get_Threads: main is None")
@@ -208,8 +208,8 @@ String Function Thread_Json(sslThreadController thread) global
     thread_str += "\"emotion\":\""+emotion+"\","
 
     Actor[] actors = thread.Positions
-    thread_str += "\"sub_name\": \""+actors[0].GetLeveledActorBase().GetName()+"\", "
-    thread_str += "\"dom_name\": \""+actors[1].GetLeveledActorBase().GetName()+"\" "
+    thread_str += "\"sub_name\": \""+actors[0].GetDisplayName()+"\", "
+    thread_str += "\"dom_name\": \""+actors[1].GetDisplayName()+"\" "
 
     thread_str += "}"
     return thread_str

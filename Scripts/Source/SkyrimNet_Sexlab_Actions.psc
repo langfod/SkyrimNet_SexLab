@@ -71,21 +71,21 @@ Bool Function Animation_IsEligible(Actor akActor, string contextJson, string par
     endif 
 
     if SexLab.IsActorActive(akActor) || main.IsActorLocked(akActor)
-        Trace("Animation_IsEligible: akActor: " + akActor.GetLeveledActorBase().GetName()+" is already captured by an animation")
+        Trace("Animation_IsEligible: akActor: " + akActor.GetDisplayName()+" is already captured by an animation")
         return False
     endif
 
     Actor akTarget = SkyrimNetApi.GetJsonActor(paramsJson, "target", Game.GetPlayer())
     if akTarget != None && (SexLab.IsActorActive(akTarget) || main.IsActorLocked(akTarget))
-        Trace("Animation_IsEligible: akTarget: " + akTarget.GetLeveledActorBase().GetName()+" is already captured by an animation")
+        Trace("Animation_IsEligible: akTarget: " + akTarget.GetDisplayName()+" is already captured by an animation")
         return False
     endif
 
     String nameTarget = "" 
     if akTarget != None 
-        nameTarget = akTarget.GetLeveledActorBase().GetName() 
+        nameTarget = akTarget.GetDisplayName() 
     endif 
-    Trace("Animation_IsEligible: " + akActor.GetLeveledActorBase().GetName()+" and "+nameTarget+" can have sex")
+    Trace("Animation_IsEligible: " + akActor.GetDisplayName()+" and "+nameTarget+" can have sex")
     return true 
 EndFunction 
 
@@ -125,7 +125,7 @@ String[] Function GetBondages() global
 EndFunction
 
 Bool Function SexTarget_IsEligible(Actor akActor, string contextJson, string paramsJson) global
-    Trace("SexTaget_IsEligible: attempting "+akActor.GetLeveledActorBase().GetName())
+    Trace("SexTaget_IsEligible: attempting "+akActor.GetDisplayName())
     SexLabFramework SexLab = Game.GetFormFromFile(0xD62, "SexLab.esm") as SexLabFramework
     SkyrimNet_SexLab_Main main = Game.GetFormFromFile(0x800, "SkyrimNet_SexLab.esp") as SkyrimNet_SexLab_Main
     if SexLab == None || main == None 
@@ -133,7 +133,7 @@ Bool Function SexTarget_IsEligible(Actor akActor, string contextJson, string par
     endif 
 
     if !SexLab.IsValidActor(akActor) || akActor.IsDead() || akActor.IsInCombat() || SexLab.IsActorActive(akActor) || main.IsActorLocked(akActor)
-        Trace("SexTarget_IsEligible: akActor: " + akActor.GetLeveledActorBase().GetName()+" can't have sex")
+        Trace("SexTarget_IsEligible: akActor: " + akActor.GetDisplayName()+" can't have sex")
         return False
     endif
 
@@ -142,12 +142,12 @@ Bool Function SexTarget_IsEligible(Actor akActor, string contextJson, string par
         Trace("SetTarget_IsEigible: akTarget is None "+paramsJson)
     else    
         if !SexLab.IsValidActor(akTarget) || akTarget.IsDead() || akTarget.IsInCombat() || SexLab.IsActorActive(akTarget) || main.IsActorLocked(akTarget)
-            Trace("SexTarget_IsEligible: akTarget: " + akTarget.GetLeveledActorBase().GetName()+" can't have sex")
+            Trace("SexTarget_IsEligible: akTarget: " + akTarget.GetDisplayName()+" can't have sex")
             return False
         endif
     endif
 
-    Trace("SexTarget_IsEligible: " + akActor.GetLeveledActorBase().GetName() + " is eligible for sex with " + akTarget.GetLeveledActorBase().GetName())
+    Trace("SexTarget_IsEligible: " + akActor.GetDisplayName() + " is eligible for sex with " + akTarget.GetDisplayName())
     return True
 EndFunction
 
@@ -211,14 +211,14 @@ Function SexTarget_Execute(Actor akActor, string contextJson, string paramsJson)
         failure = true 
     endif
     if !failure && thread.addActor(subActor) < 0   
-        Trace("SexTarget_Execute: Starting sex couldn't add " + subActor.GetLeveledActorBase().GetName() + " and target: " + akTarget.GetLeveledActorBase().GetName())
+        Trace("SexTarget_Execute: Starting sex couldn't add " + subActor.GetDisplayName() + " and target: " + akTarget.GetDisplayName())
         failure = true 
     endif  
     int num_actors = 1
     if !failure && akTarget != None 
         num_actors = 2
         if thread.addActor(domActor) < 0   
-            Trace("SexTarget_Execute: Starting sex couldn't add " + domActor.GetLeveledActorBase().GetName() + " and target: " + akTarget.GetLeveledActorBase().GetName())
+            Trace("SexTarget_Execute: Starting sex couldn't add " + domActor.GetDisplayName() + " and target: " + akTarget.GetDisplayName())
             failure = true 
         endif  
     endif 
@@ -239,7 +239,7 @@ Function SexTarget_Execute(Actor akActor, string contextJson, string paramsJson)
         endif 
     endif 
     
-    ; Debug.Notification(akActor.GetLeveledActorBase().GetName()+" will have sex with "+akTarget.GetLeveledActorBase().GetName())
+    ; Debug.Notification(akActor.GetDisplayName()+" will have sex with "+akTarget.GetDisplayName())
     if rape
         thread.IsAggressive = true
     else
@@ -259,9 +259,9 @@ EndFunction
 String function YesNoDialog(String type, Bool rape, Actor domActor, Actor subActor, Actor player) global
     String name = None 
     if subActor == player
-        name = domActor.GetLeveledActorBase().GetName()
+        name = domActor.GetDisplayName()
     else
-        name = subActor.GetLeveledActorBase().GetName()
+        name = subActor.GetDisplayName()
     endif
     String question = None
     if rape

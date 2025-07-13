@@ -71,7 +71,7 @@ Bool Function IsActorLocked(Actor akActor)
                 locked = True
             endif 
         endif 
-        Trace("IsActorLocked: "+akActor.GetLeveledActorBase().GetName()+" "+locked)
+        Trace("IsActorLocked: "+akActor.GetDisplayName()+" "+locked)
     endif 
     return locked 
 EndFunction
@@ -80,7 +80,7 @@ Function SetActorLock(Actor akActor)
     if akActor == None 
         return 
     endif 
-    Trace("SetActorLock: "+akActor.GetLeveledActorBase().GetName())
+    Trace("SetActorLock: "+akActor.GetDisplayName())
     JFormMap.setFlt(actorLock, akActor, Utility.GetCurrentGameTime())
 EndFunction
 
@@ -88,7 +88,7 @@ Function ReleaseActorLock(Actor akActor)
     if akActor == None 
         return 
     endif 
-    Trace("ReleaseActorLock: "+akActor.GetLeveledActorBase().GetName())
+    Trace("ReleaseActorLock: "+akActor.GetDisplayName())
     JFormMap.removeKey(actorLock, akActor)
 EndFunction
 
@@ -171,8 +171,8 @@ Function Orgasm_Dialog(int ThreadID) global
     sslThreadController thread = SexLab.GetController(ThreadID)
     Actor[] actors = thread.Positions
     String[] names = new String[2]
-    names[0] = actors[0].GetLeveledActorBase().GetName()
-    names[1] = actors[1].GetLeveledActorBase().GetName()
+    names[0] = actors[0].GetDisplayName()
+    names[1] = actors[1].GetDisplayName()
     bool[] can_ejaculate = new Bool[2]
     can_ejaculate[0] = actors[0].GetLeveledActorBase().GetSex() != 1
     can_ejaculate[1] = actors[1].GetLeveledActorBase().GetSex() != 1
@@ -289,7 +289,7 @@ String Function Thread_Narration(sslThreadController thread, bool starting) glob
             elseif k > 0
                 narration += ", "
             endif 
-            narration += actors[k].GetLeveledActorBase().GetName()
+            narration += actors[k].GetDisplayName()
             k += 1
         endwhile 
         if starting
@@ -301,8 +301,8 @@ String Function Thread_Narration(sslThreadController thread, bool starting) glob
     endif 
 
     String[] names = new String[2]
-    names[0] = actors[0].GetLeveledActorBase().GetName()
-    names[1] = actors[1].GetLeveledActorBase().GetName()
+    names[0] = actors[0].GetDisplayName()
+    names[1] = actors[1].GetDisplayName()
 
     String sub_name = names[0]
     String dom_name = names[1]
