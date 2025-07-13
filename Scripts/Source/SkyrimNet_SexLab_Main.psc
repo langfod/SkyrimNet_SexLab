@@ -18,6 +18,8 @@ Event OnInit()
     Setup() 
 EndEvent
 
+int tag_group = 0
+
 Function Setup()
     Debug.Trace("[SkyrimNet_SexLab] SetUp")
 
@@ -33,6 +35,15 @@ Function Setup()
             i -= 1
         endwhile 
     endif 
+
+    if tag_group == 0
+        tag_group = JValue.readFromFile("Data/SkyrimNet_Sexlab/tag_group.json")
+        JValue.retain(tag_group)
+    else
+        Jvalue.unretain(tag_group)
+        tag_group = JValue.readFromFile("Data/SkyrimNet_Sexlab/tag_group.json")
+        JValue.retain(tag_group)
+    endif
 
     RegisterSexlabEvents()
     SkyrimNet_SexLab_Actions.RegisterActions()

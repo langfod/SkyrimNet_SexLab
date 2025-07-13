@@ -26,22 +26,81 @@ class Animation:
 
 def main():
   files = files_find(sys.argv[1])
-  creatures = set() 
   for file in files:
 #    anims = parse_animation_file(file)
     anims = parse_json_file(file)
+    group_tag = {
+        "bondage": ["bound", "yoke","armbinder","bondage", "rope", "chains", "cuffs", "collar",
+                    "hogtied"],
+        "tools": ["dildo", "vibrator", "strapon", "cockring", "buttplug", "gag", "blindfold",
+            "whip","crop","balljob","magic","staff","chastitybelt"],
+        "furniture": ["table", "lowtable","chair", "cage", "gallows",
+                    "rack", "stockade", "pillory", "horse", "enchantingwb",
+                    "alchemywb", "fuckmachine", "woodenpony", "necrochair",
+                    "dwemerchair", "throne", "torturerack","javtable",
+                    "xcross","tiltedwheel", "wheel","coffin", "floating", "tentacles"],
+        "positions": ["69", "cowgirl", "missionary", "kneeling", "doggy",
+                    "sitting", "standing", "behind","floating","spitroast","side","sideways",
+                    "holding","vreversecowgirl""gloryhole","facesit","matingpress", "reversecowgirl"],
+        "actions": ["anal", "assjob", "boobjob", "thighjob", "vaginal",
+                "fisting", "oral", "blowjob", "cunnilingus", "spanking","slapping",
+                "masturbation", "fingering", "footjob", "handjob",
+                "kissing", "headpat", "hugging", "dildo","pussyslap","milking"],
+        "styles": ["aggressive", "rough", "loving", "dirty","necro","lesdom",'denial'],
+        "genders": ["mf","ff", "mm", "futa", "mmf","mff", "fmm", "mfm", "fmmf","mmmf","mmmmf"],
+        "authors": ["funnybizness", "babo","billy","nelson"],
+        "ignored": ["sex", "gangbang", "group", "creature", "bestiality",
+                    "creaturefucking", "creaturefucked", "creaturefucker",
+                    "creaturefuckingm", "creaturefuckedm", "creaturefuckerf",
+                    "creaturefuckingf", "creaturefuckedf", "creaturefucker",
+                    "defeat","bound","object","deviousdivice","orgy","fbbound",
+                    "creampie","cuminmouth","furniture","laying","facial","aircum",
+                    "animobject","gallowsstrappedo","furotub","gallowsupsidedown",
+                    "deviousdevice","","analcreampie","dp","feetfish","grinding",
+                    "gallowswoodenhorse","dd","obedient","chestcum",
+                    "movingdick","deniel","feetfetish","uc"]
+
+    }
+    synyonyms = {
+        "cuffs": ["cuffed","wrists"],
+        "oral": ["blowjob", "cunnilingus","cunnullingus","cunullingus"],
+        "aggressive": ["rape", "domsub","assault","forced","defeated","defeat","conquering",
+                 "aggressivedefault","fbrape"],
+        "mf": ["straight"],
+        "ff": ["lesbian"],
+        "masturbation": ["f","m","masurbation","solo"],
+        "billy": ["billyy"],
+        "doggy": ["doggystyle"],
+        "necro": ["snuff"],
+        "wheel": ["titledwheel"],
+        "xcross": ["xcrossreverse"],
+        "denial": ["noclimax","chastity"]
+    }
+
+    tag_group = {}
+    for group, tags in group_tag.items():
+        for tag in tags:
+            tag_group[tag] = group
+    for syn, tags in synyonyms.items():
+        group = tag_group.get(syn, None)
+        if group is None:
+            print ("Warning: no group for synonym", syn, file=sys.stderr)
+            exit(1)
+        for tag in tags:
+            tag_group[tag] = group
     for anim in anims:
         #if anim.has_tag('creature'):
             #creatures.add(anim.tags[1])
         #continue
-        print (json.dumps(anim.toDict()['tags'],indent=4))
-        print (describe_animation(anim, "snake","nina", \
-            [Actor("Nina"),Actor("Snake")]))
-        print ("\n")
-  #print ("Please provide a single sentence description of the physical look, physical feel, and emotioanl response a normal human would have of intimate contact with these skyrim creatrures:")
-  #for creature in creatures:
-  #   print (creature)
-
+        if anim.has_tag('bound'):
+            missing = set()
+            for tag in anim.tags: 
+                if tag not in tag_group:
+                    missing.add(tag)
+            if len(missing) > 0:
+                print ("Missing tags:", missing, file=sys.stderr)
+    
+    print (json.dumps(tag_group, indent=2, ensure_ascii=False))
 
 def tags_load(fname):
     with open (fname,"r", encoding="utf-8") as f:
@@ -51,9 +110,7 @@ def files_find(anim_dir):
     print (anim_dir)
     files = [] 
     for root, dirs, fs in os.walk(anim_dir):
-        print (root,dirs,fs)
         for f in fs:
-            print (f)
             if f.endswith(".json"):
                 files.append(os.path.join(root, f))
     return files
@@ -68,6 +125,8 @@ def describe_animation(anim, dom_name, sub_name, actors):
 
     if anim.has_tag('bound'):
        buffer += " bound"
+    else:
+        return 
 
     if anim.has_tag("rough"):
       buffer += " roughly"
