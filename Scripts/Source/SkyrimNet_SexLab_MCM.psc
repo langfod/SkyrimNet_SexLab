@@ -21,20 +21,25 @@ Event OnPageReset(string page)
     AddHeaderOption("Options")
     AddHeaderOption("")
 
-    rape_toggle = AddToggleOption("Enable rape action (must save then reload)",main.rape_allowed)
-    public_sex_toggle = AddToggleOption("Public sex accepted",main.public_sex_accepted)
-
+    AddToggleOptionST("RapeAllowedToggle","Add rape actions (must toggle/save/reload)",main.rape_allowed)
+    AddToggleOptionST("PublicSexAcceptedToggle","Public sex accepted",main.public_sex_accepted)
 EndEvent
 
-Event OnOptionSelect(int option)
-
-    if option == rape_toggle
+State RapeAllowedToggle
+    Event OnSelectST()
         main.rape_allowed = !main.rape_allowed
-        SetToggleOptionValue(option, main.rape_allowed)
-    endif
-    if option == public_sex_toggle
+        SetToggleOptionValueST(main.rape_allowed)
+    EndEvent
+    Event OnHighlightST()
+        SetInfoText("Adds/Removes the NPC rape Actions. Request you save and reload.")
+    EndEvent
+EndState
+State PublicSexAcceptedToggle
+    Event OnSelectST()
         main.public_sex_accepted = !main.public_sex_accepted
-        SetToggleOptionValue(option, main.public_sex_accepted)
-    endif
-
-EndEvent
+        SetToggleOptionValueST(main.public_sex_accepted)
+    EndEvent
+    Event OnHighlightST()
+        SetInfoText("Makes public sex a socially accepted activity..")
+    EndEvent
+EndState
