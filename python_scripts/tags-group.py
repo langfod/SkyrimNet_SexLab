@@ -25,7 +25,7 @@ class Animation:
 
 
 def main():
-    group_tag = {
+    group_tag_source = {
         "bondage": ["bound", "yoke","armbinder","bondage", "rope", "chains", "cuffs", "collar",
                     "hogtied"],
         "tools": ["dildo", "vibrator", "strapon", "cockring", "buttplug", "gag", "blindfold",
@@ -73,16 +73,18 @@ def main():
         "denial": ["noclimax","chastity"]
     }
 
-    tag_group = {
-        "_order":["actions","positions","tools","styles","bondage","furniture","authors"],
-        "_button_group":{}
+    groups = ["actions","positions","tools","styles","bondage","furniture","authors"]
+    for i,group in enumerate(groups):
+        groups[i] = group+">"
 
+    group_tags = {} 
+    tag_group = {
+        "_order":groups
     }
-    for group, tags in group_tag.items():
-        if group != "ignored":
-            if group not in tag_group["_order"]:
-                tag_group["_order"].append(group)
-            tag_group["_button_group"][group+">"] = group
+    for group, tags in group_tag_source.items():
+        group += ">"
+        if group in groups:
+            group_tags[group] = {tag:1 for tag in tags}
         for tag in tags:
             tag_group[tag] = group
     for syn, tags in synyonyms.items():
@@ -110,10 +112,11 @@ def main():
 
     ignored = []
     for tag,group in tag_group.items():
-        if group == "ignored":
+        if tag != "_order" and group not in groups:
             ignored.append(tag)
     for tag in ignored:
         del tag_group[tag]
+    tag_group["_group_tags"] = group_tags
     
     print (json.dumps(tag_group, indent=2, ensure_ascii=False))
 

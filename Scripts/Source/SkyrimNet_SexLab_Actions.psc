@@ -257,10 +257,10 @@ Function SexTarget_Execute(Actor akActor, string contextJson, string paramsJson)
     
     if tags != ""
         String tagSupress = ""
-        if type == "kissing"
+        if tags == "kissing"
             tagSupress = "oral,vaginal,anal,spanking,mastrubate,handjob,footjob,masturbation,breastfeeding,fingering"
         endif 
-        sslBaseAnimation[] anims =  SexLab.GetAnimationsByTags(num_actors, type, tagSupress, true)
+        sslBaseAnimation[] anims =  SexLab.GetAnimationsByTags(num_actors, tags, tagSupress, true)
 
         if anims.length > 0
             thread.SetAnimations(anims)
@@ -268,6 +268,8 @@ Function SexTarget_Execute(Actor akActor, string contextJson, string paramsJson)
         elseif type == "kissing"
             Debug.Notification("No kissing animation found")
             return 
+        else
+            Debug.Notification("No animation found for: \""+tags+"\" ignoring tags")
         endif 
     endif 
     
@@ -325,10 +327,9 @@ String Function TagsDialog(SexLabFramework sexlab, int num_actors, String tag) g
 
     ; the order of the groups 
     int groups_ordered = JMap.getObj(main.tag_group,"_order",0)
-    ; button to group "genders>" -> "genders"
-    int button_group = JMap.getObj(main.tag_group,"_button_group",0)
-    if button_group == 0 
-        Trace("TagsDialog button_group not found in tag_group.json")
+    int group_tags_top = JMap.getObj(main.tag_group,"_group_tags",0)
+    if group_tags_top == 0 
+        Trace("TagsDialog _group_tags not found in tag_group.json")
         return ""
     endif 
 
@@ -346,22 +347,28 @@ String Function TagsDialog(SexLabFramework sexlab, int num_actors, String tag) g
             i += 1
         endwhile 
 
-        sslBaseAnimation[] anims =  SexLab.GetAnimationsByTags(num_actors, tags_str, "", true)
-        Debug.Notification("tags_str:"+tags_str+" anims.length:"+anims.length)
 
-        ; Map tags to groups 
-        int group_tags = JMap.object() 
-        i = anims.length - 1
-        while 0 <= i 
-            String[] ts = anims[i].GetRawTags()
-            int j = ts.length 
-            while 0 <= j 
-                String group = JMap.getStr(main.tag_group, ts[j], "other")
-                JValue.solveIntSetter(group_tags, "."+group+"."+ts[j], 1)
-                j -= 1
+        int group_tags = 0 
+        if True
+            group_tags = group_tags_top
+        else 
+            ; Map tags to groups 
+            sslBaseAnimation[] anims =  SexLab.GetAnimationsByTags(num_actors, tags_str, "", true)
+            group_tags = JMap.object() 
+            i = anims.length - 1
+            while 0 <= i 
+                String[] ts = anims[i].GetRawTags()
+                int j = ts.length - 1
+                while 0 <= j 
+                    if ts[j] != "" 
+                        String group = JMap.getStr(main.tag_group, ts[j], "other")
+                        JValue.solveIntSetter(group_tags, "."+group+"."+ts[j], 1, createMissingKeys=true)
+                    endif
+                    j -= 1
+                endwhile 
+                i -= 1
             endwhile 
-            i -= 1
-        endwhile 
+        endif 
 
         ; First try to use the order group
         ; otherwise use a random order 
@@ -369,13 +376,15 @@ String Function TagsDialog(SexLabFramework sexlab, int num_actors, String tag) g
         if groups == 0
             groups = JMap.allKeys(group_tags)
         endif 
+        groups = JMap.allKeys(group_tags)
+
             
         uilistmenu listMenu = uiextensions.GetMenu("UIListMenu") AS uilistmenu
         ; Use the current set of tags 
-        listMenu.AddEntryItem("use:"+tags)
+        listMenu.AddEntryItem("use: "+tags_str)
         ; Remove one tag 
         if 0 < next 
-            listMenu.AddEntryItem("<back")
+            listMenu.AddEntryItem("<remove")
         endif 
 
         ; The maximum number of tags a group has to be displayed as tags
@@ -389,11 +398,12 @@ String Function TagsDialog(SexLabFramework sexlab, int num_actors, String tag) g
             int g_tags = JMap.getObj(group_tags, group, 0)
             if g_tags != 0 
                 if JMap.count(g_tags) > tags_max_individual
-                    listMenu.AddEntryItem(group+">")
+                    listMenu.AddEntryItem(group)
                 endif 
             endif 
             i += 1
         endwhile
+
 
         ; Add the tags rathern the group if they have more 
         i =  0
@@ -413,13 +423,13 @@ String Function TagsDialog(SexLabFramework sexlab, int num_actors, String tag) g
 
         listMenu.OpenMenu()
         String button =  listmenu.GetResultString()
-        if JMap.hasKey(button_group, button)
-            button = GroupDialog(button_group, group_tags, button)
+        if JMap.hasKey(group_tags, button)
+            button = GroupDialog(group_tags, button)
         endif 
 
-        if button == "<back"
+        if button == "<remove"
             next -= 1
-        elseif button == "use:"+tags_str
+        elseif button == "use: "+tags_str
             return tags_str
         elseif button != "-continue-"
             tags[next] = button 
@@ -429,12 +439,10 @@ String Function TagsDialog(SexLabFramework sexlab, int num_actors, String tag) g
     return tags_str
 EndFunction
 
-String Function GroupDialog(int button_group, int group_tags, String button)  global
+String Function GroupDialog(int group_tags, String group)  global
     uilistmenu listMenu = uiextensions.GetMenu("UIListMenu") AS uilistmenu
     listMenu.AddEntryItem("<back")
     
-    String group = JMap.getStr(button_group, button)
-
     int tags_hash = JMap.getObj(group_tags, group, 0)
     if tags_hash != 0 
         int tags = JMap.allKeys(tags_hash)
@@ -448,7 +456,7 @@ String Function GroupDialog(int button_group, int group_tags, String button)  gl
         endwhile 
     endif 
     listMenu.OpenMenu()
-    button =  listmenu.GetResultString()
+    String button =  listmenu.GetResultString()
     if button == "<back"
         button = "-continue-"
     endif 

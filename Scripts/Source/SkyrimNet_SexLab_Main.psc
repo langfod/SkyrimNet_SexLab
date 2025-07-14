@@ -271,7 +271,6 @@ Function Orgasm_Dialog(int ThreadID) global
     if narration != ""
         narration = narration
     endif 
-    Debug.Notification(narration)
     narration = "*"+narration+"*"
     ;SkyrimNetApi.RegisterShortLivedEvent("sexLab orgasm "+threadId, narration, narration,
     ;    "", 60000, actors[1], actors[0])
