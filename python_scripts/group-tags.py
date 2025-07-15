@@ -44,7 +44,7 @@ def main():
                 "kissing", "headpat", "hugging", "dildo","pussyslap","milking"],
         "styles": ["aggressive", "rough", "loving", "dirty","necro","lesdom",'denial'],
         "genders": ["f","m","mf","ff", "mm", "futa", "mmf","mff", "fmm", "mfm", "fmmf","mmmf","mmmmf"],
-        "authors": ["funnybizness", "babo","billy","nelson"]
+        "authors": ["funnybizness", "babo","billyy","nelson"]
 
     }
     synyonyms = {
@@ -55,7 +55,7 @@ def main():
         "masturbation": ["masurbation","solo"],
         "ff":["lesbian"],
         "mf":["straight"],
-        "billy": ["billyy"],
+        "billyy": ["billy"],
         "doggy": ["doggystyle"],
         "necro": ["snuff"],
         "wheel": ["titledwheel"],
@@ -100,12 +100,14 @@ def main():
                 if tag in tag_group:
                     count(tag_group[tag])
 
-    exit()
     group_tags = {} 
     for group,tags in group_tags_source.items():
-        group_tags[group+">"] = sorted(tags, key=lambda tag: tag_count.get(tag, 0),reverse=True)
-        for tag in group_tags[group+">"]:
-            print (tag, tag_count.get(tag, 0),file=sys.stderr)
+        clean = [] 
+        for tag in sorted(tags, key=lambda tag: tag_count.get(tag, 0),reverse=True):
+            if tag_count.get(tag, 0) > 0:
+                clean.append(tag)
+                print (tag, tag_count.get(tag, 0),file=sys.stderr)
+        group_tags[group+">"] = clean
         print ("",file=sys.stderr)
 
     for i,group in enumerate(groups):
@@ -118,7 +120,7 @@ def main():
        "synyonyms":synyonyms
     }
     
-    #print (json.dumps(info, indent=2, ensure_ascii=False))
+    print (json.dumps(info, indent=2, ensure_ascii=False))
 
 def tags_load(fname):
     with open (fname,"r", encoding="utf-8") as f:
