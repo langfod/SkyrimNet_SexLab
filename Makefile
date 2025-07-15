@@ -3,7 +3,7 @@ NAME=SkyrimNet_SexLab
 
 RELEASE_FILE=versions/SkyrimNet_SexLab ${VERSION}.zip
 
-release: tag_group
+release: group_tags
 	python3 ./python_scripts/fomod-info.py -v ${VERSION} -n '${NAME}' -o fomod/info.xml fomod-source/info.xml
 	python3 ./python_scripts/info.py -v ${VERSION} -n '${NAME}' -o SkyrimNet_SexLab/info.json
 	if exist '${RELEASE_file}' rm /Q /S '${RELEASE_FILE}'
@@ -15,5 +15,5 @@ release: tag_group
 	    Scripts \
 		SKSE\Plugins\SkyrimNet
 
-tag_group:
-	python3 ./python_scripts/tags-group.py animations > SkyrimNet_SexLab/tag_group.json
+group_tags:
+	python3 ./python_scripts/group-tags.py animations > SkyrimNet_SexLab/group_tags.json
