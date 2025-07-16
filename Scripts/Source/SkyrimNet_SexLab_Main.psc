@@ -11,7 +11,7 @@ bool Property public_sex_accepted = false Auto
 int Property actorLock = 0 Auto 
 float Property actorLockTimeout = 60.0 Auto
 
-int Property tag_group = 0 Auto
+int Property group_tags = 0 Auto
 int Property group_ordered = 0 Auto
 
 Event OnInit()
@@ -39,15 +39,14 @@ Function Setup()
         endwhile 
     endif 
 
-    if tag_group == 0
-        tag_group = JValue.readFromFile("Data/SkyrimNet_Sexlab/tag_group.json")
+    if group_tags == 0
+        group_tags = JValue.readFromFile("Data/SkyrimNet_Sexlab/group_tags.json")
         group_ordered
-        JValue.retain(tag_group)
+        JValue.retain(group_tags)
     else
-        int tag_group_new = JValue.readFromFile("Data/SkyrimNet_Sexlab/tag_group.json")
-        Jvalue.releaseAndRetain(tag_group, tag_group_new)
-        tag_group = tag_group_new
-        JValue.retain(tag_group)
+        int group_tags_new = JValue.readFromFile("Data/SkyrimNet_Sexlab/group_tags.json")
+        Jvalue.releaseAndRetain(group_tags, group_tags_new)
+        group_tags = group_tags_new
     endif
 
     RegisterSexlabEvents()
@@ -169,14 +168,14 @@ Function Sex_Dialog(int ThreadID, bool starting, Bool HasPlayer ) global
     ; the Dialog narration is called so that it is stored in the timeline and captured in memories,
     ; and will be responded by t
     if actors.length < 2 || actors[0] == actors[1]
-        ;SkyrimNetApi.DirectNarration(narration, actors[0])
-        SkyrimNetApi.RegisterEvent("SexLab", narration, actors[0], None)
+        SkyrimNetApi.RegisterDialogue(actors[0], "*"+narration+"*")
+        ;SkyrimNetApi.RegisterEvent("SexLab", narration, actors[0], None)
     elseif actors.length == 2
-        ;SkyrimNetApi.DirectNarration(narration, actors[1], actors[0])
-        SkyrimNetApi.RegisterEvent("SexLab", narration, actors[1], actors[0])
+        SkyrimNetApi.RegisterDialogueToListener(actors[1], actors[0], "*"+narration+"*")
+        ;SkyrimNetApi.RegisterEvent("SexLab", narration, actors[1], actors[0])
     else
-        ;SkyrimNetApi.DirectNarration(narration)
-        SkyrimNetApi.RegisterEvent("SexLab", narration,None,None)
+        SkyrimNetApi.RegisterDialogue(None, "*"+narration+"*")
+        ;SkyrimNetApi.RegisterEvent("SexLab", narration,None,None)
     endif 
 EndFunction
 
@@ -271,7 +270,6 @@ Function Orgasm_Dialog(int ThreadID) global
     if narration != ""
         narration = narration
     endif 
-    narration = "*"+narration+"*"
     ;SkyrimNetApi.RegisterShortLivedEvent("sexLab orgasm "+threadId, narration, narration,
     ;    "", 60000, actors[1], actors[0])
     ; This adds it to the time line 

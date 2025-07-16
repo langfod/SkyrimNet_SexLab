@@ -93,7 +93,6 @@ def main():
     for file in files:
         anims = parse_json_file(file)
         for anim in anims:
-            print (anim.tags)
             for tag in anim.tags: 
                 tag  = tag.lower() 
                 count(tag)
