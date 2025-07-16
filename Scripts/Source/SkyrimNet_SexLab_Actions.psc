@@ -433,13 +433,14 @@ EndFunction
 Function ListAddTags(uilistmenu listMenu, int group_tags, String group) global
     int tags = JMap.getObj(group_tags, group, 0)
     if tags != 0 
-        int i = JArray.count(tags) - 1
-        while 0 <= i
+        int i = 0
+        int count = JArray.count(tags)
+        while i < count
             String tag = JArray.getStr(tags, i, "")
             if tag != ""
                 listMenu.AddEntryItem(tag)
             endif
-            i -= 1
+            i += 1
         endwhile 
     endif 
 EndFunction
