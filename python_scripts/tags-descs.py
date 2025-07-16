@@ -26,7 +26,7 @@ class Animation:
 
 def main():
   files = files_find(sys.argv[1])
-  creatures = set() 
+  bondages = set() 
   for file in files:
 #    anims = parse_animation_file(file)
     anims = parse_json_file(file)
@@ -34,10 +34,15 @@ def main():
         #if anim.has_tag('creature'):
             #creatures.add(anim.tags[1])
         #continue
-        print (json.dumps(anim.toDict()['tags'],indent=4))
-        print (describe_animation(anim, "snake","nina", \
-            [Actor("Nina"),Actor("Snake")]))
-        print ("\n")
+        if anim.has_tag('bound'):
+            print (anim.tags)
+            for tag in anim.tags: 
+                bondages.add(tag)
+            print (json.dumps(anim.toDict()['tags'],indent=4))
+            print (describe_animation(anim, "snake","nina", \
+                [Actor("Nina"),Actor("Snake")]))
+            print ("\n")
+    print (bondages)
   #print ("Please provide a single sentence description of the physical look, physical feel, and emotioanl response a normal human would have of intimate contact with these skyrim creatrures:")
   #for creature in creatures:
   #   print (creature)
@@ -51,9 +56,7 @@ def files_find(anim_dir):
     print (anim_dir)
     files = [] 
     for root, dirs, fs in os.walk(anim_dir):
-        print (root,dirs,fs)
         for f in fs:
-            print (f)
             if f.endswith(".json"):
                 files.append(os.path.join(root, f))
     return files
@@ -68,6 +71,8 @@ def describe_animation(anim, dom_name, sub_name, actors):
 
     if anim.has_tag('bound'):
        buffer += " bound"
+    else:
+        return 
 
     if anim.has_tag("rough"):
       buffer += " roughly"

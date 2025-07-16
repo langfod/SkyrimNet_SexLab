@@ -1,9 +1,17 @@
 Scriptname SkyrimNet_SexLab_MCM extends SKI_ConfigBase
 
+<<<<<<< HEAD
+=======
+int rape_toggle
+int ublic_sex_toggle
+>>>>>>> main
 String[] Pages 
 
 SkyrimNet_SexLab_Main Property main Auto  
 SkyrimNet_SexLab_Stages Property stages Auto 
+
+bool sex_key_toggle = False 
+int sex_key = 40
 
 Event OnConfigOpen()
 
@@ -27,6 +35,7 @@ Event OnPageReset(string page)
     AddHeaderOption("Options")
     AddHeaderOption("")
 
+<<<<<<< HEAD
     Debug.MessageBox("key: "+stages.description_edit_key)
 
     AddToggleOptionST("RapeAllowedToggle","Add rape actions (must toggle/save/reload)",main.rape_allowed)
@@ -35,6 +44,12 @@ Event OnPageReset(string page)
     AddKeyMapOptionST("StartSex", "Start Sex", sex_key)
     Debug.MessageBox("key: "+stages.description_edit_key)
 
+=======
+    AddToggleOptionST("RapeAllowedToggle","Add rape actions (must toggle/save/reload)",main.rape_allowed)
+    AddToggleOptionST("PublicSexAcceptedToggle","Public sex accepted",main.public_sex_accepted)
+    AddToggleOptionST("SexKeyToggle","Enable sex hotkey",sex_key_toggle)
+    AddKeyMapOptionST("SexKeySet", "Start Sex hot key", sex_key)
+>>>>>>> main
 EndEvent
 
 State RapeAllowedToggle
@@ -56,7 +71,30 @@ State PublicSexAcceptedToggle
     EndEvent
 EndState
 
+<<<<<<< HEAD
 State DescriptionEditKeyMap
+=======
+; --------------------------------------------
+; Sex Hot Key
+; --------------------------------------------
+
+State SexKeyToggle
+    Event OnSelectST()
+        sex_key_toggle = !sex_key_toggle
+        SetToggleOptionValueST(sex_key_toggle)
+        if !sex_key_toggle
+            UnregisterForKey(sex_key)
+        else
+            RegisterForKey(sex_key)
+        endif
+        ForcePageReset()
+    EndEvent
+    Event OnHighlightST()
+        SetInfoText("Enables a start sex hot key")
+    EndEvent
+EndState
+State SexKeySet
+>>>>>>> main
     Event OnKeyMapChangeST(int keyCode, string conflictControl, string conflictName)
         bool continue = True
         if conflictControl != "" 
@@ -70,6 +108,7 @@ State DescriptionEditKeyMap
             continue = ShowMessage(msg, true, "$Yes", "$No")
         endif 
         if continue 
+<<<<<<< HEAD
             stages.description_edit_key = keyCode
             Debug.MessageBox("keyCode: "+stages.description_edit_key+" "+keycode)
             SetKeymapOptionValueST(keyCode)
@@ -79,4 +118,25 @@ State DescriptionEditKeyMap
         SetInfoText("Edit the stage's description")
     EndEvent
 EndState
+=======
+            UnregisterForKey(sex_key)
+            sex_key = keyCode
+            RegisterForKey(sex_key)
+            SetKeymapOptionValueST(sex_key)
+        endif 
+    EndEvent
+    Event OnHighlightST()
+        SetInfoText("Will start sex between the player and the actor in the crosshairs")
+    EndEvent
+EndState
+
+Event OnKeyDown(int key_code)
+    if sex_key == key_code
+        Actor target = Game.GetCurrentCrosshairRef() as Actor 
+        if target != None 
+            SkyrimNet_SexLab_Actions.SexTarget_Execute(target, "", "{\"target\":\""+Game.GetPlayer().GetDisplayName()+"\"}")
+        endif
+    endif 
+EndEvent 
+>>>>>>> main
 
