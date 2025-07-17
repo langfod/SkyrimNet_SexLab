@@ -1,3 +1,4 @@
+{% if not isTimePaused %}
 {% set arousal = sexlab_get_arousal(npc.UUID) %} 
 - {{ decnpc(npc.UUID).name }}'s arousal is {{ arousal.arousal -}}% {%
     if arousal.arousal < 20 %} (doesn't want sex) {%
@@ -5,3 +6,4 @@
     else if arousal.arousal < 60 %} (wants sex) {%
     else if arousal.arousal < 80 %} (will ask for sex) {%
                             else %} (will beg for sex) {%endif%}
+{% endif %}
