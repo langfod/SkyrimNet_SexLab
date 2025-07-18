@@ -289,14 +289,17 @@ Function SexTarget_Execute(Actor akActor, string contextJson, string paramsJson)
                 return 
             endif 
         else
-            sslBaseAnimation[] anims = AnimsDialog(sexlab, 2, type)
-            if anims != None && anims.length > 0
-                thread.SetAnimations(anims)
-            endif
+            bool includes_player = akActor == player || (akTarget != None && akTarget == player )
+            if (includes_player && main.sex_edit_tags_player) || (!includes_player && main.sex_edit_tags_nonplayer)
+                sslBaseAnimation[] anims = AnimsDialog(sexlab, 2, type)
+                if anims != None && anims.length > 0
+                    thread.SetAnimations(anims)
+                endif
 
-            if anims.length > 0
-                thread.SetAnimations(anims)
-                thread.addTag(type)
+                if anims.length > 0
+                    thread.SetAnimations(anims)
+                    thread.addTag(type)
+                endif 
             endif 
         endif 
     endif 

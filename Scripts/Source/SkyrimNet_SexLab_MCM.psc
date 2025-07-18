@@ -35,6 +35,8 @@ Event OnPageReset(string page)
 
     AddToggleOptionST("RapeAllowedToggle","Add rape actions (must toggle/save/reload)",main.rape_allowed)
     AddToggleOptionST("PublicSexAcceptedToggle","Public sex accepted",main.public_sex_accepted)
+    AddToggleOptionST("SexEditTagsPlayer","show tags editor for player sex",main.sex_edit_tags_player)
+    AddToggleOptionST("SexEditTagsNonPlayer","show tags editor for nonplayer sex",main.sex_edit_tags_nonplayer)
     AddToggleOptionST("SexKeyToggle","Enable sex hotkey",sex_key_toggle)
     AddKeyMapOptionST("SexKeySet", "Start Sex hot key", sex_key)
 EndEvent
@@ -55,6 +57,26 @@ State PublicSexAcceptedToggle
     EndEvent
     Event OnHighlightST()
         SetInfoText("Makes public sex a socially accepted activity..")
+    EndEvent
+EndState
+
+State SexEditTagsPlayer
+    Event OnSelectST()
+        main.sex_edit_tags_player = !main.sex_edit_tags_player
+        SetToggleOptionValueST(main.sex_edit_tags_player)
+    EndEvent
+    Event OnHighlightST()
+        SetInfoText("Opens a tag editor when sex does not include the player.")
+    EndEvent
+EndState
+
+State SexEditTagsNonPlayer
+    Event OnSelectST()
+        main.sex_edit_tags_nonplayer = !main.sex_edit_tags_nonplayer
+        SetToggleOptionValueST(main.sex_edit_tags_nonplayer)
+    EndEvent
+    Event OnHighlightST()
+        SetInfoText("Opens a tag editor when sex includes the player.")
     EndEvent
 EndState
 
@@ -211,7 +233,7 @@ Event OnKeyDown(int key_code)
 EndEvent 
 
 Function StartSex(Actor[] actors, int num_actors, bool is_rape) 
-    Trace("SexTarget_Execute: "+actors+" num_actors:"+num_actors+" is_rape:"+is_rape, true)
+    Trace("SexTarget_Execute: "+actors+" num_actors:"+num_actors+" is_rape:"+is_rape)
     SexLabFramework SexLab = Game.GetFormFromFile(0xD62, "SexLab.esm") as SexLabFramework
     if SexLab == None
         Trace("SexTarget_Execute: SexLab is None", true)
@@ -251,7 +273,7 @@ Function StartSex(Actor[] actors, int num_actors, bool is_rape)
     i = 0
     while !failure && i < num_actors 
         if thread.addActor(actors[i]) < 0   
-            Trace("StartSex: Starting sex couldn't add "+i+" "+actors[i].GetDisplayName(), true)
+            Trace("StartSex: Starting sex couldn't add "+i+" "+actors[i].GetDisplayName())
             failure = true 
         endif  
         i += 1

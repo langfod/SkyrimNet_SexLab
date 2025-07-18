@@ -7,12 +7,13 @@ import SkyrimNet_SexLab_Actions
 
 bool Property rape_allowed = true Auto
 bool Property public_sex_accepted = false Auto 
+bool Property sex_edit_tags_player = true Auto 
+bool Property sex_edit_tags_nonplayer = False Auto
 
 int Property actorLock = 0 Auto 
 float Property actorLockTimeout = 60.0 Auto
 
 int Property group_tags = 0 Auto
-int Property group_ordered = 0 Auto
 
 Event OnInit()
     rape_allowed = true
@@ -21,10 +22,11 @@ Event OnInit()
     Setup() 
 EndEvent
 
-
-
 Function Setup()
     Debug.Trace("[SkyrimNet_SexLab] SetUp")
+
+    ; SkyrimNet_SexLab_Stages stages = (self as Quest) as SkyrimNet_SexLab_Stages
+    ; stages.Setup() 
 
     if actorLock == 0 
         actorLock = JFormMap.object() 
@@ -41,7 +43,6 @@ Function Setup()
 
     if group_tags == 0
         group_tags = JValue.readFromFile("Data/SkyrimNet_Sexlab/group_tags.json")
-        group_ordered
         JValue.retain(group_tags)
     else
         int group_tags_new = JValue.readFromFile("Data/SkyrimNet_Sexlab/group_tags.json")
@@ -68,7 +69,6 @@ Function Trace(String msg, Bool notification=False) global
         Debug.Notification(msg)
     endif 
 EndFunction
-
 
 ;----------------------------------------------------------------------------------------------------
 ; Actor Lock
@@ -161,7 +161,7 @@ Function Sex_Dialog(int ThreadID, bool starting, Bool HasPlayer ) global
     Actor[] actors = thread.Positions
 
     String narration = thread_Narration(SexLab.GetController(ThreadID), starting)
-    if starting && HasPlayer
+    if starting
         debug.Notification(narration)
     endif
 
