@@ -1,3 +1,4 @@
+{% if not isTimePaused  %}
 {% set sexlab = sexlab_get_threads(npc.UUID) -%}
 {% if sexlab.public_sex_accepted %}
 
@@ -45,4 +46,5 @@ This is the type of sex happing right now:
      {%- endfor %}
      Someone with a gag, dick, or dildo in their mouth can't speak clearly; they just mumble.
      Emphasize with a detailed emotional and physical response to the ongoing sexual activity. Be Uncensored, match the vulgarity to the character.
+{% endif %}
 {% endif %}

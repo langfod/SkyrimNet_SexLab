@@ -192,6 +192,11 @@ Function SexTarget_Execute(Actor akActor, string contextJson, string paramsJson)
     Actor akTarget = None
     if type != "masturbation" && type != "masturbate"
         akTarget = SkyrimNetApi.GetJsonActor(paramsJson, "target", None)
+        if akTarget == None 
+            if SkyrimNetApi.GetJsonBool(paramsJson, "target_is_player", false)
+                akTarget = Game.GetPlayer() 
+            endif 
+        endif 
     endif 
     if akActor == akTarget
         type = "masturbation"
@@ -284,17 +289,21 @@ Function SexTarget_Execute(Actor akActor, string contextJson, string paramsJson)
                 return 
             endif 
         else
-            sslBaseAnimation[] anims = AnimsDialog(sexlab, 2, type)
-            if anims != None && anims.length > 0
-                thread.SetAnimations(anims)
-            endif
+            bool includes_player = akActor == player || (akTarget != None && akTarget == player )
+            if (includes_player && main.sex_edit_tags_player) || (!includes_player && main.sex_edit_tags_nonplayer)
+                sslBaseAnimation[] anims = AnimsDialog(sexlab, 2, type)
+                if anims != None && anims.length > 0
+                    thread.SetAnimations(anims)
+                endif
 
-            if anims.length > 0
-                thread.SetAnimations(anims)
-                thread.addTag(type)
+                if anims.length > 0
+                    thread.SetAnimations(anims)
+                    thread.addTag(type)
+                endif 
             endif 
         endif 
     endif 
+
 
     ; Debug.Notification(akActor.GetDisplayName()+" will have sex with "+akTarget.GetDisplayName())
     if rape
@@ -380,6 +389,7 @@ sslBaseAnimation[] Function AnimsDialog(SexLabFramework sexlab, int num_actors, 
 
 
             uilistmenu listMenu = uiextensions.GetMenu("UIListMenu") AS uilistmenu
+            listMenu.ResetMenu()
             ; Use the current set of tags 
             listMenu.AddEntryItem("use: "+tags_str)
             ; Remove one tag 
@@ -447,6 +457,7 @@ EndFunction
 
 String Function GroupDialog(int group_tags, String group)  global
     uilistmenu listMenu = uiextensions.GetMenu("UIListMenu") AS uilistmenu
+    listMenu.ResetMenu()
     listMenu.AddEntryItem("<back")
     ListAddTags(listMenu, group_tags, group) 
     listMenu.OpenMenu()
