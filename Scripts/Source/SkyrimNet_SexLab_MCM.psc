@@ -130,12 +130,24 @@ Event OnKeyDown(int key_code)
         ; Both players need to be in the crosshair to have SkyrimNet load them into the cache
         ; so the parseJsonActor works
         Actor target = Game.GetCurrentCrosshairRef() as Actor 
+        Actor player = Game.GetPlayer() 
         if target != None 
-            SkyrimNet_SexLab_Actions.SexTarget_Execute(target, "", "{\"target\":\""+Game.GetPlayer().GetDisplayName()+"\",\"target_is_player\":true}")
+            int mastrubation = 0
+            int sex = 1
+            String[] buttons = new String[2]
+            buttons[mastrubation] = "mastrubate"
+            buttons[sex] = "have sex with player"
+            int button = SkyMessage.ShowArray("Should "+target.getDisplayName()+":", buttons, getIndex = true) as int  
+
+            if button == mastrubation
+                SkyrimNet_SexLab_Actions.SexTarget_Execute(target, "", "{\"type\":\"masturbation\"}")
+            else 
+                SkyrimNet_SexLab_Actions.SexTarget_Execute(target, "", "{\"target\":\""+player.GetDisplayName()+"\",\"target_is_player\":true}")
+            endif 
             return 
         endif 
 
-        Actor[] actors = MiscUtil.ScanCellActors(Game.GetPlayer(), 1000)
+        Actor[] actors = MiscUtil.ScanCellActors(player, 1000)
         String[] names = Utility.CreateStringArray(actors.length)
 
         int i = 0 

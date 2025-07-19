@@ -11,13 +11,13 @@ This is the type of sex happing right now:
           if contains(thread.tags, "Anal") or contains(thread.tags, "anal") or contains(thread.tags, "assjob") -%}
                fucking ass of {%-
           else if contains(thread.tags, "Boobjob") -%}
-               getting having penis sucked {%-
+               getting a boobjob from {%-
           else if contains(thread.tags, "Thighjob") -%}
                getting a thighjob from {%- 
           else if contains(thread.tags, "Fisting") -%}
-               fisting pussy of {%- 
+               fisting {%- 
           else if contains(thread.tags, "Oral") or contains(thread.tags, "blowjob") or contains(thread.tags, "cunnilingus") -%}
-               getting a blowjob from {%-
+               getting oral sex from {%-
           else if contains(thread.tags, "Masturbation") -%}
                masturbating furiously.  {%- 
           else if contains(thread.tags, "Fingering") -%}
