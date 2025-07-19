@@ -125,6 +125,10 @@ State SexKeySet
 EndState
 
 Event OnKeyDown(int key_code)
+    if UI.IsTextInputEnabled()
+        return 
+    endif 
+
     if sex_key == key_code
 
         ; Both players need to be in the crosshair to have SkyrimNet load them into the cache
@@ -132,17 +136,29 @@ Event OnKeyDown(int key_code)
         Actor target = Game.GetCurrentCrosshairRef() as Actor 
         Actor player = Game.GetPlayer() 
         if target != None 
-            int mastrubation = 0
+            int mastrubate = 0
             int sex = 1
-            String[] buttons = new String[2]
-            buttons[mastrubation] = "mastrubate"
+            int raped_by = 2
+            int rapes = 3
+            int cancel = 4
+            String[] buttons = new String[5]
+            buttons[mastrubate] = "mastrubate"
             buttons[sex] = "have sex with player"
+            buttons[raped_by] = "raped by player"
+            buttons[rapes] = "rapes the player"
+            buttons[cancel] = "cancel"
             int button = SkyMessage.ShowArray("Should "+target.getDisplayName()+":", buttons, getIndex = true) as int  
 
-            if button == mastrubation
+            if button == mastrubate
                 SkyrimNet_SexLab_Actions.SexTarget_Execute(target, "", "{\"type\":\"masturbation\"}")
+            elseif button == sex
+                SkyrimNet_SexLab_Actions.SexTarget_Execute(target, "", "{\"rape\":false, \"target\":\""+player.GetDisplayName()+"\",\"target_is_player\":true}")
+            elseif button == rapes
+                SkyrimNet_SexLab_Actions.SexTarget_Execute(target, "", "{\"rape\":true, \"target\":\""+player.GetDisplayName()+"\",\"victum\":false, \"target_is_player\":true}")
+            elseif button == raped_by
+                SkyrimNet_SexLab_Actions.SexTarget_Execute(target, "", "{\"rape\":true, \"target\":\""+player.GetDisplayName()+"\",\"victum\":true,\"target_is_player\":true}")
             else 
-                SkyrimNet_SexLab_Actions.SexTarget_Execute(target, "", "{\"target\":\""+player.GetDisplayName()+"\",\"target_is_player\":true}")
+                return 
             endif 
             return 
         endif 

@@ -137,7 +137,7 @@ event AnimationStart(int ThreadID, bool HasPlayer)
     ReleaseActorLock(actors[0])
     ReleaseActorLock(actors[1])
 
-;    Sex_Dialog(ThreadID, true, HasPlayer )
+    Sex_Dialog(ThreadID, true, HasPlayer )
 endEvent
 
 ;Event StartStage(int ThreadID, bool HasPlayer)
@@ -167,13 +167,22 @@ Function Sex_Dialog(int ThreadID, bool starting, Bool HasPlayer ) global
 
     ; the Dialog narration is called so that it is stored in the timeline and captured in memories,
     ; and will be responded by t
+    String eventType = "sex"
+    if thread.IsAggressive 
+        eventType = "rape"
+    endif 
+    if starting 
+        eventType += " start"
+    else 
+        eventType += " end"
+    endif 
     narration = "*"+narration+"*"
     if actors.length < 2 || actors[0] == actors[1]
-        SkyrimNetApi.RegisterEvent("sex", narration, actors[0], None)
+        SkyrimNetApi.RegisterEvent(eventType, narration, actors[0], None)
     elseif actors.length == 2
-        SkyrimNetApi.RegisterEvent("sex", narration, actors[1], actors[0])
+        SkyrimNetApi.RegisterEvent(eventType, narration, actors[1], actors[0])
     else
-        SkyrimNetApi.RegisterEvent("sex", narration,None,None)
+        SkyrimNetApi.RegisterEvent(eventType, narration,None,None)
     endif 
 EndFunction
 
@@ -322,7 +331,11 @@ String Function Thread_Narration(sslThreadController thread, bool starting) glob
     else
         narration += " finishes "
     endif 
-    narration += " having sex with "
+    if thread.IsAggressive 
+        narration += " raping "
+    else 
+        narration += " having sex with "
+    endif 
 
     String bondage = "" 
     if anim.HasTag("bound")
@@ -355,10 +368,11 @@ String Function Thread_Narration(sslThreadController thread, bool starting) glob
         narration += " from behind"
     endif
 
+    if thread.IsAggressive 
+        narration += " by "
+    endif 
+
     String sexing = " fucking "
-    if thread.IsAggressive
-        sexing = " raping "
-    endif
 
     string type = "" 
     if anim.HasTag("anal") || anim.HasTag("assjob")
