@@ -168,15 +168,13 @@ Function Sex_Dialog(int ThreadID, bool starting, Bool HasPlayer ) global
 
     ; the Dialog narration is called so that it is stored in the timeline and captured in memories,
     ; and will be responded by t
+    narration = "*"+narration+"*"
     if actors.length < 2 || actors[0] == actors[1]
-        SkyrimNetApi.RegisterDialogue(actors[0], "*"+narration+"*")
-        ;SkyrimNetApi.RegisterEvent("SexLab", narration, actors[0], None)
+        SkyrimNetApi.RegisterEvent("sex", narration, actors[0], None)
     elseif actors.length == 2
-        SkyrimNetApi.RegisterDialogueToListener(actors[1], actors[0], "*"+narration+"*")
-        ;SkyrimNetApi.RegisterEvent("SexLab", narration, actors[1], actors[0])
+        SkyrimNetApi.RegisterEvent("sex", narration, actors[1], actors[0])
     else
-        SkyrimNetApi.RegisterDialogue(None, "*"+narration+"*")
-        ;SkyrimNetApi.RegisterEvent("SexLab", narration,None,None)
+        SkyrimNetApi.RegisterEvent("sex", narration,None,None)
     endif 
 EndFunction
 
@@ -271,11 +269,6 @@ Function Orgasm_Dialog(int ThreadID) global
     if narration != ""
         narration = narration
     endif 
-    ;SkyrimNetApi.RegisterShortLivedEvent("sexLab orgasm "+threadId, narration, narration,
-    ;    "", 60000, actors[1], actors[0])
-    ; This adds it to the time line 
-    ;SkyrimNetApi.RegisterDialogueToListener(actors[1], actors[0], narration)
-    ; This makes the ackors respond
     SkyrimNetApi.DirectNarration(narration, actors[1], actors[0])
 EndFunction  
 

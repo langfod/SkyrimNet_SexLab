@@ -233,17 +233,14 @@ Function SexTarget_Execute(Actor akActor, string contextJson, string paramsJson)
             main.ReleaseActorLock(akTarget)
             if button == NO 
                 if !rape
-                    String msg = akTarget.GetDisplayName()+" refuses "+akActor.GetDisplayName()+"'s sex request"
-                    ;SkyrimNetApi.RegisterEvent("refuses sex", msg, akTarget, akActor)
-                    SkyrimNetApi.RegisterDialogueToListener(akTarget, akActor, "*"+msg+"*")
+                    String msg = "*"+akTarget.GetDisplayName()+" refuses "+akActor.GetDisplayName()+"'s sex request*"
+                    SkyrimNetApi.RegisterEvent("refuses sex", msg, akTarget, akActor)
                 elseif victum 
-                    String msg = akTarget.GetDisplayName()+" refuses "+akActor.GetDisplayName()+"'s rape attempt."
-                    ;SkyrimNetApi.RegisterEvent("refuses sex", msg, akTarget, akActor)
-                    SkyrimNetApi.RegisterDialogueToListener(akTarget, akActor, "*"+msg+"*")
+                    String msg = "*"+akTarget.GetDisplayName()+" refuses "+akActor.GetDisplayName()+"'s rape attempt.*"
+                    SkyrimNetApi.RegisterEvent("refuses sex", msg, akTarget, akActor)
                 else
-                    String msg = akTarget.GetDisplayName()+" refuses to rape "+akActor.GetDisplayName()+"."
-                    ;SkyrimNetApi.RegisterEvent("refuses sex", msg, akTarget, akActor)
-                    SkyrimNetApi.RegisterDialogueToListener(akTarget, akActor, "*"+msg+"*")
+                    String msg = "*"+akTarget.GetDisplayName()+" refuses to rape "+akActor.GetDisplayName()+".*"
+                    SkyrimNetApi.RegisterEvent("refuses sex", msg, akTarget, akActor)
                 endif
             endif
             return 
