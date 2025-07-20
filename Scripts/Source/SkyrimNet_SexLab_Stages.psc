@@ -18,6 +18,9 @@ Function Setup()
     endif
 EndFunction
 
+Function Reset() 
+    
+
 Function UpdateStage()
     Debug.Notification("thread "+thread)
     sslThreadController thread = GetThread() 

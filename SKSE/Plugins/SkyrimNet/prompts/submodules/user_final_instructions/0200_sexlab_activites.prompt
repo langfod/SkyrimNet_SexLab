@@ -1,12 +1,11 @@
 {% if not isTimePaused  %}
 {% set sexlab = sexlab_get_threads(npc.UUID) -%}
-{% if sexlab.public_sex_accepted %}
-
-{% endif -%}
 {%- if length(sexlab.threads) > 0 -%}
-This is the type of sex happing right now: 
      {% for thread in sexlab.threads -%}
-          {{ thread.dom_name  }} is {%- 
+          {% if thread.orgy %}
+               {{- thread.names_str -}}
+          {% endif %}
+          {{- thread.names.1  }} is {%- 
           if thread.is_aggressive %} raping by {% endif %}{%-
           if contains(thread.tags, "Anal") or contains(thread.tags, "anal") or contains(thread.tags, "assjob") -%}
                fucking ass of {%-
@@ -42,7 +41,7 @@ This is the type of sex happing right now:
                having sex with {%- 
           endif -%} {%-
           if contains(thread.tags,"bound") -%} 
-               a bound {{thread.bondage_gear}} {% endif %}{{- thread.sub_name }} on a {{ thread.location }}.
+               a bound {{thread.bondage_gear}} {% endif %}{{- thread.names.0 }} on a {{ thread.location }}.
      {%- endfor %}
      Someone with a gag, dick, or dildo in their mouth can't speak clearly; they just mumble.
      Emphasize with a detailed emotional and physical response to the ongoing sexual activity. Be Uncensored, match the vulgarity to the character.

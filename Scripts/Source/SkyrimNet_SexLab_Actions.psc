@@ -28,9 +28,6 @@ Function RegisterActions() global
         endif 
         i += 1
     endwhile 
-;    SkyrimNetApi.RegisterTag("animation", "Skyrimet_SexLab_Actions", "Animation_IsEligible")
-
-            ; "{{ {{ decnpc(npc.UUID).name }} is/will have {type} consensual sex/love with {target}.", \
     SkyrimNetApi.RegisterAction("SexTarget", \
             "have consensual sex", \
             "SkyrimNet_SexLab_Actions", "SexTarget_IsEligible",  \
@@ -83,35 +80,6 @@ Function RegisterActions() global
 EndFunction
 
 ; -------------------------------------------------
-; Tags 
-; -------------------------------------------------
-Bool Function Animation_IsEligible(Actor akActor, string contextJson, string paramsJson) global
-    SkyrimNet_SexLab_Main main = Game.GetFormFromFile(0x800, "SkyrimNet_SexLab.esp") as SkyrimNet_SexLab_Main
-    SexLabFramework SexLab = Game.GetFormFromFile(0xD62, "SexLab.esm") as SexLabFramework
-    if SexLab == None || main == None 
-        return false
-    endif 
-
-    if SexLab.IsActorActive(akActor) || main.IsActorLocked(akActor)
-        Trace("Animation_IsEligible: akActor: " + akActor.GetDisplayName()+" is already captured by an animation")
-        return False
-    endif
-
-    Actor akTarget = SkyrimNetApi.GetJsonActor(paramsJson, "target", Game.GetPlayer())
-    if akTarget != None && (SexLab.IsActorActive(akTarget) || main.IsActorLocked(akTarget))
-        Trace("Animation_IsEligible: akTarget: " + akTarget.GetDisplayName()+" is already captured by an animation")
-        return False
-    endif
-
-    String nameTarget = "" 
-    if akTarget != None 
-        nameTarget = akTarget.GetDisplayName() 
-    endif 
-    Trace("Animation_IsEligible: " + akActor.GetDisplayName()+" and "+nameTarget+" can have sex")
-    return true 
-EndFunction 
-
-; -------------------------------------------------
 ; ACtions 
 ; -------------------------------------------------
 
@@ -159,20 +127,9 @@ Bool Function SexTarget_IsEligible(Actor akActor, string contextJson, string par
         return False
     endif
 
-    Actor akTarget = SkyrimNetApi.GetJsonActor(paramsJson, "target", Game.GetPlayer())
-    if akTarget == None
-        Trace("SetTarget_IsEigible: akTarget is None "+paramsJson)
-    else    
-        if !SexLab.IsValidActor(akTarget) || akTarget.IsDead() || akTarget.IsInCombat() || SexLab.IsActorActive(akTarget) || main.IsActorLocked(akTarget)
-            Trace("SexTarget_IsEligible: akTarget: " + akTarget.GetDisplayName()+" can't have sex")
-            return False
-        endif
-    endif
-
-    Trace("SexTarget_IsEligible: " + akActor.GetDisplayName() + " is eligible for sex with " + akTarget.GetDisplayName())
+    Trace("SexTarget_IsEligible: " + akActor.GetDisplayName()+" is eligible for sex")
     return True
 EndFunction
-
 
 Function SexTarget_Execute(Actor akActor, string contextJson, string paramsJson) global
     Trace("SexTarget_Execute: "+paramsJson)
@@ -213,6 +170,14 @@ Function SexTarget_Execute(Actor akActor, string contextJson, string paramsJson)
     Actor player = Game.GetPlayer()
     Debug.Trace("[SkyrimNet_SexLab] SexTarget_Execute type:"+type+" akTarget:"+akTarget)
     Bool victum = SkyrimNetApi.GetJsonBool(paramsJson, "victum", true)
+    Actor subActor = akActor 
+    Actor domActor = akTarget
+    if akTarget != None && !victum 
+        subActor = akTarget
+        domActor = akActor
+    endif
+
+
 
     int YES = 0
     int YES_RANDOM = 1
@@ -225,22 +190,22 @@ Function SexTarget_Execute(Actor akActor, string contextJson, string paramsJson)
     buttons[NO] = "No "
 
     int button = YES
-    if akActor == player || (akTarget != None && akTarget == player)
-        button = YesNoDialog(buttons, YES, type, rape, akTarget, akActor, player)
+    if subActor == player || (domActor != None && domActor == player)
+        button = YesNoDialog(buttons, YES, type, rape, domActor, subActor, player)
         if button == NO || button == NO_SILENT
-            Trace("SexTarget_Execute: User declined")
+            Trace("SexTarget_Execute: User declined",true)
             main.ReleaseActorLock(akActor)
             main.ReleaseActorLock(akTarget)
             if button == NO 
                 if !rape
                     String msg = "*"+akTarget.GetDisplayName()+" refuses "+akActor.GetDisplayName()+"'s sex request*"
-                    SkyrimNetApi.RegisterEvent("refuses sex", msg, akTarget, akActor)
-                elseif victum 
+                    SkyrimNetApi.RegisterEvent("sex refuses", msg, akTarget, akActor)
+                elseif domActor == player 
                     String msg = "*"+akTarget.GetDisplayName()+" refuses "+akActor.GetDisplayName()+"'s rape attempt.*"
-                    SkyrimNetApi.RegisterEvent("refuses sex", msg, akTarget, akActor)
+                    SkyrimNetApi.RegisterEvent("rape refuses", msg, akTarget, akActor)
                 else
                     String msg = "*"+akTarget.GetDisplayName()+" refuses to rape "+akActor.GetDisplayName()+".*"
-                    SkyrimNetApi.RegisterEvent("refuses sex", msg, akTarget, akActor)
+                    SkyrimNetApi.RegisterEvent("rape refuses", msg, akTarget, akActor)
                 endif
             endif
             return 
@@ -248,13 +213,6 @@ Function SexTarget_Execute(Actor akActor, string contextJson, string paramsJson)
     endif
 
     
-    Actor subActor = akActor 
-    Actor domActor = akTarget
-    if !victum 
-        subActor = akTarget
-        domActor = akActor
-    endif
-
     sslThreadModel thread = sexlab.NewThread()
     bool failure = false 
     if thread == None
@@ -262,14 +220,14 @@ Function SexTarget_Execute(Actor akActor, string contextJson, string paramsJson)
         failure = true 
     endif
     if !failure && thread.addActor(subActor) < 0   
-        Trace("SexTarget_Execute: Starting sex couldn't add " + subActor.GetDisplayName() + " and target: " + akTarget.GetDisplayName())
+        Trace("SexTarget_Execute: Starting sex couldn't add " + subActor.GetDisplayName())
         failure = true 
     endif  
     int num_actors = 1
-    if !failure && akTarget != None 
+    if !failure && domActor != None 
         num_actors = 2
         if thread.addActor(domActor) < 0   
-            Trace("SexTarget_Execute: Starting sex couldn't add " + domActor.GetDisplayName() + " and target: " + akTarget.GetDisplayName())
+            Trace("SexTarget_Execute: Starting sex couldn't add " + domActor.GetDisplayName())
             failure = true 
         endif  
     endif 
@@ -301,8 +259,7 @@ Function SexTarget_Execute(Actor akActor, string contextJson, string paramsJson)
         endif 
     endif 
 
-
-    ; Debug.Notification(akActor.GetDisplayName()+" will have sex with "+akTarget.GetDisplayName())
+    ; Debug.Notification(subActor.GetDisplayName()+" will have sex with "+akTarget.GetDisplayName())
     if rape
         thread.IsAggressive = true
     else
