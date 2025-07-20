@@ -28,9 +28,6 @@ Function RegisterActions() global
         endif 
         i += 1
     endwhile 
-;    SkyrimNetApi.RegisterTag("animation", "Skyrimet_SexLab_Actions", "Animation_IsEligible")
-
-            ; "{{ {{ decnpc(npc.UUID).name }} is/will have {type} consensual sex/love with {target}.", \
     SkyrimNetApi.RegisterAction("SexTarget", \
             "have consensual sex", \
             "SkyrimNet_SexLab_Actions", "SexTarget_IsEligible",  \
@@ -83,35 +80,6 @@ Function RegisterActions() global
 EndFunction
 
 ; -------------------------------------------------
-; Tags 
-; -------------------------------------------------
-Bool Function Animation_IsEligible(Actor akActor, string contextJson, string paramsJson) global
-    SkyrimNet_SexLab_Main main = Game.GetFormFromFile(0x800, "SkyrimNet_SexLab.esp") as SkyrimNet_SexLab_Main
-    SexLabFramework SexLab = Game.GetFormFromFile(0xD62, "SexLab.esm") as SexLabFramework
-    if SexLab == None || main == None 
-        return false
-    endif 
-
-    if SexLab.IsActorActive(akActor) || main.IsActorLocked(akActor)
-        Trace("Animation_IsEligible: akActor: " + akActor.GetDisplayName()+" is already captured by an animation")
-        return False
-    endif
-
-    Actor akTarget = SkyrimNetApi.GetJsonActor(paramsJson, "target", Game.GetPlayer())
-    if akTarget != None && (SexLab.IsActorActive(akTarget) || main.IsActorLocked(akTarget))
-        Trace("Animation_IsEligible: akTarget: " + akTarget.GetDisplayName()+" is already captured by an animation")
-        return False
-    endif
-
-    String nameTarget = "" 
-    if akTarget != None 
-        nameTarget = akTarget.GetDisplayName() 
-    endif 
-    Trace("Animation_IsEligible: " + akActor.GetDisplayName()+" and "+nameTarget+" can have sex")
-    return true 
-EndFunction 
-
-; -------------------------------------------------
 ; ACtions 
 ; -------------------------------------------------
 
@@ -159,20 +127,9 @@ Bool Function SexTarget_IsEligible(Actor akActor, string contextJson, string par
         return False
     endif
 
-    Actor akTarget = SkyrimNetApi.GetJsonActor(paramsJson, "target", Game.GetPlayer())
-    if akTarget == None
-        Trace("SetTarget_IsEigible: akTarget is None "+paramsJson)
-    else    
-        if !SexLab.IsValidActor(akTarget) || akTarget.IsInCombat() || SexLab.IsActorActive(akTarget) || main.IsActorLocked(akTarget)
-            Trace("SexTarget_IsEligible: akTarget: " + akTarget.GetDisplayName()+" can't have sex")
-            return False
-        endif
-    endif
-
-    Trace("SexTarget_IsEligible: " + akActor.GetDisplayName() + " is eligible for sex with " + akTarget.GetDisplayName())
+    Trace("SexTarget_IsEligible: " + akActor.GetDisplayName()+" is eligible for sex")
     return True
 EndFunction
-
 
 Function SexTarget_Execute(Actor akActor, string contextJson, string paramsJson) global
     Trace("SexTarget_Execute: "+paramsJson, true)
@@ -302,7 +259,7 @@ Function SexTarget_Execute(Actor akActor, string contextJson, string paramsJson)
         endif 
     endif 
 
-    Debug.MessageBox(paramJson+" sub:"+subActor+" dom:"+domActor)
+    Debug.MessageBox(paramsJson+" sub:"+subActor+" dom:"+domActor)
 
     ; Debug.Notification(subActor.GetDisplayName()+" will have sex with "+akTarget.GetDisplayName())
     if rape

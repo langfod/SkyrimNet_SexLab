@@ -1,5 +1,7 @@
 Scriptname SkyrimNet_SexLab_Decorators
 
+import SkyrimNet_SexLab_Main
+
 ;----------------------------------------------------------------------------------------------------
 ; Decorators 
 ;----------------------------------------------------------------------------------------------------
@@ -83,7 +85,28 @@ EndFunction
 
 String Function Thread_Json(sslThreadController thread) global
 
+    SkyrimNet_SexLab_Main main = Game.GetFormFromFile(0x800, "SkyrimNet_SexLab.esp") as SkyrimNet_SexLab_Main
+
     String thread_str = "{" 
+
+    Actor[] actors = thread.Positions
+    String names = "" 
+    int i = 0
+    while i < actors.Length
+        if names != "" 
+            names += ","
+        endif 
+        names += "\""+actors[i].GetDisplayName()+"\""
+        i += 1
+    endwhile 
+    if actors.length > 2 
+        thread_str += "\"orgy\":true, "
+    else 
+        thread_str += "\"orgy\":false, "
+    endif
+    thread_str += "\"names\":["+names+"], "
+    thread_str += "\"names_str\":\""+Thread_Narration(thread,"are")+"\", "
+
     if thread.IsAggressive
         thread_str += "\"is_aggressive\": true, "
     else
@@ -91,7 +114,7 @@ String Function Thread_Json(sslThreadController thread) global
     endif 
 
     sslBaseAnimation anim = thread.Animation
-    int i = 0
+    i = 0
     String[] tags = anim.GetRawTags()
     String tags_str = "" 
     while i < tags.Length
@@ -205,11 +228,7 @@ String Function Thread_Json(sslThreadController thread) global
     elseif anim.HasTag("loving")
         emotion += " lovingly"
     endif
-    thread_str += "\"emotion\":\""+emotion+"\","
-
-    Actor[] actors = thread.Positions
-    thread_str += "\"sub_name\": \""+actors[0].GetDisplayName()+"\", "
-    thread_str += "\"dom_name\": \""+actors[1].GetDisplayName()+"\" "
+    thread_str += "\"emotion\":\""+emotion+"\""
 
     thread_str += "}"
     return thread_str
