@@ -148,7 +148,7 @@ Event OrgasmStart(int ThreadID, bool HasPlayer)
 EndEvent
 
 event AnimationEnd(int ThreadID, bool HasPlayer)
-    Sex_Event(ThreadID, "end", HasPlayer )
+    Sex_Event(ThreadID, "stop", HasPlayer )
 endEvent
 
 Function Sex_Event(int ThreadID, String status, Bool HasPlayer ) global
