@@ -132,7 +132,7 @@ Bool Function SexTarget_IsEligible(Actor akActor, string contextJson, string par
 EndFunction
 
 Function SexTarget_Execute(Actor akActor, string contextJson, string paramsJson) global
-    Trace("SexTarget_Execute: "+paramsJson, true)
+    Trace("SexTarget_Execute: "+paramsJson)
     SexLabFramework SexLab = Game.GetFormFromFile(0xD62, "SexLab.esm") as SexLabFramework
     if SexLab == None
         Trace("SexTarget_Execute: SexLab is None", true)
@@ -258,8 +258,6 @@ Function SexTarget_Execute(Actor akActor, string contextJson, string paramsJson)
             endif 
         endif 
     endif 
-
-    Debug.MessageBox(paramsJson+" sub:"+subActor+" dom:"+domActor)
 
     ; Debug.Notification(subActor.GetDisplayName()+" will have sex with "+akTarget.GetDisplayName())
     if rape
