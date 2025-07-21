@@ -87,7 +87,6 @@ String Function Get_Threads(Actor akActor) global
         json = "{\"public_sex_accepted\":false"
     endif
     json += ",\"threads\":["+threads_str+"]}"
-    Debug.Notification(json)
     return json
 EndFunction 
 

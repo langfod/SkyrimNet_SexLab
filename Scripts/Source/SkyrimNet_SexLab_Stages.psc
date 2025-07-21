@@ -48,7 +48,8 @@ String Function GetStageDescription(sslThreadController thread) global
             if desc_info != 0 
                 Actor[] actors = thread.Positions
                 String desc = JMap.getStr(desc_info, "description")
-                return Description_Add_Actors(actors, desc)
+                String source = JMap.getStr(desc_info, "description")
+                return Description_Add_Actors(actors, "["+source+"] "+desc)
             endif 
             stage -= 1
         endwhile 
@@ -73,56 +74,61 @@ Function EditDescriptions()
     if thread == None 
         return 
     endif 
-    String fname = GetFilename(thread)
-    int anim_info = GetAnim_Info(animations_folder, fname)
     Actor[] actors = thread.Positions
 
     int undefined = -1
-    int accept = 0
-    int edit = 1 
-    int cancel = 2
-    String[] buttons = new String[3]
-    buttons[accept] = "Accept"
-    buttons[edit] = "Edit"
-    buttons[cancel] = "Cancel"
+    int replace = 0 
+    int cancel = 1
 
+    String fname = GetFilename(thread)
+    int anim_info = GetAnim_Info(animations_folder, fname)
+    JValue.writeToFile(anim_info, animations_folder+"/anim_info.json")
     String stage_id = "stage "+thread.stage
-    String desc_current = ""
     int desc_info = JMap.getObj(anim_info, stage_id)
     if desc_info != 0 
-        desc_current = JMap.getStr(desc_info, "description")
+        String desc = JMap.getStr(desc_info, "description")
+        if desc != ""
+            String[] buttons = new String[2]
+            buttons[replace ] = "Replace"
+            buttons[cancel] = "Cancel"
+            String full = Description_Add_Actors(actors, desc)
+            int button = SkyMessage.ShowArray(full, buttons, getIndex = true) as int  
+            if button == cancel - 1
+                return 
+            endif 
+        endif 
     endif 
 
-    bool continue = true
-    while True  
-        int button = EditorDescription(actors, buttons, cancel, desc_current ,stage_id)
-        if button == accept 
-            SaveAnimInfo(fname, stage_id)
-            return 
-        elseif button == Edit
-            desc_current = ""
-        elseif button == cancel
-            return
-        endif 
-    endwhile 
+    EditorDescription(fname, actors, stage_id)
+
 EndFunction 
 
 ; ------------------------------------
 ; Editor Functions 
 ; ------------------------------------
-int Function EditorDescription(Actor[] actors, String[] buttons, int button_cancel, String desc_current, String id)
-    if desc_current == ""
-        uiextensions.InitMenu("UITextEntryMenu")
-        uiextensions.OpenMenu("UITextEntryMenu")
-        desc_input = UIExtensions.GetMenuResultString("UITextEntryMenu")
-        if desc_input == ""
-            Debug.Notification("[SkyrimNet_SexLab] EditorDescription: No description entered")
-            return button_cancel
+int Function EditorDescription(String fname, Actor[] actors, String stage_id)
+    uiextensions.InitMenu("UITextEntryMenu")
+    uiextensions.OpenMenu("UITextEntryMenu")
+    desc_input = UIExtensions.GetMenuResultString("UITextEntryMenu")
+    if desc_input != ""
+        int undefined = -1
+        int accept = 0
+        int replace = 1 
+        int cancel = 2
+        String[] buttons = new String[3]
+        buttons[accept] = "Accept"
+        buttons[replace] = "Replace"
+        buttons[cancel] = "Cancel"
+
+        String full = Description_Add_Actors(actors, desc_input)
+        int button = SkyMessage.ShowArray(full, buttons, getIndex = true) as int  
+
+        if button == accept 
+            SaveAnimInfo(fname, stage_id)
+        elseif button == replace
+            EditorDescription(fname, actors, stage_id)
         endif 
     endif 
-
-    String full = Description_Add_Actors(actors, desc_input)
-    return SkyMessage.ShowArray(full, buttons, getIndex = true) as int  
 EndFunction
 
 Function SaveAnimInfo(String fname, String stage_id) 
@@ -136,9 +142,8 @@ Function SaveAnimInfo(String fname, String stage_id)
     JMap.setStr(stage_info,"version",VERSION_1_0)
     JMap.setStr(stage_info,"description",desc_input)
     JMap.setObj(anim_info, stage_id, stage_info)
-    JValue.writeToFile(stage_info, animations_folder+"/"+stage_id+".json")
 
-    Debug.Notification("saving "+path)
+    Debug.Notification("saving "+fname)
     JValue.writeToFile(anim_info, path)
     JValue.writeToFile(anim_info, animations_folder+"/last.json")
 EndFunction 
@@ -194,6 +199,7 @@ int Function GetAnim_Info(String animations_folder, String fname) global
                 int desc_info = JMap.getObj(info, keys[k])
                 JMap.setStr(desc_info, "source", folders[i])
                 String stage_id = JMap.getStr(desc_info, "id")
+                String desc = JMap.getStr(desc_info, "description")
                 JMap.setObj(anim_info, stage_id, desc_info)
                 k -= 1
             endwhile 

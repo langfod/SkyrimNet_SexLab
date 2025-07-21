@@ -148,7 +148,6 @@ Event StartStage(int ThreadID, bool HasPlayer)
         return  
     endif
     sslThreadController thread = SexLab.GetController(ThreadID)
-    Debug.Notification("stage:"+thread.Stage)
 EndEvent
 
 Event OrgasmStart(int ThreadID, bool HasPlayer)
