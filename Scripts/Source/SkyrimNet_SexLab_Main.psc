@@ -117,8 +117,8 @@ Function RegisterSexlabEvents()
 
     UnRegisterForModEvent("HookAnimationStart")
     RegisterForModEvent("HookAnimationStart", "AnimationStart")
-    ;UnRegisterForModEvent("HookStageStart")
-    ;RegisterForModEvent("HookStageStart", "StageStart")
+    UnRegisterForModEvent("HookStageStart")
+    ; RegisterForModEvent("HookStageStart", "StageStart")
     ;UnRegisterForModEvent("HookStageEnd")
     ;RegisterForModEvent("HookStageEnd", "SexLab_StageEnd")
     UnRegisterForModEvent("HookOrgasmStart")
@@ -141,8 +141,15 @@ event AnimationStart(int ThreadID, bool HasPlayer)
     Sex_Event(ThreadID, "start", HasPlayer )
 endEvent
 
-;Event StartStage(int ThreadID, bool HasPlayer)
-;EndEvent
+Event StartStage(int ThreadID, bool HasPlayer)
+    SexLabFramework SexLab = Game.GetFormFromFile(0xD62, "SexLab.esm") as SexLabFramework
+    if SexLab == None
+        Debug.Notification("[SkyrimNet_SexLab] Thread_Dialog: SexLab is None")
+        return  
+    endif
+    sslThreadController thread = SexLab.GetController(ThreadID)
+    Debug.Notification("stage:"+thread.Stage)
+EndEvent
 
 Event OrgasmStart(int ThreadID, bool HasPlayer)
     Orgasm_Event(ThreadID)

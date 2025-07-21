@@ -34,6 +34,8 @@ The following and depedancies:
 - [Papyrus MessageBox](https://www.nexusmods.com/skyrimspecialedition/mods/83578)
 - [OSL Aroused](https://www.nexusmods.com/skyrimspecialedition/mods/65454)
 - [JContainers](https://www.nexusmods.com/skyrimspecialedition/mods/16495)
+- [SkyUI SE](https://www.nexusmods.com/skyrimspecialedition/mods/12604)
+  [UIExtensions](https://www.nexusmods.com/skyrimspecialedition/mods/17561)
 - SkyrimNet
    - You must have narration enabled
 - **SkyrimNet**
@@ -45,8 +47,6 @@ The following and depedancies:
     -  [SKSE](https://skse.silverlock.org/)
     -  [Address Library for SKSE Plugins](https://www.nexusmods.com/skyrimspecialedition/mods/32444)
     -  [Unofficial Skyrim Special Edition Patch - USSEP](https://www.nexusmods.com/skyrimspecialedition/mods/266)
-    -  [UIExtensions](https://www.nexusmods.com/skyrimspecialedition/mods/17561)
-    -  [SkyUI SE](https://www.nexusmods.com/skyrimspecialedition/mods/12604)
     -  [PapyrusUtil SE](https://www.nexusmods.com/skyrimspecialedition/mods/13048)
     -  [Powerof three Papyrus Extender](https://www.nexusmods.com/skyrimspecialedition/mods/22854)
     -  [Power of three Tweaks](https://www.nexusmods.com/skyrimspecialedition/mods/51073)

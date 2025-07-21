@@ -1,5 +1,7 @@
 Scriptname SkyrimNet_SexLab_MCM extends SKI_ConfigBase
 
+import SkyrimNet_SexLab_Actions
+
 int rape_toggle
 int ublic_sex_toggle
 String[] Pages 
@@ -7,8 +9,8 @@ String[] Pages
 SkyrimNet_SexLab_Main Property main Auto  
 SkyrimNet_SexLab_Stages Property stages Auto 
 
-bool sex_key_toggle = False 
-int sex_key = 40
+bool hot_key_toggle = False 
+int sex_start_key = 40 ; 26
 
 bool description_edit_toggle = False 
 int description_edit_key = 39
@@ -28,32 +30,34 @@ Event OnConfigOpen()
     ;pages[0] = "options"
 
 EndEvent
-
-int sex_key = 26
-
 Event OnPageReset(string page)
 
     if stages == None 
        stages = Game.GetFormFromFile(0x800, "SkyrimNet_SexLab.esp") as SkyrimNet_SexLab_Stages
     endif
 
-
     SetCursorFillMode(LEFT_TO_RIGHT)
     SetCursorPosition(0)
     
     AddHeaderOption("Options")
     AddHeaderOption("")
-
-    Debug.MessageBox("key: "+stages.description_edit_key)
-
-    Debug.MessageBox("key: "+stages.description_edit_key)
     AddToggleOptionST("RapeAllowedToggle","Add rape actions (must toggle/save/reload)",main.rape_allowed)
     AddToggleOptionST("PublicSexAcceptedToggle","Public sex accepted",main.public_sex_accepted)
-    AddToggleOptionST("SexEditTagsPlayer","show tags editor for player sex",main.sex_edit_tags_player)
-    AddToggleOptionST("SexEditTagsNonPlayer","show tags editor for nonplayer sex",main.sex_edit_tags_nonplayer)
-    AddToggleOptionST("SexKeyToggle","Enable sex hotkey",sex_key_toggle)
-    AddKeyMapOptionST("SexKeySet", "Start Sex hot key", sex_key)
-    AddKeyMapOptionST("DescriptionEditKeyMap", "Edit Stage Descriptions", stages.description_edit_key)
+    AddToggleOptionST("SexEditTagsPlayer","Show Tags_Editor for player sex",main.sex_edit_tags_player)
+    AddToggleOptionST("SexEditTagsNonPlayer","Show Tags_Editor for nonplayer sex",main.sex_edit_tags_nonplayer)
+
+    AddHeaderOption("")
+    AddHeaderOption("")
+    AddToggleOptionST("HotKeyToggle","Enable hotkey",hot_key_toggle)
+    AddHeaderOption("")
+    AddKeyMapOptionST("SexKeySet", "Start Sex hot key", sex_start_key)
+    AddKeyMapOptionST("DescriptionEditKeyMap", "Edit Stage Descriptions", description_edit_key)
+
+    if hot_key_toggle 
+        RegisterForKey(sex_start_key)
+        RegisterForKey(description_edit_key)
+    endif 
+
 EndEvent
 
 State RapeAllowedToggle
@@ -96,22 +100,24 @@ State SexEditTagsNonPlayer
 EndState
 
 ; --------------------------------------------
-; Sex Start Hot Key
+; Hot Keys 
 ; --------------------------------------------
 
-State SexKeyToggle
+State HotKeyToggle
     Event OnSelectST()
-        sex_key_toggle = !sex_key_toggle
-        SetToggleOptionValueST(sex_key_toggle)
-        if !sex_key_toggle
-            UnregisterForKey(sex_key)
+        hot_key_toggle = !hot_key_toggle
+        SetToggleOptionValueST(hot_key_toggle)
+        if !hot_key_toggle
+            UnregisterForKey(sex_start_key)
+            UnregisterForKey(description_edit_key)
         else
-            RegisterForKey(sex_key)
+            RegisterForKey(sex_start_key)
+            registerForKey(description_edit_key)
         endif
         ForcePageReset()
     EndEvent
     Event OnHighlightST()
-        SetInfoText("Enables a start sex hot key")
+        SetInfoText("Enables a hot keys")
     EndEvent
 EndState
 
@@ -129,34 +135,14 @@ State SexKeySet
             continue = ShowMessage(msg, true, "$Yes", "$No")
         endif 
         if continue 
-            UnregisterForKey(sex_key)
-            sex_key = keyCode
-            RegisterForKey(sex_key)
-            SetKeymapOptionValueST(sex_key)
+            UnregisterForKey(sex_start_key)
+            sex_start_key = keyCode
+            RegisterForKey(sex_start_key)
+            SetKeymapOptionValueST(sex_start_key)
         endif 
     EndEvent
     Event OnHighlightST()
         SetInfoText("Will start sex between the player and the actor in the crosshairs")
-    EndEvent
-EndState
-
-; --------------------------------------------
-; Edit Stage Description 
-; --------------------------------------------
-
-State DescriptionEditToggle
-    Event OnSelectST()
-        description_edit_toggle = !description_edit_toggle
-        SetToggleOptionValueST(description_edit_toggle)
-        if !description_edit_toggle
-            UnregisterForKey(description_edit_key)
-        else
-            RegisterForKey(description_edit_key)
-        endif
-        ForcePageReset()
-    EndEvent
-    Event OnHighlightST()
-        SetInfoText("Enables hot key used to edit stage descriptions")
     EndEvent
 EndState
 
@@ -194,15 +180,15 @@ Event OnKeyDown(int key_code)
         return 
     endif 
 
-    if description_editor_key == key_code 
-        stages.EditDescription() 
-    elseif sex_key == key_code
+    if description_edit_key == key_code 
+        stages.EditDescriptions() 
+    elseif sex_start_key == key_code
 
         ; Both players need to be in the crosshair to have SkyrimNet load them into the cache
         ; so the parseJsonActor works
         Actor target = Game.GetCurrentCrosshairRef() as Actor 
         Actor player = Game.GetPlayer() 
-        if target != None 
+        if target != None  && SexTarget_IsEligible(target,"","")
             int mastrubate = 0
             int sex = 1
             int raped_by = 2
