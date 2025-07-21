@@ -3,8 +3,8 @@ Scriptname SkyrimNet_SexLab_Stages extends Quest
 sslThreadSlots ThreadSlots = None
 Actor player = None 
 
-String animations_folder = "Data/SkyrimNet_SexLab/animations"
-String local_folder =      "Data/SkyrimNet_SexLab/animations/_local_"
+String Property animations_folder = "Data/SkyrimNet_SexLab/animations" Auto
+String Property local_folder =      "" Auto
 
 String VERSION_1_0 = "1.0"
 
@@ -18,7 +18,10 @@ Function Trace(String msg, Bool notification=False) global
     endif 
 EndFunction
 
+
 Function Setup()
+    animations_folder = "Data/SkyrimNet_SexLab/animations"
+    local_folder =      animations_folder+"/_local_"
     if ThreadSlots == None 
         ThreadSlots = Game.GetFormFromFile(0xD62, "SexLab.esm") as sslThreadSlots
         player = Game.GetPlayer()
@@ -29,6 +32,41 @@ Function Setup()
     endif
 EndFunction
 
+String Function GetStageDescription(sslThreadController thread) global
+    SkyrimNet_SexLab_Stages stages = Game.GetFormFromFile(0x800, "SkyrimNet_SexLab.esp") as SkyrimNet_SexLab_Stages
+    if thread == None 
+        Trace("GetStageDescription: thread is None", true)
+        return ""
+    endif 
+    String fname = GetFilename(thread)
+    int stage = thread.stage
+    int anim_info = GetAnim_Info(stages.animations_folder, fname)
+    if anim_info != 0
+        while 0 <= stage 
+            String stage_id = "stage "+stage
+            int desc_info = JMap.getObj(anim_info, stage_id)
+            if desc_info != 0 
+                Actor[] actors = thread.Positions
+                String desc = JMap.getStr(desc_info, "description")
+                return Description_Add_Actors(actors, desc)
+            endif 
+            stage -= 1
+        endwhile 
+    endif 
+    return ""
+EndFunction 
+
+String Function Description_Add_Actors(Actor[] actors, String desc) global
+    if desc == ""
+        return ""
+    endif 
+    if actors.length == 1 
+        return actors[0].GetDisplayName()+" "+desc
+    else 
+        return actors[1].GetDisplayName()+" "+desc+" "+actors[0].GetDisplayName() 
+    endif 
+EndFunction 
+
 Function EditDescriptions()
     local_folder =      "Data/SkyrimNet_SexLab/animations/_local_"
     sslThreadController thread = GetThread() 
@@ -36,7 +74,7 @@ Function EditDescriptions()
         return 
     endif 
     String fname = GetFilename(thread)
-    int anim_info = GetAnim_Info(fname)
+    int anim_info = GetAnim_Info(animations_folder, fname)
     Actor[] actors = thread.Positions
 
     int undefined = -1
@@ -83,12 +121,7 @@ int Function EditorDescription(Actor[] actors, String[] buttons, int button_canc
         endif 
     endif 
 
-    String full = ""
-    if actors.length == 1 
-        full = actors[0].GetDisplayName()+" "+desc_input
-    else 
-        full = actors[1].GetDisplayName()+" "+desc_input+" "+actors[0].GetDisplayName() 
-    endif 
+    String full = Description_Add_Actors(actors, desc_input)
     return SkyMessage.ShowArray(full, buttons, getIndex = true) as int  
 EndFunction
 
@@ -145,7 +178,7 @@ sslThreadcontroller Function GetThread()
     return thread
 EndFunction 
 
-int Function GetAnim_Info(String fname) 
+int Function GetAnim_Info(String animations_folder, String fname) global
     ; This will hold a map between the Stage nad the descriptions 
     int anim_info = JMap.object() 
 
@@ -170,7 +203,7 @@ int Function GetAnim_Info(String fname)
     return anim_info
 EndFunction 
 
-String Function GetFilename(sslThreadController thread) 
+String Function GetFilename(sslThreadController thread) global
     sslBaseAnimation anim = thread.animation
     return anim.name+".json"
 EndFunction 

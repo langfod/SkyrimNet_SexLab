@@ -1,6 +1,7 @@
 Scriptname SkyrimNet_SexLab_Decorators
 
 import SkyrimNet_SexLab_Main
+import SkyrimNet_SexLab_Stages
 
 ;----------------------------------------------------------------------------------------------------
 ; Decorators 
@@ -48,6 +49,8 @@ EndFunction
 String Function Get_Threads(Actor akActor) global
     Debug.Trace("[SkyrimNet_SexLab] Get_Threads called for "+akActor.GetDisplayName())
     SkyrimNet_SexLab_Main main = Game.GetFormFromFile(0x800, "SkyrimNet_SexLab.esp") as SkyrimNet_SexLab_Main
+    SkyrimNet_SexLab_Stages stages = (main as Quest) as SkyrimNet_SexLab_Stages
+
     if main == None
         Debug.Notification("[SkyrimNet_SexLab] Get_Threads: main is None")
         return ""
@@ -68,7 +71,12 @@ String Function Get_Threads(Actor akActor) global
             if threads_str != ""
                 threads_str += ", "
             endif 
-            threads_str += Thread_Json(threads[i])
+            String stage_desc = GetStageDescription(threads[i])
+            if stage_desc != ""
+                threads_str += "{\"stage_description_has\":true,\"stage_description\":\""+stage_desc+"\"}"
+            else
+                threads_str += Thread_Json(threads[i])
+            endif 
         endif 
         i += 1
     endwhile
@@ -79,6 +87,7 @@ String Function Get_Threads(Actor akActor) global
         json = "{\"public_sex_accepted\":false"
     endif
     json += ",\"threads\":["+threads_str+"]}"
+    Debug.Notification(json)
     return json
 EndFunction 
 
@@ -87,7 +96,7 @@ String Function Thread_Json(sslThreadController thread) global
 
     SkyrimNet_SexLab_Main main = Game.GetFormFromFile(0x800, "SkyrimNet_SexLab.esp") as SkyrimNet_SexLab_Main
 
-    String thread_str = "{" 
+    String thread_str = "{\"stage_description_has\":false, "
 
     Actor[] actors = thread.Positions
     String names = "" 
