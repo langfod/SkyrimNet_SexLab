@@ -20,6 +20,7 @@ EndFunction
 
 
 Function Setup()
+    desc_input = ""
     animations_folder = "Data/SkyrimNet_SexLab/animations"
     local_folder =      animations_folder+"/_local_"
     if ThreadSlots == None 
@@ -48,8 +49,7 @@ String Function GetStageDescription(sslThreadController thread) global
             if desc_info != 0 
                 Actor[] actors = thread.Positions
                 String desc = JMap.getStr(desc_info, "description")
-                String source = JMap.getStr(desc_info, "description")
-                return Description_Add_Actors(actors, "["+source+"] "+desc)
+                return Description_Add_Actors(actors, desc)
             endif 
             stage -= 1
         endwhile 
@@ -62,38 +62,44 @@ String Function Description_Add_Actors(Actor[] actors, String desc) global
         return ""
     endif 
     if actors.length == 1 
-        return actors[0].GetDisplayName()+" "+desc
+        desc = actors[0].GetDisplayName()+" "+desc+"."
+        String last_char = StringUtil.GetNthChar(desc,StringUtil.GetLength(desc) - 1)
+        if !StringUtil.IsPunctuation(last_char)
+            desc += "."
+        endif
+        return desc
     else 
-        return actors[1].GetDisplayName()+" "+desc+" "+actors[0].GetDisplayName() 
+        return actors[1].GetDisplayName()+" "+desc+" "+actors[0].GetDisplayName()+"."
     endif 
 EndFunction 
 
-Function EditDescriptions()
+Function EditDescriptions(Actor target)
+    Trace("EditDescriptions called for "+target.GetDisplayName(), true)
     local_folder =      "Data/SkyrimNet_SexLab/animations/_local_"
-    sslThreadController thread = GetThread() 
+    sslThreadController thread = GetThread(target) 
     if thread == None 
         return 
     endif 
     Actor[] actors = thread.Positions
 
     int undefined = -1
-    int replace = 0 
+    int rewrite = 0 
     int cancel = 1
 
     String fname = GetFilename(thread)
     int anim_info = GetAnim_Info(animations_folder, fname)
-    JValue.writeToFile(anim_info, animations_folder+"/anim_info.json")
     String stage_id = "stage "+thread.stage
     int desc_info = JMap.getObj(anim_info, stage_id)
     if desc_info != 0 
         String desc = JMap.getStr(desc_info, "description")
         if desc != ""
             String[] buttons = new String[2]
-            buttons[replace ] = "Replace"
-            buttons[cancel] = "Cancel"
-            String full = Description_Add_Actors(actors, desc)
+            buttons[rewrite] = "replace"
+            buttons[cancel] = "cancel"
+            String source = JMap.getStr(desc_info, "source")
+            String full = "["+source+"] "+Description_Add_Actors(actors, desc)
             int button = SkyMessage.ShowArray(full, buttons, getIndex = true) as int  
-            if button == cancel - 1
+            if button == cancel
                 return 
             endif 
         endif 
@@ -113,22 +119,23 @@ int Function EditorDescription(String fname, Actor[] actors, String stage_id)
     if desc_input != ""
         int undefined = -1
         int accept = 0
-        int replace = 1 
+        int rewrite = 1 
         int cancel = 2
         String[] buttons = new String[3]
-        buttons[accept] = "Accept"
-        buttons[replace] = "Replace"
-        buttons[cancel] = "Cancel"
+        buttons[accept] = "accept"
+        buttons[rewrite] = "replace"
+        buttons[cancel] = "cancel"
 
         String full = Description_Add_Actors(actors, desc_input)
         int button = SkyMessage.ShowArray(full, buttons, getIndex = true) as int  
 
         if button == accept 
             SaveAnimInfo(fname, stage_id)
-        elseif button == replace
+        elseif button == rewrite
             EditorDescription(fname, actors, stage_id)
         endif 
     endif 
+    desc_input = ""
 EndFunction
 
 Function SaveAnimInfo(String fname, String stage_id) 
@@ -153,14 +160,13 @@ EndFunction
 ; Helper functions
 ; ------------------------------------
 
-sslThreadcontroller Function GetThread() 
+sslThreadcontroller Function GetThread(Actor target)
     if threadSlots == None 
         return None 
     endif 
     sslThreadController[] threads = ThreadSlots.Threads
 
     ; Get the active thread that contains the player or actor in the crossHair
-    Actor target = Game.GetCurrentCrosshairRef() as Actor 
     sslThreadController thread = None
     bool has_player = false 
     int i = threads.length - 1
@@ -188,7 +194,18 @@ int Function GetAnim_Info(String animations_folder, String fname) global
     int anim_info = JMap.object() 
 
     String[] folders = MiscUtil.FoldersInfolder(animations_folder)
-    int i = folders.Length - 1
+
+    ; Make sure the local folder is processed last
+    int i = folders.length - 1
+    while 0 <= i && folders[i] != "_local_"
+        i -= 1
+    endwhile 
+    if 0 < i 
+        folders[i] = folders[0]
+        folders[0] = "_local_"
+    endif
+
+    i = folders.Length - 1
     while 0 <= i
         String fn = animations_folder+"/"+folders[i]+"/"+fname
         int info = JValue.readFromFile(fn)

@@ -4,6 +4,7 @@ import JContainers
 import UIExtensions
 import SkyrimNet_SexLab_Decorators
 import SkyrimNet_SexLab_Actions
+import SkyrimNet_SexLab_Stages
 
 bool Property rape_allowed = true Auto
 bool Property public_sex_accepted = false Auto 
@@ -16,9 +17,13 @@ float Property actorLockTimeout = 60.0 Auto
 int Property group_tags = 0 Auto
 int Property group_ordered = 0 Auto
 
+;SexLabFramework SexLab = None
+;SkyrimNet_SexLab_Stages stages = None
+
 Event OnInit()
-    rape_allowed = true
     Debug.Trace("[SkyrimNet_SexLab] OnInit")
+    rape_allowed = true
+
     ; Register for all SexLab events using the framework's RegisterForAllEvents function
     Setup() 
 EndEvent
@@ -26,6 +31,7 @@ EndEvent
 Function Setup()
     Debug.Trace("[SkyrimNet_SexLab] SetUp")
 
+    SexLabFramework SexLab = Game.GetFormFromFile(0xD62, "SexLab.esm") as SexLabFramework
     SkyrimNet_SexLab_Stages stages = (self as Quest) as SkyrimNet_SexLab_Stages
     stages.Setup() 
 
@@ -138,7 +144,7 @@ event AnimationStart(int ThreadID, bool HasPlayer)
     ReleaseActorLock(actors[0])
     ReleaseActorLock(actors[1])
 
-    Sex_Event(ThreadID, "start", HasPlayer )
+    Sex_Event(ThreadID, "starts", HasPlayer )
 endEvent
 
 Event StartStage(int ThreadID, bool HasPlayer)
@@ -155,7 +161,13 @@ Event OrgasmStart(int ThreadID, bool HasPlayer)
 EndEvent
 
 event AnimationEnd(int ThreadID, bool HasPlayer)
-    Sex_Event(ThreadID, "stop", HasPlayer )
+    ; String desc = stages.GetStageDescription(SexLab.GetController(ThreadID))
+    ; if desc != ""
+        ; Actor[] actors = SexLab.GetController(ThreadID).Positions
+        ; desc = stages.Description_Add_Actors(s, desc)
+        ; Skyrim
+    ; endif 
+    Sex_Event(ThreadID, "stops", HasPlayer )
 endEvent
 
 Function Sex_Event(int ThreadID, String status, Bool HasPlayer ) global
@@ -270,10 +282,13 @@ Function Orgasm_Event(int ThreadID) global
         endif 
         position += 1
     endwhile
-    if narration != ""
-        narration = narration
+    String desc = GetStageDescription(thread)
+    if desc != ""
+        narration = desc+" "+narration
     endif 
-    SkyrimNetApi.DirectNarration(narration, actors[1], actors[0])
+
+    ;SkyrimNetApi.DirectNarration(narration, actors[1], actors[0])
+    SkyrimNetApi.DirectNarration(narration)
 EndFunction  
 
 ;----------------------------------------------------
@@ -299,11 +314,13 @@ String Function Thread_Narration(sslThreadController thread, String status) glob
         int k = 1
         String names = "" 
         while k < actors.length
-            if actors.length > 3 && names != "" 
-                names += ", "
-            endif 
-            if k == actors.length - 1
-                names += " and "
+            if actors.length > 3
+                if  names != "" 
+                    names += ", "
+                endif 
+                if k == actors.length - 1
+                    names += " and "
+                endif 
             endif 
             names += actors[k].GetDisplayName()
             k += 1

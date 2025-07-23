@@ -73,7 +73,8 @@ String Function Get_Threads(Actor akActor) global
             endif 
             String stage_desc = GetStageDescription(threads[i])
             if stage_desc != ""
-                threads_str += "{\"stage_description_has\":true,\"stage_description\":\""+stage_desc+"\"}"
+                String loc = GetLocation(threads[i].Animation, threads[i].BedTypeId) 
+                threads_str += "{\"stage_description_has\":true,\"stage_description\":\""+stage_desc+"\",\"location\":\""+loc+"\"}"
             else
                 threads_str += Thread_Json(threads[i])
             endif 
@@ -168,6 +169,31 @@ String Function Thread_Json(sslThreadController thread) global
     endwhile
     thread_str += "\"position\":\""+position+"\","
     
+    String loc = GetLocation(anim, thread.BedTypeId) 
+
+    thread_str += "\"location\":\""+loc+"\","
+
+    String emotion = ""
+    if anim.HasTag("rough")
+        emotion += " roughly"
+    elseif anim.HasTag("loving")
+        emotion += " lovingly"
+    endif
+    thread_str += "\"emotion\":\""+emotion+"\""
+
+    thread_str += "}"
+    return thread_str
+EndFunction
+
+String Function GetLocation(sslBaseAnimation anim, int bed) global
+    String loc = "floor"
+    if  bed == 1
+        loc = "bedroll "
+    elseif bed == 2
+        loc = "single bed "
+    elseif bed == 3
+        loc = "double bed "
+    endif 
 
     String[] on_furniture = new String[21]
     on_furniture[0] = "Table"
@@ -193,27 +219,15 @@ String Function Thread_Json(sslThreadController thread) global
     on_furniture[20] = "Stockade"
     ; Add more if needed
 
-    String loc = "floor"
-    i = 0
-    while i < on_furniture.Length && loc == "floor"
+    int i = 0
+    bool found = false
+    while i < on_furniture.Length && !found
         if anim.HasTag(on_furniture[i])
-            loc = on_furniture[i]+" "
+            loc = on_furniture[i]
+            found = true
         endif
         i += 1
     endwhile
-    
-    if loc == ""
-        int bed = thread.BedTypeId
-        if bed == 0
-            loc = "floor"
-        elseif bed == 1
-            loc = "bedroll "
-        elseif bed == 2
-            loc = "single bed "
-        elseif bed == 3
-            loc = "double bed "
-        endif 
-    endif 
 
     if anim.HasTag("Cage")
         loc += " in a cage"
@@ -228,20 +242,9 @@ String Function Thread_Json(sslThreadController thread) global
     elseif anim.HasTag("gloryhole") || anim.HasTag("gloryholem")
         loc += " through a gloryhole"
     endif
-    thread_str += "\"location\":\""+loc+"\","
 
-    String emotion = ""
-    if anim.HasTag("rough")
-        emotion += " roughly"
-    elseif anim.HasTag("loving")
-        emotion += " lovingly"
-    endif
-    thread_str += "\"emotion\":\""+emotion+"\""
-
-    thread_str += "}"
-    return thread_str
-EndFunction
-
+    return loc+" "
+EndFunction 
 
 bool Function SexLab_Thread_LOS(Actor akActor, sslThreadController thread) global
     Actor[] actors = thread.Positions

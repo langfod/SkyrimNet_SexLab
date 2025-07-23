@@ -3,7 +3,7 @@
 {%- if length(sexlab.threads) > 0 -%}
      {% for thread in sexlab.threads -%}
           {% if thread.stage_description_has %} 
-              {{ thread.stage_description }} 
+              On a {{ thread.location}}, {{ thread.stage_description }} 
           {% else %} {%-
                if length(thread.names) == 1 %}
                     {{- thread.names.0 }} {% 
