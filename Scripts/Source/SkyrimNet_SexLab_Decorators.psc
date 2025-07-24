@@ -10,7 +10,6 @@ Function RegisterDecorators() global
     Debug.Trace("SkyrimNet_SexLab_Decorators: RegisterDecorattors called")
     SkyrimNetApi.RegisterDecorator("sexlab_get_public_sex_accepted", "SkyrimNet_SexLab_Decorators", "Get_Public_Sex_Accepted")
     SkyrimNetApi.RegisterDecorator("sexlab_get_threads", "SkyrimNet_SexLab_Decorators", "Get_Threads")
-    SkyrimNetApi.RegisterDecorator("sexlab_get_arousal", "SkyrimNet_SexLab_Decorators", "Get_Arousal")
 EndFunction
 
 String Function Get_Public_Sex_Accepted(Actor akActor) global
@@ -20,30 +19,6 @@ String Function Get_Public_Sex_Accepted(Actor akActor) global
     else
         return "{\"public_sex_accepted\":false}"
     endif
-EndFunction
-
-String Function Get_Arousal(Actor akActor) global
-    Debug.Trace("[SkyrimNet_SexLab] Get_Arousal called for "+akActor.GetDisplayName())
-
-    int arousal = -1
-
-    ; Form api = Game.GetFormFromFile(0x00000D61, "DiaryOfMine.esm")
-    ; if api != None 
-    ;    DOM_Actor slave = (api as DOM_API).GetDOMActor(akActor)
-    ;    if slave != None 
-    ;        arousal = slave.mind.arousal_factor as Int
-    ;    endif 
-    ;endif 
-
-    if arousal == -1
-        slaFrameworkScr sla = Game.GetFormFromFile(0x4290F, "SexLabAroused.esm") as slaFrameworkScr
-        if sla == None
-            Debug.Notification("[SkyrimNet_SexLab] Get_Arousal: slaFrameworkScr is None")
-        else
-            arousal =  sla.GetActorArousal(akActor)
-        endif
-    endif 
-    return "{\"arousal\":"+arousal+"}"
 EndFunction
 
 String Function Get_Threads(Actor akActor) global
