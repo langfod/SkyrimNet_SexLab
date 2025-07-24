@@ -10,10 +10,7 @@ SkyrimNet_SexLab_Main Property main Auto
 SkyrimNet_SexLab_Stages Property stages Auto 
 
 bool hot_key_toggle = False 
-int sex_start_key = 40 ; 26
-
-bool description_edit_toggle = False 
-int description_edit_key = 39
+int sex_edit_key = 40 ; 26
 
 Function Trace(String msg, Bool notification=False) global
     msg = "[SkyrimNet_SexLab_MCM] "+msg
@@ -48,14 +45,11 @@ Event OnPageReset(string page)
 
     AddHeaderOption("")
     AddHeaderOption("")
-    AddToggleOptionST("HotKeyToggle","Enable hotkey",hot_key_toggle)
-    AddHeaderOption("")
-    AddKeyMapOptionST("SexKeySet", "Start Sex hot key", sex_start_key)
-    AddKeyMapOptionST("DescriptionEditKeyMap", "Edit Stage Descriptions", description_edit_key)
+    AddToggleOptionST("HotKeyToggle","Enable the Start Sex / Edit Stage hot key",hot_key_toggle)
+    AddKeyMapOptionST("SexEditKeySet", "Start Sex / Edit Stage Description", sex_edit_key)
 
     if hot_key_toggle 
-        RegisterForKey(sex_start_key)
-        RegisterForKey(description_edit_key)
+        RegisterForKey(sex_edit_key)
     endif 
 
 EndEvent
@@ -108,20 +102,18 @@ State HotKeyToggle
         hot_key_toggle = !hot_key_toggle
         SetToggleOptionValueST(hot_key_toggle)
         if !hot_key_toggle
-            UnregisterForKey(sex_start_key)
-            UnregisterForKey(description_edit_key)
+            UnregisterForKey(sex_edit_key)
         else
-            RegisterForKey(sex_start_key)
-            registerForKey(description_edit_key)
+            RegisterForKey(sex_edit_key)
         endif
         ForcePageReset()
     EndEvent
     Event OnHighlightST()
-        SetInfoText("Enables a hot keys")
+        SetInfoText("Enables the Sex Edit Hotkey.\n")
     EndEvent
 EndState
 
-State SexKeySet
+State SexEditKeySet
     Event OnKeyMapChangeST(int keyCode, string conflictControl, string conflictName)
         bool continue = True
         if conflictControl != "" 
@@ -135,39 +127,17 @@ State SexKeySet
             continue = ShowMessage(msg, true, "$Yes", "$No")
         endif 
         if continue 
-            UnregisterForKey(sex_start_key)
-            sex_start_key = keyCode
-            RegisterForKey(sex_start_key)
-            SetKeymapOptionValueST(sex_start_key)
+            UnregisterForKey(sex_edit_key)
+            sex_edit_key = keyCode
+            RegisterForKey(sex_edit_key)
+            SetKeymapOptionValueST(sex_edit_key)
         endif 
     EndEvent
     Event OnHighlightST()
-        SetInfoText("Will start sex between the player and the actor in the crosshairs")
-    EndEvent
-EndState
-
-State DescriptionEditKey
-    Event OnKeyMapChangeST(int keyCode, string conflictControl, string conflictName)
-        bool continue = True
-        if conflictControl != "" 
-            String msg = None 
-            if (conflictName != "")
-                msg = "This key is already mapped to:\n'" + conflictControl + "'\n(" + conflictName + ")\n\nAre you sure you want to continue?"
-            else
-                msg = "This key is already mapped to:\n'" + conflictControl + "'\n\nAre you sure you want to continue?"
-            endIf
-
-            continue = ShowMessage(msg, true, "$Yes", "$No")
-        endif 
-        if continue 
-            UnregisterForKey(description_edit_key)
-            description_edit_key = keyCode
-            RegisterForKey(description_edit_key)
-            SetKeymapOptionValueST(description_edit_key)
-        endif 
-    EndEvent
-    Event OnHighlightST()
-        SetInfoText("Hot key will bring up the stage desciption editor.")
+        SetInfoText( \
+            "For an actor in the crosshair and not in a sex animation, it will allow you to start a sex animation.\n" \
+          + "For an actor in the crosshair and in a sex animation, it will open a stage description editor for that animation.\n" \
+          + "Without any actor in the crosshair, it will allow you to start sex between a near by set of eligible actors.")
     EndEvent
 EndState
 
@@ -180,11 +150,7 @@ Event OnKeyDown(int key_code)
         return 
     endif 
 
-;    if description_edit_key == key_code 
-;        if stages.desc_input == ""
-;            stages.EditDescriptions() 
-;        endif 
-    if sex_start_key == key_code
+    if sex_edit_key == key_code
 
         ; Both players need to be in the crosshair to have SkyrimNet load them into the cache
         ; so the parseJsonActor works
@@ -192,20 +158,20 @@ Event OnKeyDown(int key_code)
         Actor player = Game.GetPlayer() 
         if target != None 
             if SexTarget_IsEligible(target,"","")
-                int mastrubate = 0
+                int masturbate = 0
                 int sex = 1
                 int raped_by = 2
                 int rapes = 3
                 int cancel = 4
                 String[] buttons = new String[5]
-                buttons[mastrubate] = "mastrubate"
+                buttons[masturbate] = "masturbate"
                 buttons[sex] = "have sex with player"
                 buttons[raped_by] = "raped by player"
                 buttons[rapes] = "rapes the player"
                 buttons[cancel] = "cancel"
                 int button = SkyMessage.ShowArray("Should "+target.getDisplayName()+":", buttons, getIndex = true) as int  
 
-                if button == mastrubate
+                if button == masturbate
                     SkyrimNet_SexLab_Actions.SexTarget_Execute(target, "", "{\"type\":\"masturbation\"}")
                 elseif button == sex
                     SkyrimNet_SexLab_Actions.SexTarget_Execute(target, "", "{\"rape\":false, \"target\":\""+player.GetDisplayName()+"\",\"target_is_player\":true}")

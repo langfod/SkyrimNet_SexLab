@@ -309,7 +309,7 @@ String Function Thread_Narration(sslThreadController thread, String status) glob
 
     String narration = "" 
     if actors.length == 1 
-        narration = actors[0].GetDisplayName()+" "+status+" mastrubating"
+        narration = actors[0].GetDisplayName()+" "+status+" masturbating"
     else
         int k = 1
         String names = "" 

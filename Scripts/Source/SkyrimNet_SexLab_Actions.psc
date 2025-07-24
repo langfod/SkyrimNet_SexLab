@@ -212,7 +212,7 @@ Function SexTarget_Execute(Actor akActor, string contextJson, string paramsJson)
     
     if button != YES_RANDOM
         if type == "kissing"
-            String tagSupress = "oral,vaginal,anal,spanking,mastrubate,handjob,footjob,masturbation,breastfeeding,fingering"
+            String tagSupress = "oral,vaginal,anal,spanking,masturbate,handjob,footjob,masturbation,breastfeeding,fingering"
             sslBaseAnimation[] anims =  SexLab.GetAnimationsByTags(num_actors, type, tagSupress, true)
             if anims.length > 0
                 thread.SetAnimations(anims)
