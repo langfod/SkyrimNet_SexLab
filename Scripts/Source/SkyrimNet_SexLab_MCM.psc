@@ -176,9 +176,9 @@ Event OnKeyDown(int key_code)
                 elseif button == sex
                     SkyrimNet_SexLab_Actions.SexTarget_Execute(target, "", "{\"rape\":false, \"target\":\""+player.GetDisplayName()+"\",\"target_is_player\":true}")
                 elseif button == rapes
-                    SkyrimNet_SexLab_Actions.SexTarget_Execute(target, "", "{\"rape\":true, \"target\":\""+player.GetDisplayName()+"\",\"victum\":false, \"target_is_player\":true}")
+                    SkyrimNet_SexLab_Actions.SexTarget_Execute(target, "", "{\"rape\":true, \"target\":\""+player.GetDisplayName()+"\",\"victim\":false, \"target_is_player\":true}")
                 elseif button == raped_by
-                    SkyrimNet_SexLab_Actions.SexTarget_Execute(target, "", "{\"rape\":true, \"target\":\""+player.GetDisplayName()+"\",\"victum\":true,\"target_is_player\":true}")
+                    SkyrimNet_SexLab_Actions.SexTarget_Execute(target, "", "{\"rape\":true, \"target\":\""+player.GetDisplayName()+"\",\"victim\":true,\"target_is_player\":true}")
                 else 
                     return 
                 endif 
@@ -348,9 +348,7 @@ Function StartSex(Actor[] actors, int num_actors, bool is_rape)
     endif
 
     if is_rape
-        thread.IsAggressive = true
-    else
-        thread.IsAggressive = false
+        thread.SetVictim(actors[0])
     endif 
 
     thread.StartThread() 

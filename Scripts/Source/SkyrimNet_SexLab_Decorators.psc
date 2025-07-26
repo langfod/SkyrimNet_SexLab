@@ -21,8 +21,8 @@ String Function Get_Public_Sex_Accepted(Actor akActor) global
     endif
 EndFunction
 
-String Function Get_Threads(Actor akActor) global
-    Debug.Trace("[SkyrimNet_SexLab] Get_Threads called for "+akActor.GetDisplayName())
+String Function Get_Threads(Actor speaker) global
+    Debug.Trace("[SkyrimNet_SexLab] Get_Threads called for "+speaker.GetDisplayName())
     SkyrimNet_SexLab_Main main = Game.GetFormFromFile(0x800, "SkyrimNet_SexLab.esp") as SkyrimNet_SexLab_Main
     SkyrimNet_SexLab_Stages stages = (main as Quest) as SkyrimNet_SexLab_Stages
 
@@ -41,8 +41,15 @@ String Function Get_Threads(Actor akActor) global
 
     int i = 0
     String threads_str = ""
+    bool speaker_having_sex = false 
+    String[] states = new String[15]
     while i < threads.length
-        if (threads[i] as sslThreadModel).GetState() == "animating"
+        String s = (threads[i] as sslThreadModel).GetState()
+        if i < states.Length
+            states[i] = s
+        endif
+
+        if s == "animating" || s == "prepare"
             if threads_str != ""
                 threads_str += ", "
             endif 
@@ -53,6 +60,15 @@ String Function Get_Threads(Actor akActor) global
             else
                 threads_str += Thread_Json(threads[i])
             endif 
+
+            Actor[] actors = threads[i].Positions
+            int j = actors.Length - 1
+            while 0 <= j 
+                if actors[j] == speaker
+                    speaker_having_sex = true
+                endif 
+                j -= 1
+            endwhile 
         endif 
         i += 1
     endwhile
@@ -62,6 +78,8 @@ String Function Get_Threads(Actor akActor) global
     else
         json = "{\"public_sex_accepted\":false"
     endif
+    json += ",\"speaker_having_sex\":"+speaker_having_sex
+    json += ",\"speaker_name\":\""+speaker.GetDisplayName()+"\""
     json += ",\"threads\":["+threads_str+"]}"
     return json
 EndFunction 
@@ -76,11 +94,15 @@ String Function Thread_Json(sslThreadController thread) global
     Actor[] actors = thread.Positions
     String names = "" 
     int i = 0
+    int num_victims = 0
     while i < actors.Length
         if names != "" 
             names += ","
         endif 
         names += "\""+actors[i].GetDisplayName()+"\""
+        if thread.IsVictim(actors[i])
+            num_victims += 1
+        endif
         i += 1
     endwhile 
     if actors.length > 2 
@@ -91,10 +113,29 @@ String Function Thread_Json(sslThreadController thread) global
     thread_str += "\"names\":["+names+"], "
     thread_str += "\"names_str\":\""+Thread_Narration(thread,"are")+"\", "
 
-    if thread.IsAggressive
-        thread_str += "\"is_aggressive\": true, "
+    if num_victims > 0
+        String victims = "" 
+        String aggressors = ""
+        i = 0
+        while i < actors.Length 
+            if thread.IsVictim(actors[i])
+                if victims != ""
+                    victims += ", "
+                endif 
+                victims += "\""+actors[i].GetDisplayName()+"\""
+            else
+                if aggressors != ""
+                    aggressors += ", "
+                endif 
+                aggressors += "\""+actors[i].GetDisplayName()+"\""
+            endif
+            i += 1
+        endwhile
+        thread_str += "\"victims\":["+victims+"], "
+        thread_str += "\"aggressors\":["+aggressors+"], "
+        thread_str += "\"rape\": true, "
     else
-        thread_str += "\"is_aggressive\": false, "
+        thread_str += "\"rape\": false, "
     endif 
 
     sslBaseAnimation anim = thread.Animation
@@ -109,19 +150,6 @@ String Function Thread_Json(sslThreadController thread) global
         i += 1
     endwhile
     thread_str += "\"tags\": ["+tags_str+"], "
-
-    String[] gears = SkyrimNet_SexLab_Actions.GetBondages()
-    int j = 0 
-    int num = gears.Length
-    String gear = "" 
-    while j < num
-        if anim.HasTag(gears[j])
-            gear  = " with a "+gears[j]
-            j = num 
-        endif 
-        j += 1
-    endwhile
-    thread_str += "\"bondage_gear\": \""+gear+"\", "
 
     String[] positions = new String[7]
     positions[0] = "69"
@@ -161,13 +189,13 @@ String Function Thread_Json(sslThreadController thread) global
 EndFunction
 
 String Function GetLocation(sslBaseAnimation anim, int bed) global
-    String loc = "floor"
+    String loc = "the floor"
     if  bed == 1
-        loc = "bedroll "
+        loc = "a bedroll "
     elseif bed == 2
-        loc = "single bed "
+        loc = "a single bed "
     elseif bed == 3
-        loc = "double bed "
+        loc = "a double bed "
     endif 
 
     String[] on_furniture = new String[21]

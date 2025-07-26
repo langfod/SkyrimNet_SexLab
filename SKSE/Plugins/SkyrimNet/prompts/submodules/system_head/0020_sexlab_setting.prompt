@@ -1,4 +1,5 @@
 {% if not isTimePaused %}
+{# {% if get_global_value("sexlab_get_public_sex_accepted") == 1 %}  #}
 {% set sexlab = sexlab_get_public_sex_accepted(npc.UUID) %}
 {% if sexlab.public_sex_accepted %} 
 In the world of Skyrim, public displays of sexuality are commonplace. Seeing a woman masturbating, or individuals engaging in sex, would be as typical as encountering a bard playing a tune. Onlookers are likely to enjoy the spectacle and cheer for the participants, viewing public sex as wholesome entertainment.

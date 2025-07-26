@@ -6,8 +6,21 @@ import SkyrimNet_SexLab_Decorators
 import SkyrimNet_SexLab_Actions
 import SkyrimNet_SexLab_Stages
 
+GlobalVariable Property sexlab_public_sex_accepted Auto
+Bool Property public_sex_accepted 
+    Bool Function Get()
+        return sexlab_public_sex_accepted.GetValue() == 1
+    EndFunction 
+    Function Set(Bool value)
+        if value
+            sexlab_public_sex_accepted.SetValue(1)
+        else
+            sexlab_public_sex_accepted.SetValue(0)
+        endif
+    EndFunction 
+EndProperty
+
 bool Property rape_allowed = true Auto
-bool Property public_sex_accepted = false Auto 
 bool Property sex_edit_tags_player = true Auto 
 bool Property sex_edit_tags_nonplayer = False Auto
 
@@ -23,6 +36,7 @@ int Property group_ordered = 0 Auto
 Event OnInit()
     Debug.Trace("[SkyrimNet_SexLab] OnInit")
     rape_allowed = true
+    public_sex_accepted = False 
 
     ; Register for all SexLab events using the framework's RegisterForAllEvents function
     Setup() 
@@ -123,8 +137,8 @@ Function RegisterSexlabEvents()
 
     UnRegisterForModEvent("HookAnimationStart")
     RegisterForModEvent("HookAnimationStart", "AnimationStart")
-    UnRegisterForModEvent("HookStageStart")
-    ; RegisterForModEvent("HookStageStart", "StageStart")
+    ;UnRegisterForModEvent("HookStageStart")
+    ;RegisterForModEvent("HookStageStart", "StageStart")
     ;UnRegisterForModEvent("HookStageEnd")
     ;RegisterForModEvent("HookStageEnd", "SexLab_StageEnd")
     UnRegisterForModEvent("HookOrgasmStart")
@@ -144,17 +158,11 @@ event AnimationStart(int ThreadID, bool HasPlayer)
     ReleaseActorLock(actors[0])
     ReleaseActorLock(actors[1])
 
-    Sex_Event(ThreadID, "starts", HasPlayer )
+    Sex_Event(ThreadID, "start", HasPlayer )
 endEvent
 
-Event StartStage(int ThreadID, bool HasPlayer)
-    SexLabFramework SexLab = Game.GetFormFromFile(0xD62, "SexLab.esm") as SexLabFramework
-    if SexLab == None
-        Debug.Notification("[SkyrimNet_SexLab] Thread_Dialog: SexLab is None")
-        return  
-    endif
-    sslThreadController thread = SexLab.GetController(ThreadID)
-EndEvent
+;Event StartStage(int ThreadID, bool HasPlayer)
+;EndEvent
 
 Event OrgasmStart(int ThreadID, bool HasPlayer)
     Orgasm_Event(ThreadID)
@@ -167,7 +175,7 @@ event AnimationEnd(int ThreadID, bool HasPlayer)
         ; desc = stages.Description_Add_Actors(s, desc)
         ; Skyrim
     ; endif 
-    Sex_Event(ThreadID, "stops", HasPlayer )
+    Sex_Event(ThreadID, "stop", HasPlayer )
 endEvent
 
 Function Sex_Event(int ThreadID, String status, Bool HasPlayer ) global
@@ -184,13 +192,23 @@ Function Sex_Event(int ThreadID, String status, Bool HasPlayer ) global
     ; the Dialog narration is called so that it is stored in the timeline and captured in memories,
     ; and will be responded by t
     String eventType = "sex "+status
-    narration = "*"+narration+"*"
+    ; narration = "*"+narration+"*"
+    String s = (thread as sslThreadModel).GetState()
+    ; Debug.MessageBox(status+" "+narration+" state:"+s)
     if actors.length < 2 || actors[0] == actors[1]
-        SkyrimNetApi.RegisterEvent(eventType, narration, actors[0], None)
+        if status == "start"
+            SkyrimNetApi.DirectNarration(narration, actors[0], None)
+        else
+            SkyrimNetApi.RegisterEvent(eventType, narration, actors[0], None)
+        endif 
     elseif actors.length == 2
-        SkyrimNetApi.RegisterEvent(eventType, narration, actors[1], actors[0])
+        if status == "start"
+            SkyrimNetApi.DirectNarration(narration, actors[1], actors[0])
+        else
+            SkyrimNetApi.RegisterEvent(eventType, narration, actors[1], actors[0])
+        endif 
     else
-        SkyrimNetApi.RegisterEvent(eventType, narration,None,None)
+        ;SkyrimNetApi.RegisterEvent(eventType, narration,None,None)
     endif 
 EndFunction
 
@@ -307,29 +325,78 @@ String Function Thread_Narration(sslThreadController thread, String status) glob
     ; Get our list of actors that were in this animation thread.
     Actor[] actors = thread.Positions
 
-    String narration = "" 
     if actors.length == 1 
-        narration = actors[0].GetDisplayName()+" "+status+" masturbating"
-    else
-        int k = 1
-        String names = "" 
-        while k < actors.length
-            if actors.length > 3
-                if  names != "" 
-                    names += ", "
-                endif 
-                if k == actors.length - 1
-                    names += " and "
-                endif 
-            endif 
-            names += actors[k].GetDisplayName()
-            k += 1
-        endwhile 
-        if thread.IsAggressive 
-            narration += names +" "+status+" raping "+actors[0].GetDisplayName()
-        else 
-            narration += names+" "+status+" having sex with "+actors[0].GetDisplayName()
+        if status == "start"
+            return actors[0].GetDisplayName()+" starts masturbating."
+        elseif status == "are"
+            return actors[0].GetDisplayName()+" is masturbating."
+        else
+            return actors[0].GetDisplayName()+" stops masturbating."
         endif 
-    endif 
-    return narration 
+    else
+        int num_victims = 0
+        int k = actors.length - 1
+        while 0 <= k 
+            if thread.IsVictim(actors[k])
+                num_victims += 1   
+            endif 
+            k -= 1
+        endwhile
+
+        if num_victims == 0
+            String actors_str = ActorsToString(actors, status)
+            if status == "start" 
+                return actors_str+" start having sex."
+            elseif status == "are"
+                return actors_str+" are having sex."
+            else 
+                return actors_str+" stop having sex."
+            endif 
+        else
+            Actor[] victims = PapyrusUtil.ActorArray(num_victims)
+            Actor[] aggressors = PapyrusUtil.ActorArray(actors.length - num_victims)
+            int v = 0
+            int a = 0 
+            k = actors.length - 1
+            while 0 <= k 
+                if thread.IsVictim(actors[k])
+                    victims[v] = actors[k]
+                    v += 1
+                else 
+                    aggressors[a] = actors[k]
+                    a += 1
+                endif 
+                k -= 1
+            endwhile
+            String victims_str = ActorsToString(victims, status)
+            String aggressors_str = ActorsToString(aggressors, status)
+            if status == "start"
+                return aggressors_str+" start raping "+victims_str+"."
+            elseif status == "are"
+                return aggressors_str+" are raping "+victims_str+"."
+            else 
+                return aggressors_str+" stop raping "+victims_str+"."   
+            endif 
+        endif 
+
+    endif
+EndFunction 
+String Function ActorsToString(Actor[] actors, String status) global
+    String names = ""
+    int k = 0
+    int count = actors.length
+    while k < count 
+        if k > 0
+            if count > 2 && k > 0
+                names += ", "
+            endif
+            if k == count - 1 
+                names += " and "
+            endif
+        endif
+        names += actors[k].GetDisplayName()
+        k += 1
+    endwhile 
+    return names 
 endFunction
+

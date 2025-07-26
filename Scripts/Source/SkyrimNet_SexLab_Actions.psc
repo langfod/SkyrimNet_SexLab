@@ -33,7 +33,7 @@ Function RegisterActions() global
             "SkyrimNet_SexLab_Actions", "SexTarget_IsEligible",  \
             "SkyrimNet_SexLab_Actions", "SexTarget_Execute",  \
             "", "PAPYRUS", 1, \
-            "{\"target\": \"Actor\", \"type\":\""+type+"\", \"rape\":false, \"victum\":true}")
+            "{\"target\": \"Actor\", \"type\":\""+type+"\", \"rape\":false, \"victim\":true}")
     SkyrimNetApi.RegisterAction("SexMasturbation", \
             "masturbate",\
             "SkyrimNet_SexLab_Actions", "SexTarget_IsEligible",  \
@@ -46,13 +46,13 @@ Function RegisterActions() global
                 "SkyrimNet_SexLab_Actions", "SexTarget_IsEligible",  \
                 "SkyrimNet_SexLab_Actions", "SexTarget_Execute",  \
                 "", "PAPYRUS", 1, \
-                "{\"target\": \"Actor\", \"type\":\""+type+"\", \"rape\":true, \"victum\":false}")
+                "{\"target\": \"Actor\", \"type\":\""+type+"\", \"rape\":true, \"victim\":false}")
         SkyrimNetApi.RegisterAction("RapedByTarget", \
-                "be the victum of nonconsensual sex",\
+                "be the victim of nonconsensual sex",\
                 "SkyrimNet_SexLab_Actions", "SexTarget_IsEligible",  \
                 "SkyrimNet_SexLab_Actions", "SexTarget_Execute",  \
                 "", "PAPYRUS", 1, \
-                "{\"target\": \"Actor\", \"type\":\""+type+"\", \"rape\":true, \"victum\":true}")
+                "{\"target\": \"Actor\", \"type\":\""+type+"\", \"rape\":true, \"victim\":true}")
     endif 
 
 EndFunction
@@ -80,17 +80,7 @@ String[] Function GetTypes() global
     return types
 EndFunction
 
-String[] Function GetBondages() global
-    string[] bondages = new String[9]
-    bondages[0] = "armbinder"
-    bondages[1] = "cuffs"
-    bondages[2] = "cuffed"
-    bondages[3] = "yoke"
-    bondages[6] = "hogtied"
-    bondages[7] = "chastity"
-    bondages[8] = "chasitybelt"
-    return bondages
-EndFunction
+
 
 Bool Function SexTarget_IsEligible(Actor akActor, string contextJson, string paramsJson) global
     Trace("SexTaget_IsEligible: attempting "+akActor.GetDisplayName())
@@ -123,7 +113,7 @@ Function SexTarget_Execute(Actor akActor, string contextJson, string paramsJson)
     endif
 
     bool rape = SkyrimNetApi.GetJsonBool(paramsJson, "rape", false)
-    String type = SkyrimNetApi.GetJsonString(paramsJson, "type","vaginal")
+    String type = SkyrimNetApi.GetJsonString(paramsJson, "type","")
     Actor akTarget = None
     if type != "masturbation" && type != "masturbate"
         akTarget = SkyrimNetApi.GetJsonActor(paramsJson, "target", None)
@@ -147,10 +137,10 @@ Function SexTarget_Execute(Actor akActor, string contextJson, string paramsJson)
 
     Actor player = Game.GetPlayer()
     Debug.Trace("[SkyrimNet_SexLab] SexTarget_Execute type:"+type+" akTarget:"+akTarget)
-    Bool victum = SkyrimNetApi.GetJsonBool(paramsJson, "victum", true)
+    Bool victim = SkyrimNetApi.GetJsonBool(paramsJson, "victim", true)
     Actor subActor = akActor 
     Actor domActor = akTarget
-    if akTarget != None && !victum 
+    if akTarget != None && !victim 
         subActor = akTarget
         domActor = akActor
     endif
@@ -224,7 +214,7 @@ Function SexTarget_Execute(Actor akActor, string contextJson, string paramsJson)
         else
             bool includes_player = akActor == player || (akTarget != None && akTarget == player )
             if (includes_player && main.sex_edit_tags_player) || (!includes_player && main.sex_edit_tags_nonplayer)
-                sslBaseAnimation[] anims = AnimsDialog(sexlab, 2, type)
+                sslBaseAnimation[] anims = AnimsDialog(sexlab, thread, type)
                 if anims != None && anims.length > 0
                     thread.SetAnimations(anims)
                 endif
@@ -239,9 +229,7 @@ Function SexTarget_Execute(Actor akActor, string contextJson, string paramsJson)
 
     ; Debug.Notification(subActor.GetDisplayName()+" will have sex with "+akTarget.GetDisplayName())
     if rape
-        thread.IsAggressive = true
-    else
-        thread.IsAggressive = false
+        thread.SetVictim(subActor)
     endif 
     Trace("SexTarget_Executer: Starting type:"+type+" aggressive:"+thread.IsAggressive)
 
@@ -278,8 +266,19 @@ int function YesNoDialog(String[] buttons, int YES, String type, Bool rape, Acto
 EndFunction
 
 
-sslBaseAnimation[] Function AnimsDialog(SexLabFramework sexlab, int num_actors, String tag) global
+sslBaseAnimation[] Function AnimsDialog(SexLabFramework sexlab, sslThreadModel thread, String tag) global
     SkyrimNet_SexLab_Main main = Game.GetFormFromFile(0x800, "SkyrimNet_SexLab.esp") as SkyrimNet_SexLab_Main
+
+    Actor[] actors = thread.Positions
+    int i = actors.Length
+    String names = ""
+    while 0 <= i 
+        if names != ""
+            names += "+" 
+        endif
+        names += actors[i].GetDisplayName()
+        i -= 1 
+    endwhile
 
 
     ; Current set of tags
@@ -310,7 +309,7 @@ sslBaseAnimation[] Function AnimsDialog(SexLabFramework sexlab, int num_actors, 
 
             ; build the current tags
             tags_str = "" 
-            int i = 0
+            i = 0
             while i < next
                 if i > 0 
                     tags_str += ","
@@ -323,7 +322,8 @@ sslBaseAnimation[] Function AnimsDialog(SexLabFramework sexlab, int num_actors, 
             uilistmenu listMenu = uiextensions.GetMenu("UIListMenu") AS uilistmenu
             listMenu.ResetMenu()
             ; Use the current set of tags 
-            listMenu.AddEntryItem("use: "+tags_str)
+            String use_tags = names + " tags: "+tags_str
+            listMenu.AddEntryItem(use_tags)
             ; Remove one tag 
             if 0 < next 
                 listMenu.AddEntryItem("<remove")
@@ -355,14 +355,14 @@ sslBaseAnimation[] Function AnimsDialog(SexLabFramework sexlab, int num_actors, 
                 return None 
             elseif button == "<remove"
                 next -= 1
-            elseif button == "use: "+tags_str
+            elseif button == use_tags
                 finished = true
             elseif button != "-continue-"
                 tags[next] = button 
                 next += 1
             endif 
         endwhile 
-        sslBaseAnimation[] anims =  SexLab.GetAnimationsByTags(num_actors, tags_str, "", true)
+        sslBaseAnimation[] anims =  SexLab.GetAnimationsByTags(actors.length, tags_str, "", true)
         if anims.length > 0
             return anims 
         else
