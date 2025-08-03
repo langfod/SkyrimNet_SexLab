@@ -1,5 +1,8 @@
 Scriptname SkyrimNet_SexLab_Stages extends Quest 
 
+import SkyrimNet_SexLab_Main
+import SkyrimNetApi
+
 sslThreadSlots ThreadSlots = None
 Actor player = None 
 
@@ -7,6 +10,7 @@ String Property animations_folder = "Data/SkyrimNet_SexLab/animations" Auto
 String Property local_folder =      "" Auto
 
 String VERSION_1_0 = "1.0"
+String VERSION_2_0 = "2.0"
 
 String desc_input = "" 
 
@@ -49,7 +53,8 @@ String Function GetStageDescription(sslThreadController thread) global
             if desc_info != 0 
                 Actor[] actors = thread.Positions
                 String desc = JMap.getStr(desc_info, "description")
-                return Description_Add_Actors(actors, desc)
+                String version = JMap.getStr(desc_info, "version")
+                return stages.Description_Add_Actors(version, actors, desc)
             endif 
             stage -= 1
         endwhile 
@@ -57,28 +62,39 @@ String Function GetStageDescription(sslThreadController thread) global
     return ""
 EndFunction 
 
-String Function Description_Add_Actors(Actor[] actors, String desc) global
+String Function Description_Add_Actors(String version, Actor[] actors, String desc)
+    Trace("Description_Add_Actors: version "+version+" actors:"+actors.length+" desc:"+desc+" ")
     if desc == ""
         return ""
     endif 
-    if actors.length == 1 
-        desc = actors[0].GetDisplayName()+" "+desc+"."
-        String last_char = StringUtil.GetNthChar(desc,StringUtil.GetLength(desc) - 1)
-        if !StringUtil.IsPunctuation(last_char)
-            desc += "."
-        endif
-        return desc
+    if version == VERSION_1_0
+        if actors.length == 1 
+            desc = actors[0].GetDisplayName()+" "+desc+"."
+            String last_char = StringUtil.GetNthChar(desc,StringUtil.GetLength(desc) - 1)
+            if !StringUtil.IsPunctuation(last_char)
+                desc += "."
+            endif
+        else
+            desc = actors[1].GetDisplayName()+" "+desc+" "+actors[0].GetDisplayName()+"."
+        endif 
+       return desc
+    elseif version == VERSION_2_0
+        String actors_json = SkyrimNet_SexLab_Main.ActorsToJson(actors)
+        return SkyrimNetApi.ParseString(desc, "sl", "{\"actors\":"+actors_json+"}")
     else 
-        return actors[1].GetDisplayName()+" "+desc+" "+actors[0].GetDisplayName()+"."
+        Trace("Description_Add_Actors: Unknown version "+version, true)
+        return "" 
     endif 
 EndFunction 
 
-Function EditDescriptions(Actor target)
-    Trace("EditDescriptions called for "+target.GetDisplayName(), true)
-    local_folder =      "Data/SkyrimNet_SexLab/animations/_local_"
-    sslThreadController thread = GetThread(target) 
+; ------------------------------------
+; Edit Description Function 
+; Returns True if there was a thread to edit
+; ------------------------------------
+
+Function EditDescriptions(sslThreadController thread)
     if thread == None 
-        return 
+        return
     endif 
     Actor[] actors = thread.Positions
 
@@ -87,6 +103,7 @@ Function EditDescriptions(Actor target)
     int cancel = 1
 
     String fname = GetFilename(thread)
+    Trace("EditDescriptions thread: "+fname,true)
     int anim_info = GetAnim_Info(animations_folder, fname)
     String stage_id = "stage "+thread.stage
     int desc_info = JMap.getObj(anim_info, stage_id)
@@ -97,25 +114,27 @@ Function EditDescriptions(Actor target)
             buttons[rewrite] = "replace"
             buttons[cancel] = "cancel"
             String source = JMap.getStr(desc_info, "source")
-            String full = "["+source+"] "+Description_Add_Actors(actors, desc)
+            String version = JMap.getStr(desc_info, "version")
+            String full = "["+source+"] "+Description_Add_Actors(version, actors, desc)
             int button = SkyMessage.ShowArray(full, buttons, getIndex = true) as int  
             if button == cancel
-                return 
+                return
             endif 
         endif 
     endif 
 
     EditorDescription(fname, actors, stage_id)
-
+    return
 EndFunction 
 
 ; ------------------------------------
 ; Editor Functions 
 ; ------------------------------------
-int Function EditorDescription(String fname, Actor[] actors, String stage_id)
+Function EditorDescription(String fname, Actor[] actors, String stage_id)
     uiextensions.InitMenu("UITextEntryMenu")
     uiextensions.OpenMenu("UITextEntryMenu")
     desc_input = UIExtensions.GetMenuResultString("UITextEntryMenu")
+    String version = VERSION_2_0
     if desc_input != ""
         int undefined = -1
         int accept = 0
@@ -126,11 +145,11 @@ int Function EditorDescription(String fname, Actor[] actors, String stage_id)
         buttons[rewrite] = "replace"
         buttons[cancel] = "cancel"
 
-        String full = Description_Add_Actors(actors, desc_input)
+        String full = "On {the floor/a bed}, "+Description_Add_Actors(version, actors, desc_input)
         int button = SkyMessage.ShowArray(full, buttons, getIndex = true) as int  
 
         if button == accept 
-            SaveAnimInfo(fname, stage_id)
+            SaveAnimInfo(fname, stage_id, version)
         elseif button == rewrite
             EditorDescription(fname, actors, stage_id)
         endif 
@@ -138,15 +157,17 @@ int Function EditorDescription(String fname, Actor[] actors, String stage_id)
     desc_input = ""
 EndFunction
 
-Function SaveAnimInfo(String fname, String stage_id) 
+Function SaveAnimInfo(String fname, String stage_id, String version)
     String path = local_folder+"/"+fname
-    int anim_info = JValue.readFromFile(path)
-    int stage_info = JMap.object() 
-    if anim_info == 0 
+    int anim_info = 0
+    if MiscUtil.FileExists(path)
+        anim_info = JValue.readFromFile(path)
+    else 
         anim_info = JMap.object()
-    endif
+    endif 
+    int stage_info = JMap.object() 
     JMap.setStr(stage_info,"id",stage_id) 
-    JMap.setStr(stage_info,"version",VERSION_1_0)
+    JMap.setStr(stage_info,"version",version)
     JMap.setStr(stage_info,"description",desc_input)
     JMap.setObj(anim_info, stage_id, stage_info)
 
@@ -208,19 +229,21 @@ int Function GetAnim_Info(String animations_folder, String fname) global
     i = folders.Length - 1
     while 0 <= i
         String fn = animations_folder+"/"+folders[i]+"/"+fname
-        int info = JValue.readFromFile(fn)
-        if info != 0
-            String[] keys = JMap.allKeysPArray(info)
-            int k = keys.length - 1
-            while 0 <= k
-                int desc_info = JMap.getObj(info, keys[k])
-                JMap.setStr(desc_info, "source", folders[i])
-                String stage_id = JMap.getStr(desc_info, "id")
-                String desc = JMap.getStr(desc_info, "description")
-                JMap.setObj(anim_info, stage_id, desc_info)
-                k -= 1
-            endwhile 
-        endif 
+        if MiscUtil.FileExists(fn)
+            int info = JValue.readFromFile(fn)
+            if info != 0
+                String[] keys = JMap.allKeysPArray(info)
+                int k = keys.length - 1
+                while 0 <= k
+                    int desc_info = JMap.getObj(info, keys[k])
+                    JMap.setStr(desc_info, "source", folders[i])
+                    String stage_id = JMap.getStr(desc_info, "id")
+                    String desc = JMap.getStr(desc_info, "description")
+                    JMap.setObj(anim_info, stage_id, desc_info)
+                    k -= 1
+                endwhile 
+            endif 
+        endif
         i -= 1
     endwhile 
     return anim_info

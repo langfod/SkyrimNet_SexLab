@@ -3,21 +3,29 @@ Scriptname SkyrimNet_SexLab_Decorators
 import SkyrimNet_SexLab_Main
 import SkyrimNet_SexLab_Stages
 
+Function Trace(String msg, Bool notification=False) global
+    msg = "[SkyrimNet_SexLab_Decorators] "+msg
+    Debug.Trace(msg)
+    if notification
+        Debug.Notification(msg)
+    endif 
+EndFunction
+
+
 ;----------------------------------------------------------------------------------------------------
 ; Decorators 
 ;----------------------------------------------------------------------------------------------------
 Function RegisterDecorators() global
-    Debug.Trace("SkyrimNet_SexLab_Decorators: RegisterDecorattors called")
-    SkyrimNetApi.RegisterDecorator("sexlab_get_public_sex_accepted", "SkyrimNet_SexLab_Decorators", "Get_Public_Sex_Accepted")
     SkyrimNetApi.RegisterDecorator("sexlab_get_threads", "SkyrimNet_SexLab_Decorators", "Get_Threads")
+    Trace("SkyrimNet_SexLab_Decorators: RegisterDecorattors called",true)
 EndFunction
 
-String Function Get_Public_Sex_Accepted(Actor akActor) global
+String Function Is_Naked(Actor akActor) global
     SkyrimNet_SexLab_Main main = Game.GetFormFromFile(0x800, "SkyrimNet_SexLab.esp") as SkyrimNet_SexLab_Main
-    if main.public_sex_accepted
-        return "{\"public_sex_accepted\":true}"
+    if main.HasStrippedItems(akActor)
+        return "{\"is_naked\":true}"
     else
-        return "{\"public_sex_accepted\":false}"
+        return "{\"is_naked\":false}"
     endif
 EndFunction
 
@@ -56,7 +64,12 @@ String Function Get_Threads(Actor speaker) global
             String stage_desc = GetStageDescription(threads[i])
             if stage_desc != ""
                 String loc = GetLocation(threads[i].Animation, threads[i].BedTypeId) 
-                threads_str += "{\"stage_description_has\":true,\"stage_description\":\""+stage_desc+"\",\"location\":\""+loc+"\"}"
+                threads_str += "{\"stage_description_has\":true,\"stage_description\":\""+stage_desc+"\""
+
+                String strapon_names = GetStraponNames(threads[i])
+                threads_str += ", \"strapon_names\":\""+strapon_names+"\""
+
+                threads_str += ", \"location\":\""+loc+"\"}"
             else
                 threads_str += Thread_Json(threads[i])
             endif 
@@ -72,15 +85,9 @@ String Function Get_Threads(Actor speaker) global
         endif 
         i += 1
     endwhile
-    String json = ""
-    if main.public_sex_accepted
-        json = "{\"public_sex_accepted\":true"
-    else
-        json = "{\"public_sex_accepted\":false"
-    endif
-    json += ",\"speaker_having_sex\":"+speaker_having_sex
-    json += ",\"speaker_name\":\""+speaker.GetDisplayName()+"\""
-    json += ",\"threads\":["+threads_str+"]}"
+    String json = "{\"speaker_having_sex\":"+speaker_having_sex
+    json +=       ",\"speaker_name\":\""+speaker.GetDisplayName()+"\""
+    json +=       ",\"threads\":["+threads_str+"]}"
     return json
 EndFunction 
 
@@ -137,6 +144,9 @@ String Function Thread_Json(sslThreadController thread) global
     else
         thread_str += "\"rape\": false, "
     endif 
+
+    String strapon_names = GetStraponNames(thread)
+    thread_str += "\"strapon_names\":\""+strapon_names+"\","
 
     sslBaseAnimation anim = thread.Animation
     i = 0
@@ -248,6 +258,46 @@ String Function GetLocation(sslBaseAnimation anim, int bed) global
 
     return loc+" "
 EndFunction 
+
+String Function GetStraponNames(sslThreadController thread) global
+    Actor[] actors = thread.Positions
+    String names = "" 
+    int num_strapons = 0
+    int count = actors.length
+    int i = 0
+    while i < count
+        if thread.IsUsingStrapon(actors[i])
+            num_strapons += 1
+        endif 
+        i += 1
+    endwhile
+    i = 0
+    int j = 0
+    while i < count
+        if thread.IsUsingStrapon(actors[i])
+            if j > 0
+                if num_strapons > 2
+                    names += ", "
+                else 
+                endif
+                if j == count - 1 
+                    names += " and "
+                endif
+            endif
+            names += actors[i].GetDisplayName()
+            j += 1  
+        endif 
+        i += 1
+    endwhile 
+    if names != "" 
+        if num_strapons == 1
+            names += " is using a strapon."
+        else 
+            names += " are using strapons."
+        endif
+    endif 
+    return names 
+EndFunction
 
 bool Function SexLab_Thread_LOS(Actor akActor, sslThreadController thread) global
     Actor[] actors = thread.Positions

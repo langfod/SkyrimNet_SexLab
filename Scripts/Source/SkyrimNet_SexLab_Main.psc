@@ -6,16 +6,16 @@ import SkyrimNet_SexLab_Decorators
 import SkyrimNet_SexLab_Actions
 import SkyrimNet_SexLab_Stages
 
-GlobalVariable Property sexlab_public_sex_accepted Auto
-Bool Property public_sex_accepted 
+GlobalVariable Property sexlab_active_sex Auto
+Bool Property active_sex 
     Bool Function Get()
-        return sexlab_public_sex_accepted.GetValue() == 1
+        return sexlab_active_sex.GetValueInt() == 1
     EndFunction 
     Function Set(Bool value)
         if value
-            sexlab_public_sex_accepted.SetValue(1)
+            sexlab_active_sex.SetValue(1.0)
         else
-            sexlab_public_sex_accepted.SetValue(0)
+            sexlab_active_sex.SetValue(0.0)
         endif
     EndFunction 
 EndProperty
@@ -30,13 +30,14 @@ float Property actorLockTimeout = 60.0 Auto
 int Property group_tags = 0 Auto
 int Property group_ordered = 0 Auto
 
+String storage_key = "skyrimnet_sexlab_storage_items"
+
 ;SexLabFramework SexLab = None
 ;SkyrimNet_SexLab_Stages stages = None
 
 Event OnInit()
     Debug.Trace("[SkyrimNet_SexLab] OnInit")
     rape_allowed = true
-    public_sex_accepted = False 
 
     ; Register for all SexLab events using the framework's RegisterForAllEvents function
     Setup() 
@@ -45,21 +46,23 @@ EndEvent
 Function Setup()
     Debug.Trace("[SkyrimNet_SexLab] SetUp")
 
-    SexLabFramework SexLab = Game.GetFormFromFile(0xD62, "SexLab.esm") as SexLabFramework
     SkyrimNet_SexLab_Stages stages = (self as Quest) as SkyrimNet_SexLab_Stages
     stages.Setup() 
+    active_sex = false
 
     if actorLock == 0 
         actorLock = JFormMap.object() 
         JValue.retain(actorLock)
         ActorLockTimeout = 60.0
-    Else
+    elseif JFormMap.count(actorLock) > 0
         Form[] forms = JFormMap.allKeysPArray(actorLock)
-        int i = forms.Length
-        while i >= 0
-            ReleaseActorLock(forms[i] as Actor)
-            i -= 1
-        endwhile 
+        if forms != None 
+            int i = forms.Length
+            while i >= 0
+                ReleaseActorLock(forms[i] as Actor)
+                i -= 1
+            endwhile 
+        endif
     endif 
 
     if group_tags == 0
@@ -74,9 +77,6 @@ Function Setup()
     RegisterSexlabEvents()
     SkyrimNet_SexLab_Actions.RegisterActions()
     SkyrimNet_SexLab_Decorators.RegisterDecorators() 
-    RegisterSexLabEvents()
-
-    Debug.Trace("SkyrimNet_SexLab_Main Finished registration")
 
 EndFunction
 ;----------------------------------------------------------------------------------------------------
@@ -92,12 +92,46 @@ Function Trace(String msg, Bool notification=False) global
 EndFunction
 
 ;----------------------------------------------------------------------------------------------------
+; Stripped Items Storage
+;----------------------------------------------------------------------------------------------------
+
+Function StoreStrippedItems(Actor akActor, Form[] forms)
+    if akActor == None || forms == None || forms.Length == 0
+        return 
+    endif 
+    Trace("AddStrippedItems: "+akActor.GetDisplayName()+" num_items:"+forms.Length)
+    StorageUtil.FormListClear(akActor, storage_key)
+    int i = 0
+    while i < forms.Length
+        StorageUtil.FormListAdd(akActor, storage_key, forms[i])
+        i += 1
+    endwhile
+EndFunction 
+
+Form[] Function UnStoreStrippedItems(Actor akActor)
+    Trace("UnStoreStrippedItems: "+akActor.GetDisplayName()+" attempting to undress")
+    if !HasStrippedItems(akActor)
+        return None
+    endif
+    Form[] forms = StorageUtil.FormListToArray(akActor, storage_key)
+    StorageUtil.FormListClear(akActor, storage_key)
+    return forms
+EndFunction
+
+Bool Function HasStrippedItems(Actor akActor)
+    if akActor == None || StorageUtil.FormListCount(akActor, storage_key) == 0
+        return False
+    endif 
+    return true 
+EndFunction
+
+;----------------------------------------------------------------------------------------------------
 ; Actor Lock
 ;----------------------------------------------------------------------------------------------------
 
 Bool Function IsActorLocked(Actor akActor) 
     bool locked = False
-    if akActor == None 
+    if akActor != None 
         if JFormMap.hasKey(actorLock, akActor) 
             float time = JFormMap.getFlt(actorLock, akActor) 
             if Utility.GetCurrentGameTime() - time > actorLockTimeout
@@ -155,10 +189,14 @@ event AnimationStart(int ThreadID, bool HasPlayer)
     endif
     sslThreadController thread = SexLab.GetController(ThreadID)
     Actor[] actors = thread.Positions
-    ReleaseActorLock(actors[0])
-    ReleaseActorLock(actors[1])
+    int i = actors.length - 1
+    while 0 <= i 
+        ReleaseActorLock(actors[i])
+        i -= 1
+    endwhile 
 
     Sex_Event(ThreadID, "start", HasPlayer )
+    active_sex = true
 endEvent
 
 ;Event StartStage(int ThreadID, bool HasPlayer)
@@ -176,6 +214,28 @@ event AnimationEnd(int ThreadID, bool HasPlayer)
         ; Skyrim
     ; endif 
     Sex_Event(ThreadID, "stop", HasPlayer )
+
+   sslThreadSlots ThreadSlots = Game.GetFormFromFile(0xD62, "SexLab.esm") as sslThreadSlots
+    if ThreadSlots == None
+        Debug.Notification("[SkyrimNet_SexLab] Get_Threads: ThreadSlots is None")
+        return
+    endif
+
+    sslThreadController[] threads = ThreadSlots.Threads
+
+    int i = 0
+    bool found = false
+    while i < threads.length && !found
+        String s = (threads[i] as sslThreadModel).GetState()
+        if s == "animating" || s == "prepare"
+            found = true
+        endif 
+    endwhile
+    if found
+        active_sex = true
+    else 
+        active_sex = false
+    endif
 endEvent
 
 Function Sex_Event(int ThreadID, String status, Bool HasPlayer ) global
@@ -193,19 +253,23 @@ Function Sex_Event(int ThreadID, String status, Bool HasPlayer ) global
     ; and will be responded by t
     String eventType = "sex "+status
     ; narration = "*"+narration+"*"
-    String s = (thread as sslThreadModel).GetState()
-    ; Debug.MessageBox(status+" "+narration+" state:"+s)
     if actors.length < 2 || actors[0] == actors[1]
         if status == "start"
             SkyrimNetApi.DirectNarration(narration, actors[0], None)
         else
-            SkyrimNetApi.RegisterEvent(eventType, narration, actors[0], None)
+            ;if actors.length == 1 || actors[0] == actors[1]
+                ;SkyrimNetApi.RegisterDialogue(actors[0], "*"+narration+"*")
+            ;else
+                ;SkyrimNetApi.RegisterDialogueToListener(actors[1], actors[0], "*"+narration+"*")
+            ;endif 
+            SkyrimNetApi.RegisterEvent(eventType, "*"+narration+"*", actors[0], None)
         endif 
     elseif actors.length == 2
         if status == "start"
             SkyrimNetApi.DirectNarration(narration, actors[1], actors[0])
         else
-            SkyrimNetApi.RegisterEvent(eventType, narration, actors[1], actors[0])
+            SkyrimNetApi.RegisterEvent(eventType, "*"+narration+"*", actors[1], actors[0])
+            ;SkyrimNetApi.RegisterDialogueToListener(actors[1], actors[0], "*"+narration+"*")
         endif 
     else
         ;SkyrimNetApi.RegisterEvent(eventType, narration,None,None)
@@ -222,10 +286,14 @@ Function Orgasm_Event(int ThreadID) global
     Actor[] actors = thread.Positions
     String[] names = new String[2]
     names[0] = actors[0].GetDisplayName()
-    names[1] = actors[1].GetDisplayName()
+    if actors.length > 1
+        names[1] = actors[1].GetDisplayName()
+    endif 
     bool[] can_ejaculate = new Bool[2]
     can_ejaculate[0] = actors[0].GetLeveledActorBase().GetSex() != 1
-    can_ejaculate[1] = actors[1].GetLeveledActorBase().GetSex() != 1
+    if actors.length > 1
+        can_ejaculate[1] = actors[1].GetLeveledActorBase().GetSex() != 1
+    endif 
 
     sslBaseAnimation anim = thread.Animation
 
@@ -344,13 +412,13 @@ String Function Thread_Narration(sslThreadController thread, String status) glob
         endwhile
 
         if num_victims == 0
-            String actors_str = ActorsToString(actors, status)
+            String actors_str = ActorsToString(actors)
             if status == "start" 
-                return actors_str+" start having sex."
+                return actors_str+" starts having sex."
             elseif status == "are"
                 return actors_str+" are having sex."
             else 
-                return actors_str+" stop having sex."
+                return actors_str+" stops having sex."
             endif 
         else
             Actor[] victims = PapyrusUtil.ActorArray(num_victims)
@@ -368,20 +436,20 @@ String Function Thread_Narration(sslThreadController thread, String status) glob
                 endif 
                 k -= 1
             endwhile
-            String victims_str = ActorsToString(victims, status)
-            String aggressors_str = ActorsToString(aggressors, status)
+            String victims_str = ActorsToString(victims)
+            String aggressors_str = ActorsToString(aggressors)
             if status == "start"
-                return aggressors_str+" start raping "+victims_str+"."
+                return aggressors_str+" starts raping "+victims_str+"."
             elseif status == "are"
-                return aggressors_str+" are raping "+victims_str+"."
+                return aggressors_str+" is raping "+victims_str+"."
             else 
-                return aggressors_str+" stop raping "+victims_str+"."   
+                return aggressors_str+" stops raping "+victims_str+"."   
             endif 
         endif 
 
     endif
 EndFunction 
-String Function ActorsToString(Actor[] actors, String status) global
+String Function ActorsToString(Actor[] actors) global
     String names = ""
     int k = 0
     int count = actors.length
@@ -400,3 +468,17 @@ String Function ActorsToString(Actor[] actors, String status) global
     return names 
 endFunction
 
+String Function ActorsToJson(Actor[] actors) global
+    String json = "["
+    int i = 0
+    int count = actors.length
+    while i < count 
+        if i > 0
+            json += ", "
+        endif 
+        json += "\""+actors[i].GetDisplayName()+"\""
+        i += 1
+    endwhile 
+    json += "]"
+    return json 
+EndFunction 

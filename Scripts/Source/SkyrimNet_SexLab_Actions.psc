@@ -1,5 +1,6 @@
 Scriptname SkyrimNet_SexLab_Actions 
 
+
 Function Trace(String msg, Bool notification=False) global
     msg = "[SkyrimNet_SexLab_Actions] "+msg
     Debug.Trace(msg)
@@ -28,27 +29,45 @@ Function RegisterActions() global
         endif 
         i += 1
     endwhile 
-    SkyrimNetApi.RegisterAction("SexTarget", \
-            "have consensual sex", \
+
+    ; ------------------------
+    SkyrimNetApi.RegisterAction("SexLabSexTarget", \
+            "Start having consensual sex with {target}.", \
             "SkyrimNet_SexLab_Actions", "SexTarget_IsEligible",  \
             "SkyrimNet_SexLab_Actions", "SexTarget_Execute",  \
             "", "PAPYRUS", 1, \
             "{\"target\": \"Actor\", \"type\":\""+type+"\", \"rape\":false, \"victim\":true}")
-    SkyrimNetApi.RegisterAction("SexMasturbation", \
-            "masturbate",\
+    SkyrimNetApi.RegisterAction("SexLabSexMasturbation", \
+            "Start masturbating.",\
             "SkyrimNet_SexLab_Actions", "SexTarget_IsEligible",  \
             "SkyrimNet_SexLab_Actions", "SexTarget_Execute",  \
             "", "PAPYRUS", 1, \
             "{\"type\":\"masturbation\", \"rape\":{true|false}}")
+
+    ; ------------------------
+    SkyrimNetApi.RegisterAction("SexLabDress", \
+            "Start to dress in clothing.",\
+            "SkyrimNet_SexLab_Actions", "Dress_IsEligible",  \
+            "SkyrimNet_SexLab_Actions", "Dress_Execute",  \
+            "", "PAPYRUS", 1, \
+            "")
+    SkyrimNetApi.RegisterAction("SexLabUndress", \
+            "Start to undress clothing.",\
+            "SkyrimNet_SexLab_Actions", "Undress_IsEligible",  \
+            "SkyrimNet_SexLab_Actions", "Undress_Execute",  \
+            "", "PAPYRUS", 5, \
+            "")
+
+    ; ------------------------
     if main.rape_allowed
-        SkyrimNetApi.RegisterAction("RapeTarget", \
-                "be the assailant of nonconsensual sex",\
+        SkyrimNetApi.RegisterAction("SexLabRapeTarget", \
+                "Start to sexually assualt {target}.",\
                 "SkyrimNet_SexLab_Actions", "SexTarget_IsEligible",  \
                 "SkyrimNet_SexLab_Actions", "SexTarget_Execute",  \
                 "", "PAPYRUS", 1, \
                 "{\"target\": \"Actor\", \"type\":\""+type+"\", \"rape\":true, \"victim\":false}")
-        SkyrimNetApi.RegisterAction("RapedByTarget", \
-                "be the victim of nonconsensual sex",\
+        SkyrimNetApi.RegisterAction("SexLab_RapedByTarget", \
+                "Starts being sexually assulted by {target}.",\
                 "SkyrimNet_SexLab_Actions", "SexTarget_IsEligible",  \
                 "SkyrimNet_SexLab_Actions", "SexTarget_Execute",  \
                 "", "PAPYRUS", 1, \
@@ -62,7 +81,7 @@ EndFunction
 ; -------------------------------------------------
 
 String[] Function GetTypes() global
-    String[] types = new String[14]
+    String[] types = new String[12]
     types[0] = "bondage"
     types[1] = "oral"
     types[2] = "boobjob"
@@ -71,12 +90,9 @@ String[] Function GetTypes() global
     types[5] = "fisting"
     types[6] = "anal"
     types[7] = "dildo"
-    types[8] = "spanking"
     types[9] = "fingering"
     types[10] = "footjob"
     types[11] = "handjob"
-    types[12] = "kissing"
-    types[13] = "headpat"
     return types
 EndFunction
 
@@ -161,7 +177,7 @@ Function SexTarget_Execute(Actor akActor, string contextJson, string paramsJson)
     if subActor == player || (domActor != None && domActor == player)
         button = YesNoDialog(buttons, YES, type, rape, domActor, subActor, player)
         if button == NO || button == NO_SILENT
-            Trace("SexTarget_Execute: User declined",true)
+            Trace("SexTarget_Execute: User declined")
             main.ReleaseActorLock(akActor)
             main.ReleaseActorLock(akTarget)
             if button == NO 
@@ -169,10 +185,10 @@ Function SexTarget_Execute(Actor akActor, string contextJson, string paramsJson)
                     String msg = "*"+akTarget.GetDisplayName()+" refuses "+akActor.GetDisplayName()+"'s sex request*"
                     SkyrimNetApi.RegisterEvent("sex refuses", msg, akTarget, akActor)
                 elseif domActor == player 
-                    String msg = "*"+akTarget.GetDisplayName()+" refuses "+akActor.GetDisplayName()+"'s rape attempt.*"
+                    String msg = "*"+akTarget.GetDisplayName()+" refuses to rape "+akActor.GetDisplayName()+".*"
                     SkyrimNetApi.RegisterEvent("rape refuses", msg, akTarget, akActor)
                 else
-                    String msg = "*"+akTarget.GetDisplayName()+" refuses to rape "+akActor.GetDisplayName()+".*"
+                    String msg = "*"+akTarget.GetDisplayName()+" refuses "+akActor.GetDisplayName()+"'s rape attempt.*"
                     SkyrimNetApi.RegisterEvent("rape refuses", msg, akTarget, akActor)
                 endif
             endif
@@ -265,20 +281,97 @@ int function YesNoDialog(String[] buttons, int YES, String type, Bool rape, Acto
     return SkyMessage.ShowArray(question, buttons, getIndex = true) as int  
 EndFunction
 
+; -------------------------------------------------
+; Dress and Undress
+; -------------------------------------------------
+
+Bool Function Undress_IsEligible(Actor akActor, string contextJson, string paramsJson) global
+    Trace("Undress_IsEligible: attempting "+akActor.GetDisplayName())
+    SexLabFramework SexLab = Game.GetFormFromFile(0xD62, "SexLab.esm") as SexLabFramework
+    SkyrimNet_SexLab_Main main = Game.GetFormFromFile(0x800, "SkyrimNet_SexLab.esp") as SkyrimNet_SexLab_Main
+    if SexLab == None || main == None 
+        return false
+    endif 
+
+    if !SexLab.IsValidActor(akActor)
+        Trace("Undress_IsEligible: akActor: " + akActor.GetDisplayName()+" can't undress")
+        return False
+    endif
+
+    Trace("Undress_IsEligible: " + akActor.GetDisplayName()+" can undress")
+    return True
+EndFunction
+
+Function Undress_Execute(Actor akActor, string contextJson, string paramsJson) global
+    Trace("Undress_Execute: attempting "+akActor.GetDisplayName(),true)
+    SexLabFramework SexLab = Game.GetFormFromFile(0xD62, "SexLab.esm") as SexLabFramework
+    SkyrimNet_SexLab_Main main = Game.GetFormFromFile(0x800, "SkyrimNet_SexLab.esp") as SkyrimNet_SexLab_Main
+    if SexLab == None || main == None 
+       return 
+    endif 
+
+    Trace("Undress_Execute: " + akActor.GetDisplayName()+" ",true)
+    Form[] forms = sexlab.StripActor(akActor, akActor, false, false) 
+    main.StoreStrippedItems(akActor, forms)
+EndFunction
+
+Bool Function Dress_IsEligible(Actor akActor, string contextJson, string paramsJson) global
+    SexLabFramework SexLab = Game.GetFormFromFile(0xD62, "SexLab.esm") as SexLabFramework
+    SkyrimNet_SexLab_Main main = Game.GetFormFromFile(0x800, "SkyrimNet_SexLab.esp") as SkyrimNet_SexLab_Main
+    if SexLab == None || main == None 
+        return false
+    endif 
+
+    if !SexLab.IsValidActor(akActor)
+        Trace("Dress_IsEligible: akActor: " + akActor.GetDisplayName()+" can't dress")
+        return False
+    endif
+
+    if !main.HasStrippedItems(akActor)
+        Trace("Dress_IsEligible: akActor: " + akActor.GetDisplayName()+" has no stripped items")
+        return False
+    endif
+    Trace("Dress_IsEligible: " + akActor.GetDisplayName()+" can dress")
+    return True
+EndFunction
+
+Function Dress_Execute(Actor akActor, string contextJson, string paramsJson) global
+    Trace("Dress_Execute: attempting "+akActor.GetDisplayName(),true)
+    SexLabFramework SexLab = Game.GetFormFromFile(0xD62, "SexLab.esm") as SexLabFramework
+    SkyrimNet_SexLab_Main main = Game.GetFormFromFile(0x800, "SkyrimNet_SexLab.esp") as SkyrimNet_SexLab_Main
+    if SexLab == None || main == None 
+        return
+    endif 
+
+    Trace("Dress_Execute: Unstoring stripped items",true)
+    Form[] forms = main.UnStoreStrippedItems(akActor)
+    if forms != None
+        Trace("Dress_Execute: "+akActor.GetDisplayName()+" unstripping "+forms,true)
+        sexlab.UnStripActor(akActor, forms, false) 
+    else 
+        Trace("Dress_Execute: "+akActor.GetDisplayName()+" has no stripped items",true)
+    endif 
+EndFunction
+
+; -------------------------------------------------
+; Tools
+; -------------------------------------------------
 
 sslBaseAnimation[] Function AnimsDialog(SexLabFramework sexlab, sslThreadModel thread, String tag) global
     SkyrimNet_SexLab_Main main = Game.GetFormFromFile(0x800, "SkyrimNet_SexLab.esp") as SkyrimNet_SexLab_Main
 
     Actor[] actors = thread.Positions
-    int i = actors.Length
+    int i = 0
+    int count = actors.Length
     String names = ""
-    while 0 <= i 
+    while i < count
         if names != ""
             names += "+" 
         endif
         names += actors[i].GetDisplayName()
-        i -= 1 
+        i += 1 
     endwhile
+    names += " | "
 
 
     ; Current set of tags
@@ -330,7 +423,7 @@ sslBaseAnimation[] Function AnimsDialog(SexLabFramework sexlab, sslThreadModel t
             endif 
 
             ; Add groups
-            int count = JArray.count(groups)
+            count = JArray.count(groups)
             i =  0
             while i < count
                 String group = JArray.getStr(groups,i)

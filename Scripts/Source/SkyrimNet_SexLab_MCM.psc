@@ -3,7 +3,8 @@ Scriptname SkyrimNet_SexLab_MCM extends SKI_ConfigBase
 import SkyrimNet_SexLab_Actions
 
 int rape_toggle
-int ublic_sex_toggle
+GlobalVariable Property sexlab_public_sex_accepted Auto
+
 String[] Pages 
 
 SkyrimNet_SexLab_Main Property main Auto  
@@ -11,6 +12,10 @@ SkyrimNet_SexLab_Stages Property stages Auto
 
 bool hot_key_toggle = False 
 int sex_edit_key = 40 ; 26
+
+Function OnInit() 
+    sexlab_public_sex_accepted.SetValue(0.0)
+Endfunction 
 
 Function Trace(String msg, Bool notification=False) global
     msg = "[SkyrimNet_SexLab_MCM] "+msg
@@ -23,7 +28,7 @@ EndFunction
 
 Event OnConfigOpen()
 
-    Pages = None ; new String[0]
+    ; Pages = None ; new String[0]
     ;pages[0] = "options"
 
 EndEvent
@@ -39,7 +44,7 @@ Event OnPageReset(string page)
     AddHeaderOption("Options")
     AddHeaderOption("")
     AddToggleOptionST("RapeAllowedToggle","Add rape actions (must toggle/save/reload)",main.rape_allowed)
-    AddToggleOptionST("PublicSexAcceptedToggle","Public sex accepted",main.public_sex_accepted)
+    AddToggleOptionST("PublicSexAcceptedToggle","Public sex accepted",sexlab_public_sex_accepted.GetValue() == 1.0)
     AddToggleOptionST("SexEditTagsPlayer","Show Tags_Editor for player sex",main.sex_edit_tags_player)
     AddToggleOptionST("SexEditTagsNonPlayer","Show Tags_Editor for nonplayer sex",main.sex_edit_tags_nonplayer)
 
@@ -65,8 +70,16 @@ State RapeAllowedToggle
 EndState
 State PublicSexAcceptedToggle
     Event OnSelectST()
-        main.public_sex_accepted = !main.public_sex_accepted
-        SetToggleOptionValueST(main.public_sex_accepted)
+        Bool public_bool = False
+        if sexlab_public_sex_accepted.GetValue() == 1.0
+            public_bool = False
+            sexlab_public_sex_accepted.SetValue(0.0)
+        else
+            public_bool = True
+            sexlab_public_sex_accepted.SetValue(1.0)
+        endif 
+        SetToggleOptionValueST(public_bool)
+        Trace("PublicSexAcceptedToggle: sexlab_public"+sexlab_public_sex_accepted.GetValue(),true)
     EndEvent
     Event OnHighlightST()
         SetInfoText("Makes public sex a socially accepted activity..")
@@ -162,12 +175,18 @@ Event OnKeyDown(int key_code)
                 int sex = 1
                 int raped_by = 2
                 int rapes = 3
-                int cancel = 4
-                String[] buttons = new String[5]
+                int clothing = 4
+                int cancel = 5
+                String[] buttons = new String[6]
                 buttons[masturbate] = "masturbate"
                 buttons[sex] = "have sex with player"
                 buttons[raped_by] = "raped by player"
                 buttons[rapes] = "rapes the player"
+                if main.HasStrippedItems(target)
+                    buttons[clothing] = "dress"
+                else
+                    buttons[clothing] = "undress"
+                endif 
                 buttons[cancel] = "cancel"
                 int button = SkyMessage.ShowArray("Should "+target.getDisplayName()+":", buttons, getIndex = true) as int  
 
@@ -179,27 +198,52 @@ Event OnKeyDown(int key_code)
                     SkyrimNet_SexLab_Actions.SexTarget_Execute(target, "", "{\"rape\":true, \"target\":\""+player.GetDisplayName()+"\",\"victim\":false, \"target_is_player\":true}")
                 elseif button == raped_by
                     SkyrimNet_SexLab_Actions.SexTarget_Execute(target, "", "{\"rape\":true, \"target\":\""+player.GetDisplayName()+"\",\"victim\":true,\"target_is_player\":true}")
+                elseif button == clothing
+                    if main.HasStrippedItems(target)
+                        SkyrimNet_SexLab_Actions.Dress_Execute(target, "", "")
+                    else
+                        SkyrimNet_SexLab_Actions.Undress_Execute(target, "", "")
+                    endif
                 else 
                     return 
                 endif 
                 return 
             else
-                stages.EditDescriptions(target) 
+                sslThreadController thread = stages.GetThread(target)
+                if thread != None 
+                    stages.EditDescriptions(thread) 
+                endif 
                 return 
             endif 
         endif 
 
+        ; See if player is in a sex animation 
+        sslThreadController thread = stages.GetThread(player)
+        if thread != None 
+            stages.EditDescriptions(thread) 
+            return
+        endif
+
+        ; If not, then we allow them to start a sex animation with nearby actors
         Actor[] actors = MiscUtil.ScanCellActors(player, 1000)
-        String[] names = Utility.CreateStringArray(actors.length)
+        if actors.length < 2
+            actors = MiscUtil.ScanCellActors(player, 2000)
+            if actors.length == 0
+                Debug.Notification("No eligible actors found in the area.")
+                return
+            endif 
+        endif 
+        Debug.Notification("Found "+actors.length+" actors in the area.")
 
         int i = 0 
         int num_actors = actors.Length
+        String[] names = Utility.CreateStringArray(actors.length)
         while i < num_actors 
             names[i] = actors[i].GetDisplayName()
             i += 1
         endwhile 
 
-        String[] members = new String[3]
+        String[] members = new String[5]
 
         String remove = "<remove"
         String cancel = "<cancel>"
@@ -248,6 +292,7 @@ Event OnKeyDown(int key_code)
                     i += 1
                 endwhile 
             endif 
+
             listMenu.AddEntryItem(cancel)
 
             listMenu.OpenMenu()
@@ -342,7 +387,7 @@ Function StartSex(Actor[] actors, int num_actors, bool is_rape)
         return
     endif
 
-    sslBaseAnimation[] anims = SkyrimNet_SexLab_Actions.AnimsDialog(sexlab, 2, "")
+    sslBaseAnimation[] anims = SkyrimNet_SexLab_Actions.AnimsDialog(sexlab, thread, "")
     if anims != None && anims.length > 0
         thread.SetAnimations(anims)
     endif
