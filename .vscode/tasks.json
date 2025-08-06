@@ -8,7 +8,7 @@
 			"problemMatcher": [
 				"$PapyrusCompiler"
 			],
-			"amount": "pyro: Compile Project (skyrimse.ppj)",
+			"label": "pyro: Compile Project (skyrimse.ppj)",
 			"group": {
 				"kind": "build",
 				"isDefault": true

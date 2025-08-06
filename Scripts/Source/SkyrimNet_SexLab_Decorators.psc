@@ -17,7 +17,7 @@ EndFunction
 ;----------------------------------------------------------------------------------------------------
 Function RegisterDecorators() global
     SkyrimNetApi.RegisterDecorator("sexlab_get_threads", "SkyrimNet_SexLab_Decorators", "Get_Threads")
-    Trace("SkyrimNet_SexLab_Decorators: RegisterDecorattors called",true)
+    Trace("SkyrimNet_SexLab_Decorators: RegisterDecorattors called")
 EndFunction
 
 String Function Is_Naked(Actor akActor) global

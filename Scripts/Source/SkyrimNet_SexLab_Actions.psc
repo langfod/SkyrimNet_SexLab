@@ -144,24 +144,24 @@ Function SexTarget_Execute(Actor akActor, string contextJson, string paramsJson)
         akTarget = None
     endif 
 
-    if main.IsActorLocked(akActor) || main.IsActorLocked(akTarget)
+    if !main.SetActorLock(akActor) 
+        main.ReleaseActorLock(akActor) 
         return 
     endif 
-
-    main.SetActorLock(akActor)
-    main.SetActorLock(akTarget)
+    if akTarget != None && !main.SetActorLock(akTarget)
+        main.ReleaseActorLock(akActor)
+        main.ReleaseActorLock(akTarget) 
+    endif 
 
     Actor player = Game.GetPlayer()
-    Debug.Trace("[SkyrimNet_SexLab] SexTarget_Execute type:"+type+" akTarget:"+akTarget)
     Bool victim = SkyrimNetApi.GetJsonBool(paramsJson, "victim", true)
+    Debug.Trace("[SkyrimNet_SexLab] SexTarget_Execute type:"+type+" akTarget:"+akTarget)
     Actor subActor = akActor 
     Actor domActor = akTarget
     if akTarget != None && !victim 
         subActor = akTarget
         domActor = akActor
     endif
-
-
 
     int YES = 0
     int YES_RANDOM = 1
@@ -196,26 +196,12 @@ Function SexTarget_Execute(Actor akActor, string contextJson, string paramsJson)
         endif 
     endif
 
-    
-    sslThreadModel thread = sexlab.NewThread()
-    bool failure = false 
-    if thread == None
-        Trace("SexTarget_Execute: Failed to create thread")
-        failure = true 
-    endif
-    if !failure && thread.addActor(subActor) < 0   
-        Trace("SexTarget_Execute: Starting sex couldn't add " + subActor.GetDisplayName())
-        failure = true 
-    endif  
     int num_actors = 1
-    if !failure && domActor != None 
+    if domActor != None
         num_actors = 2
-        if thread.addActor(domActor) < 0   
-            Trace("SexTarget_Execute: Starting sex couldn't add " + domActor.GetDisplayName())
-            failure = true 
-        endif  
     endif 
-    
+
+    bool failure = False
     if button != YES_RANDOM
         if type == "kissing"
             String tagSupress = "oral,vaginal,anal,spanking,masturbate,handjob,footjob,masturbation,breastfeeding,fingering"
@@ -230,30 +216,54 @@ Function SexTarget_Execute(Actor akActor, string contextJson, string paramsJson)
         else
             bool includes_player = akActor == player || (akTarget != None && akTarget == player )
             if (includes_player && main.sex_edit_tags_player) || (!includes_player && main.sex_edit_tags_nonplayer)
-                sslBaseAnimation[] anims = AnimsDialog(sexlab, thread, type)
-                if anims != None && anims.length > 0
-                    thread.SetAnimations(anims)
+                Actor[] actors = PapyrusUtil.ActorArray(num_actors)
+                if num_actors == 1
+                    actors[0] = subActor
+                else
+                    actors[0] = subActor
+                    actors[1] = domActor
                 endif
-
-                if anims.length > 0
+                sslBaseAnimation[] anims = AnimsDialog(sexlab, actors, type)
+                if anims[0] == None 
+                    failure = true
+                else
                     thread.SetAnimations(anims)
-                    thread.addTag(type)
                 endif 
             endif 
         endif 
     endif 
+
+    
+    sslThreadModel thread = None 
+    if !failure 
+        thread = sexlab.NewThread()
+        if thread == None
+            Trace("SexTarget_Execute: Failed to create thread")
+            failure = true 
+        endif
+        if !failure && thread.addActor(subActor) < 0   
+            Trace("SexTarget_Execute: Starting sex couldn't add " + subActor.GetDisplayName())
+            failure = true 
+        endif  
+        if !failure && domActor != None 
+            if thread.addActor(domActor) < 0   
+                Trace("SexTarget_Execute: Starting sex couldn't add " + domActor.GetDisplayName())
+                failure = true 
+            endif  
+        endif 
+    endif 
+    
+    if failure
+        main.ReleaseActorLock(akActor)
+        main.ReleaseActorLock(akTarget)
+        return
+    endif
 
     ; Debug.Notification(subActor.GetDisplayName()+" will have sex with "+akTarget.GetDisplayName())
     if rape
         thread.SetVictim(subActor)
     endif 
     Trace("SexTarget_Executer: Starting type:"+type+" aggressive:"+thread.IsAggressive)
-
-    if failure
-        main.ReleaseActorLock(akActor)
-        main.ReleaseActorLock(akTarget)
-        return
-    endif
 
     thread.StartThread() 
 EndFunction
@@ -303,14 +313,14 @@ Bool Function Undress_IsEligible(Actor akActor, string contextJson, string param
 EndFunction
 
 Function Undress_Execute(Actor akActor, string contextJson, string paramsJson) global
-    Trace("Undress_Execute: attempting "+akActor.GetDisplayName(),true)
+    Trace("Undress_Execute: attempting "+akActor.GetDisplayName())
     SexLabFramework SexLab = Game.GetFormFromFile(0xD62, "SexLab.esm") as SexLabFramework
     SkyrimNet_SexLab_Main main = Game.GetFormFromFile(0x800, "SkyrimNet_SexLab.esp") as SkyrimNet_SexLab_Main
     if SexLab == None || main == None 
        return 
     endif 
 
-    Trace("Undress_Execute: " + akActor.GetDisplayName()+" ",true)
+    Trace("Undress_Execute: " + akActor.GetDisplayName()+" ")
     Form[] forms = sexlab.StripActor(akActor, akActor, false, false) 
     main.StoreStrippedItems(akActor, forms)
 EndFunction
@@ -336,20 +346,20 @@ Bool Function Dress_IsEligible(Actor akActor, string contextJson, string paramsJ
 EndFunction
 
 Function Dress_Execute(Actor akActor, string contextJson, string paramsJson) global
-    Trace("Dress_Execute: attempting "+akActor.GetDisplayName(),true)
+    Trace("Dress_Execute: attempting "+akActor.GetDisplayName())
     SexLabFramework SexLab = Game.GetFormFromFile(0xD62, "SexLab.esm") as SexLabFramework
     SkyrimNet_SexLab_Main main = Game.GetFormFromFile(0x800, "SkyrimNet_SexLab.esp") as SkyrimNet_SexLab_Main
     if SexLab == None || main == None 
         return
     endif 
 
-    Trace("Dress_Execute: Unstoring stripped items",true)
+    Trace("Dress_Execute: Unstoring stripped items")
     Form[] forms = main.UnStoreStrippedItems(akActor)
-    if forms != None
-        Trace("Dress_Execute: "+akActor.GetDisplayName()+" unstripping "+forms,true)
+    if forms.length > 0
+        Trace("Dress_Execute: "+akActor.GetDisplayName()+" unstripping "+forms)
         sexlab.UnStripActor(akActor, forms, false) 
     else 
-        Trace("Dress_Execute: "+akActor.GetDisplayName()+" has no stripped items",true)
+        Trace("Dress_Execute: "+akActor.GetDisplayName()+" has no stripped items")
     endif 
 EndFunction
 
@@ -357,10 +367,9 @@ EndFunction
 ; Tools
 ; -------------------------------------------------
 
-sslBaseAnimation[] Function AnimsDialog(SexLabFramework sexlab, sslThreadModel thread, String tag) global
+sslBaseAnimation[] Function AnimsDialog(SexLabFramework sexlab, Actor[] actors, String tag) global
     SkyrimNet_SexLab_Main main = Game.GetFormFromFile(0x800, "SkyrimNet_SexLab.esp") as SkyrimNet_SexLab_Main
 
-    Actor[] actors = thread.Positions
     int i = 0
     int count = actors.Length
     String names = ""
@@ -436,7 +445,7 @@ sslBaseAnimation[] Function AnimsDialog(SexLabFramework sexlab, sslThreadModel t
             ;ListAddTags(listMenu, group_tags, "actions>") 
 
             ; just give up
-            listMenu.AddEntryItem("<random>")
+            listMenu.AddEntryItem("<cancel>")
 
             listMenu.OpenMenu()
             String button =  listmenu.GetResultString()
@@ -444,8 +453,10 @@ sslBaseAnimation[] Function AnimsDialog(SexLabFramework sexlab, sslThreadModel t
                 button = GroupDialog(group_tags, button)
             endif 
 
-            if button == "<random>"
-                return None 
+            if button == "<cancel>"
+                sslBaseAnimation[] anims = new sslBaseAnimation[1]
+                anims[0] = None 
+                return anims
             elseif button == "<remove"
                 next -= 1
             elseif button == use_tags

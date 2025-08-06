@@ -1,7 +1,6 @@
 Scriptname SkyrimNet_SexLab_Stages extends Quest 
 
 import SkyrimNet_SexLab_Main
-import SkyrimNetApi
 
 sslThreadSlots ThreadSlots = None
 Actor player = None 
@@ -80,7 +79,8 @@ String Function Description_Add_Actors(String version, Actor[] actors, String de
        return desc
     elseif version == VERSION_2_0
         String actors_json = SkyrimNet_SexLab_Main.ActorsToJson(actors)
-        return SkyrimNetApi.ParseString(desc, "sl", "{\"actors\":"+actors_json+"}")
+        String result = SkyrimNetApi.ParseString(desc, "sl", "{\"actors\":"+actors_json+"}")
+        return result 
     else 
         Trace("Description_Add_Actors: Unknown version "+version, true)
         return "" 

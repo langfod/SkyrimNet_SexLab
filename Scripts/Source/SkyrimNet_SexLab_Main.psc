@@ -96,7 +96,7 @@ EndFunction
 ;----------------------------------------------------------------------------------------------------
 
 Function StoreStrippedItems(Actor akActor, Form[] forms)
-    if akActor == None || forms == None || forms.Length == 0
+    if akActor == None || forms.Length == 0
         return 
     endif 
     Trace("AddStrippedItems: "+akActor.GetDisplayName()+" num_items:"+forms.Length)
@@ -146,12 +146,13 @@ Bool Function IsActorLocked(Actor akActor)
     return locked 
 EndFunction
 
-Function SetActorLock(Actor akActor) 
-    if akActor == None 
-        return 
+bool Function SetActorLock(Actor akActor) 
+    if akActor == None || IsActorLocked(akActor)
+        return false 
     endif 
     Trace("SetActorLock: "+akActor.GetDisplayName())
     JFormMap.setFlt(actorLock, akActor, Utility.GetCurrentGameTime())
+    return true
 EndFunction
 
 Function ReleaseActorLock(Actor akActor) 

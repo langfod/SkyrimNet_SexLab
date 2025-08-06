@@ -233,7 +233,7 @@ Event OnKeyDown(int key_code)
                 return
             endif 
         endif 
-        Debug.Notification("Found "+actors.length+" actors in the area.")
+        Trace("Found "+actors.length+" actors in the area.")
 
         int i = 0 
         int num_actors = actors.Length
@@ -313,8 +313,9 @@ Event OnKeyDown(int key_code)
             endif 
         endwhile
 
-        Actor[] mActors =  new Actor[5]
+        Actor[] mActors = PapyrusUtil.ActorArray(next)
         i = 0 
+        Debug.MessageBox("before actors: "+mActors+ " " + next )
         while i < next 
             int j = 0 
             while j < num_actors 
@@ -326,12 +327,13 @@ Event OnKeyDown(int key_code)
             endwhile 
             i += 1 
         endwhile 
+        Debug.MessageBox("actors: "+mActors)
 
-        StartSex(mActors, next, type == "rape>")
+        StartSex(mActors, type == "rape>")
     endif 
 EndEvent 
 
-Function StartSex(Actor[] actors, int num_actors, bool is_rape) 
+Function StartSex(Actor[] actors, bool is_rape) 
     Trace("SexTarget_Execute: "+actors+" num_actors:"+num_actors+" is_rape:"+is_rape)
     SexLabFramework SexLab = Game.GetFormFromFile(0xD62, "SexLab.esm") as SexLabFramework
     if SexLab == None
@@ -339,57 +341,55 @@ Function StartSex(Actor[] actors, int num_actors, bool is_rape)
         return
     endif
 
-    ; Check the lock 
+    ; Lock the actors 
+    int num_actors = actors.length 
     int i = 0
-    while i < num_actors 
-        if main.IsActorLocked(actors[i])
-            return 
+    bool cancel = false
+    while !cancel && i < num_actors 
+        if !main.SetActorLock(actors[i])
+            cancel = true
         endif 
-        i += 1
-    endwhile
-
-    ; Lock the actors 
-    i = 0
-    while i < num_actors 
         main.SetActorLock(actors[i])
         i += 1
     endwhile
 
-    sslThreadModel thread = sexlab.NewThread()
-    if thread == None
-        Trace("StartSex: Failed to create thread")
-        return 
-    endif
-    ; Lock the actors 
-    i = 0
-    while !failure && i < num_actors 
-        main.SetActorLock(actors[i])
-        i += 1
-    endwhile 
+    sslThreadModel thread = None 
+    if !cancel
+        thread = sexlab.NewThread()
+        if thread == None
+            Trace("StartSex: Failed to create thread")
+            cancel = true
+        endif
+    endif 
 
     ; Attempt to add the actors 
-    bool failure = false 
+    if !cancel
+        sslBaseAnimation[] anims = SkyrimNet_SexLab_Actions.AnimsDialog(sexlab, actors, "")
+        if anims[0] == None 
+            cancel = true
+        else 
+            thread.SetAnimations(anims)
+        endif 
+    endif
+
     i = 0
-    while !failure && i < num_actors 
+    while !cancel && i < num_actors 
         if thread.addActor(actors[i]) < 0   
             Trace("StartSex: Starting sex couldn't add "+i+" "+actors[i].GetDisplayName())
-            failure = true 
+            cancel = true 
         endif  
         i += 1
     endwhile
 
-    if failure
+
+    if cancel
         i = 0 
         while i <= num_actors 
+            Debug.Notification("releasing actor "+actors[i].GetDisplayName())
             main.ReleaseActorLock(actors[i])
             i += 1 
         endwhile 
         return
-    endif
-
-    sslBaseAnimation[] anims = SkyrimNet_SexLab_Actions.AnimsDialog(sexlab, thread, "")
-    if anims != None && anims.length > 0
-        thread.SetAnimations(anims)
     endif
 
     if is_rape
