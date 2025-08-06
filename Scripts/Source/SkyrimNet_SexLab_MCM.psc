@@ -315,7 +315,6 @@ Event OnKeyDown(int key_code)
 
         Actor[] mActors = PapyrusUtil.ActorArray(next)
         i = 0 
-        Debug.MessageBox("before actors: "+mActors+ " " + next )
         while i < next 
             int j = 0 
             while j < num_actors 
@@ -327,7 +326,6 @@ Event OnKeyDown(int key_code)
             endwhile 
             i += 1 
         endwhile 
-        Debug.MessageBox("actors: "+mActors)
 
         StartSex(mActors, type == "rape>")
     endif 
@@ -365,10 +363,12 @@ Function StartSex(Actor[] actors, bool is_rape)
     ; Attempt to add the actors 
     if !cancel
         sslBaseAnimation[] anims = SkyrimNet_SexLab_Actions.AnimsDialog(sexlab, actors, "")
-        if anims[0] == None 
-            cancel = true
-        else 
-            thread.SetAnimations(anims)
+        if anims.length > 0
+            if anims[0] == None 
+                cancel = true
+            else 
+                thread.SetAnimations(anims)
+            endif 
         endif 
     endif
 

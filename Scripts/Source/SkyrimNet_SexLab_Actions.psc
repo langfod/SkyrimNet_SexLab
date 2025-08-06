@@ -202,6 +202,11 @@ Function SexTarget_Execute(Actor akActor, string contextJson, string paramsJson)
     endif 
 
     bool failure = False
+    sslThreadModel thread = sexlab.NewThread()
+    if thread == None
+        Trace("SexTarget_Execute: Failed to create thread")
+        failure = true 
+    endif
     if button != YES_RANDOM
         if type == "kissing"
             String tagSupress = "oral,vaginal,anal,spanking,masturbate,handjob,footjob,masturbation,breastfeeding,fingering"
@@ -224,23 +229,19 @@ Function SexTarget_Execute(Actor akActor, string contextJson, string paramsJson)
                     actors[1] = domActor
                 endif
                 sslBaseAnimation[] anims = AnimsDialog(sexlab, actors, type)
-                if anims[0] == None 
-                    failure = true
-                else
-                    thread.SetAnimations(anims)
+                if anims.length > 0
+                    if anims[0] == None 
+                        failure = true
+                    else
+                        thread.SetAnimations(anims)
+                    endif 
                 endif 
             endif 
         endif 
     endif 
 
     
-    sslThreadModel thread = None 
     if !failure 
-        thread = sexlab.NewThread()
-        if thread == None
-            Trace("SexTarget_Execute: Failed to create thread")
-            failure = true 
-        endif
         if !failure && thread.addActor(subActor) < 0   
             Trace("SexTarget_Execute: Starting sex couldn't add " + subActor.GetDisplayName())
             failure = true 
@@ -454,9 +455,9 @@ sslBaseAnimation[] Function AnimsDialog(SexLabFramework sexlab, Actor[] actors, 
             endif 
 
             if button == "<cancel>"
-                sslBaseAnimation[] anims = new sslBaseAnimation[1]
-                anims[0] = None 
-                return anims
+                sslBaseAnimation[] empty = new sslBaseAnimation[1]
+                empty[0] = None 
+                return empty
             elseif button == "<remove"
                 next -= 1
             elseif button == use_tags
@@ -473,7 +474,9 @@ sslBaseAnimation[] Function AnimsDialog(SexLabFramework sexlab, Actor[] actors, 
             Debug.Notification("No animations found for: "+tags_str)
         endif 
     endwhile 
-    return None
+    sslBaseAnimation[] empty = new sslBaseAnimation[1]
+    empty[0] = None 
+    return empty
 EndFunction
 
 Function ListAddTags(uilistmenu listMenu, int group_tags, String group) global

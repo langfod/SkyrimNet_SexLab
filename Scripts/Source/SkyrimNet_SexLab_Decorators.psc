@@ -17,16 +17,26 @@ EndFunction
 ;----------------------------------------------------------------------------------------------------
 Function RegisterDecorators() global
     SkyrimNetApi.RegisterDecorator("sexlab_get_threads", "SkyrimNet_SexLab_Decorators", "Get_Threads")
+    SkyrimNetApi.RegisterDecorator("sexlab_nudity", "SkyrimNet_SexLab_Decorators", "Is_Nudity")
     Trace("SkyrimNet_SexLab_Decorators: RegisterDecorattors called")
 EndFunction
 
-String Function Is_Naked(Actor akActor) global
-    SkyrimNet_SexLab_Main main = Game.GetFormFromFile(0x800, "SkyrimNet_SexLab.esp") as SkyrimNet_SexLab_Main
-    if main.HasStrippedItems(akActor)
-        return "{\"is_naked\":true}"
-    else
-        return "{\"is_naked\":false}"
+String Function Is_Nudity(Actor akActor) global
+    ; 32 off top
+    ; 52 and 49 off bottom 
+    Form body = akActor.GetEquippedArmorInSlot(32)
+    Form pelvis_primary = akActor.GetEquippedArmorInSlot(52)
+    Form pelvis_seconday = akActor.GetEquippedArmorInSlot(49)
+
+    bool topless = false
+    bool bottomless = false 
+    if body == None 
+        topless = true 
+    endif 
+    if pelvis_primary == None && pelvis_seconday == None
+        bottomless = true 
     endif
+    return "{\"topless\":"+topless+",\"bottomless\":"+bottomless+"}"
 EndFunction
 
 String Function Get_Threads(Actor speaker) global
