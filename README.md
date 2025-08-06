@@ -2,26 +2,35 @@
 
 Adds SkyrimNet support to SexLab.
 
+# Actions 
+- NPC will be able to start sex
+- NPC will be able to dress and undress
+
 # Hot Key
 There is an optional hot key, must be enabled in the MCM.  It supports: 
 - ability to start a sexual act with an NPC in the crosshairs or between NPCs not in the crosshairs.
 - add a per-stage description for the animation of the NPC in the crosshairs. 
+- ability to dress/undress the actor under the across hairs.
 
 ## Per Stage Description 
-When you press the hot key a one of two thing will happen:
-- If the animation's stage already has a description, it will be presented with the option to replace it.
+When you press the hot key on an actor in sex, one of two thing will happen:
+- If the animation's stage already has a description, the description will be presented with the option to replace it. If you choose to edit, it will be the same as the next step
 - If the animation's stage does not have a description, a text field will be presented to add it. 
-  - After you finish typing, the code will add the actor's names and present the final description to you.  You can accept or reject. 
+  - After you finish typing, the code will add the actor's names and present the final description to you.  You can accept or reject. If it is empty you most likely used the wrong variable names.
 
 Descriptions you create will be stored in `SkyrimNet_SexLab/animations/\_local\_`with a single file for each animation. Additional stage descriptions will be stored in `animations/(author_name)` as they are shared with me, or people can simple give them to you.  The author's name will be presented when the description is provided, so you know where to edit the files. You can always create new description in \_local\_.
 
-- Once the file exists, you can edit with your favorite editor if you so choose.
+- Once the file exists, you can edit with your favorite text editor if you so choose.
 - If no stage descriptions is used, the tag based description will be used. 
-- The last stage with a description will be used for those with out descriptions
+- The last stage with a description will be used if none is found.
 - descriptions will be used in the order the directories are read, with \_local\_ loaded last.
-- vesion 1 descriptions must take the form of:
-    - Actor[0] "did something looking like something"
-    - Actor[1] "did something to looking like something" actor[0] 
+
+- We now support inja format for stage descriptions:
+  - There will be an array of actors.  If there is a victum, it is normally the first character.
+  - If you aren't sure.  Type just the actors needs so you can see which is which.
+  - {{sl.actors.0}} is the first actor 
+  - {{sl.actors.1}} is the second, etc 
+  - {{sl.actors.2}} is the third, etc 
 
 Examples can be found in the animations/GoodProvider sub directory.
 
@@ -29,7 +38,7 @@ Examples can be found in the animations/GoodProvider sub directory.
 ~~~
 {
     "stage 1": {
-        "description":"kisses with",
+        "description":"{{sl.actors.1}} kisses {{sl.actors.0}}.",
         "id":"stage 1",
         "version": "1.0"
     }
@@ -41,8 +50,6 @@ Please send me any animations you create by zipping your \_local\_ directory and
 
 - Send the zip file to me on discord
 - email the zipped file to da.good.provider@gmail.com 
-
-# Install 
 
 **Requirements**
 The following and depedancies:
