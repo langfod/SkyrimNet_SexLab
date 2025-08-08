@@ -6,6 +6,8 @@ import SkyrimNet_SexLab_Decorators
 import SkyrimNet_SexLab_Actions
 import SkyrimNet_SexLab_Stages
 
+ReferenceAlias[] Property nude_refs Auto
+
 GlobalVariable Property sexlab_active_sex Auto
 Bool Property active_sex 
     Bool Function Get()
@@ -31,9 +33,6 @@ int Property group_tags = 0 Auto
 int Property group_ordered = 0 Auto
 
 String storage_key = "skyrimnet_sexlab_storage_items"
-
-;SexLabFramework SexLab = None
-;SkyrimNet_SexLab_Stages stages = None
 
 Event OnInit()
     Debug.Trace("[SkyrimNet_SexLab] OnInit")
@@ -106,10 +105,28 @@ Function StoreStrippedItems(Actor akActor, Form[] forms)
         StorageUtil.FormListAdd(akActor, storage_key, forms[i])
         i += 1
     endwhile
+
+    i = nude_refs.Length - 1
+    while 0 <= i 
+        if nude_refs[i].GetActorReference() == None 
+            nude_refs[i].ForceRefTo(akActor) 
+            i = -1
+        endif 
+        i -= 1 
+    endwhile 
 EndFunction 
 
 Form[] Function UnStoreStrippedItems(Actor akActor)
     Trace("UnStoreStrippedItems: "+akActor.GetDisplayName()+" attempting to undress")
+    int i = nude_refs.length - 1
+    while 0 <= i 
+        if nude_refs[i].GetActorReference() == akActor 
+            nude_refs[i].Clear() 
+            Utility.Wait(1.00)
+            i = -1
+        endif 
+        i -= 1 
+    endwhile 
     if !HasStrippedItems(akActor)
         return None
     endif
@@ -278,7 +295,10 @@ Function Sex_Event(int ThreadID, String status, Bool HasPlayer ) global
 EndFunction
 
 Function Orgasm_Event(int ThreadID) global
-    SexLabFramework SexLab = Game.GetFormFromFile(0xD62, "SexLab.esm") as SexLabFramework
+    Quest q = Game.GetFormFromFile(0xD62, "SexLab.esm") as Quest 
+    SexLabFramework SexLab = q  as SexLabFramework
+    sslActorLibrary ActorLib = q as sslActorLibrary
+
     if SexLab == None
         Debug.Notification("[SkyrimNet_SexLab] Thread_Dialog: SexLab is None")
         return  
@@ -291,9 +311,9 @@ Function Orgasm_Event(int ThreadID) global
         names[1] = actors[1].GetDisplayName()
     endif 
     bool[] can_ejaculate = new Bool[2]
-    can_ejaculate[0] = actors[0].GetLeveledActorBase().GetSex() != 1
+    can_ejaculate[0] = Actorlib.GetGender(actors[0]) != 1
     if actors.length > 1
-        can_ejaculate[1] = actors[1].GetLeveledActorBase().GetSex() != 1
+        can_ejaculate[1] = Actorlib.GetGender(actors[1]) != 1
     endif 
 
     sslBaseAnimation anim = thread.Animation

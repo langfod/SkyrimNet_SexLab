@@ -2,6 +2,6 @@
 {% set nudity = sexlab_nudity(actorUUID) %} 
 {% if nudity.topless and nudity.bottomless %} 
 # Nudity
-- {{ decnpc(actorUUID).name }} is nude.
+- {{ decnpc(actorUUID).name }} is nude, which increasing shame.
 {% endif %}
 {% endif %}
