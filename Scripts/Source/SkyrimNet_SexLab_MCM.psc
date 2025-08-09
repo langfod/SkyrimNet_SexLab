@@ -5,17 +5,11 @@ import SkyrimNet_SexLab_Actions
 int rape_toggle
 GlobalVariable Property sexlab_public_sex_accepted Auto
 
-String[] Pages 
-
 SkyrimNet_SexLab_Main Property main Auto  
 SkyrimNet_SexLab_Stages Property stages Auto 
 
 bool hot_key_toggle = False 
 int sex_edit_key = 40 ; 26
-
-Function OnInit() 
-    sexlab_public_sex_accepted.SetValue(0.0)
-Endfunction 
 
 Function Trace(String msg, Bool notification=False) global
     msg = "[SkyrimNet_SexLab_MCM] "+msg
@@ -25,13 +19,13 @@ Function Trace(String msg, Bool notification=False) global
     endif 
 EndFunction
 
-
 Event OnConfigOpen()
 
-    ; Pages = None ; new String[0]
+    ;Pages = new String[1]
     ;pages[0] = "options"
 
 EndEvent
+
 Event OnPageReset(string page)
 
     if stages == None 
