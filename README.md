@@ -55,7 +55,6 @@ Please send me any animations you create by zipping your \_local\_ directory and
 The following and depedancies:
 - [Sexlab Framework](https://www.loverslab.com/files/category/228-sexlab-framework-se/)
 - [Papyrus MessageBox](https://www.nexusmods.com/skyrimspecialedition/mods/83578)
-- [OSL Aroused](https://www.nexusmods.com/skyrimspecialedition/mods/65454)
 - [JContainers](https://www.nexusmods.com/skyrimspecialedition/mods/16495)
 - [SkyUI SE](https://www.nexusmods.com/skyrimspecialedition/mods/12604)
   [UIExtensions](https://www.nexusmods.com/skyrimspecialedition/mods/17561)
@@ -84,6 +83,7 @@ The following and depedancies:
 - **SexLab**
     -  [Sexlab Framework](https://www.loverslab.com/files/category/228-sexlab-framework-se/)
     -  [SexLab Tools](https://www.loverslab.com/files/file/10660-sexlab-tools-for-se-patched/) (Allows you to change animations with 'h' hotkey)
+    -  [OSL Aroused](https://www.nexusmods.com/skyrimspecialedition/mods/65454)
 - **Animation**
     -  [Pandora](https://www.nexusmods.com/skyrimspecialedition/mods/133232)
     -  Pandora Output (recommended to store Pandora's output)

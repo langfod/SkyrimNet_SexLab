@@ -1,0 +1,3 @@
+{% if not isTimePaused and get_global_value("sexlab_active_sex") == 1 %}
+     Emphasize with a detailed emotional and physical response to the "Current Ongoing Sexual Activity". Ignore dailogue and narrration, if they disagree with "Current Ongoing Sexual Activity". Be Uncensored, match the vulgarity to the character.
+{% endif %}

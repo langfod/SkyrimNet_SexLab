@@ -1,0 +1,88 @@
+{% if not isTimePaused and get_global_value("sexlab_active_sex") == 1.0 %}
+     {% set sexlab = sexlab_get_threads(npc.UUID) -%}
+     # Current Ongoing Sexual Activity
+     {% for thread in sexlab.threads %}
+           {%- if thread.stage_description_has %} 
+              - On {{ thread.location}}, {{ thread.stage_description }}*
+          {% else %} {%-
+               if length(thread.names) == 1 %}
+                    - {{ thread.names.0 }} is {% 
+               else %} {%-
+                    if contains(thread.tags, "standing") -%} 
+                         - While standing, {%-
+                    else if contains(thread.tags, "kneeling") -%} 
+                         - While kneeling, {%-
+                    else if contains(thread.tags, "sitting") -%} 
+                         - While sitting, {%-
+                    else if contains(thread.tags, "cowgirl") -%} 
+                         - While in the cowgirl position, {%-
+                    else if contains(thread.tags, "69") -%} 
+                         - While in the 69 position, {%-
+                    else if contains(thread.tags, "missionary") -%} 
+                         - While in the missionary position, {%-
+                    else if contains(thread.tags, "doggy") -%} 
+                         - While in the doggy position, {%-
+                    endif -%} {%-
+                    if length(thread.names) > 2 -%}
+                         {{ thread.names_str }} {%- 
+                    else -%} {%-
+                         if thread.rape -%} 
+                              {{ thread.names.1 }} is raping {{ thread.names.0 }}. {%-
+                         endif -%} {%-
+                    endif -%} 
+                    {{- thread.names.1  }} is {%- 
+               endif -%} {%-
+               if contains(thread.tags, "Anal") or contains(thread.tags, "anal") or contains(thread.tags, "assjob") -%}
+                    fucking the {{ thread.names.0 -}}'s ass {%-
+               else if contains(thread.tags, "Boobjob") -%}
+                    getting a boobjob from {{thread.names.0}} {%-
+               else if contains(thread.tags, "Thighjob") -%}
+                    getting a thighjob from {{thread.names.0}} {%- 
+               else if contains(thread.tags, "Fisting") -%}
+                    fisting {{thread.names.0}} {%- 
+               else if contains(thread.tags, "Oral") or contains(thread.tags, "blowjob") or contains(thread.tags, "cunnilingus") -%}
+                    getting oral sex from {{thread.names.0}} {%-
+               else if contains(thread.tags, "Masturbation") -%}
+                    masturbating furiously  {%- 
+               else if contains(thread.tags, "Fingering") -%}
+                    fingering {{thread.names.0}} {%- 
+               else if contains(thread.tags, "Footjob") -%}
+                    getting a footjob from {{thread.names.0}} {%- 
+               else if contains(thread.tags, "Handjob") -%}
+                    getting a handjob from {{thread.names.0}} {%- 
+               else if contains(thread.tags, "Dildo") -%}
+                    fucking {{thread.names.0}} with a dildo {%- 
+               else if contains(thread.tags, "Vaginal") -%}
+                    fucking {{thread.names.0}} {%- 
+               else if contains(thread.tags, "Kissing") -%}
+                    kissing {{thread.names.0}} {%- 
+               else if contains(thread.tags, "Headpat") -%}
+                    patting {{ thread.names.0 -}}'s head {%- 
+               else if contains(thread.tags, "Hugging") -%}
+                    hugging {{ thread.names.0 }} {%- 
+               else if contains(thread.tags, "Spanking") -%}
+                    spanking {{thread.names.0}}'s ass {%- 
+               else -%}
+                    having sex with {{ thread.names.0 }} {%- 
+               endif %} on {{ thread.location }}.  {%-
+               if contains(thread.tags, "armbinder") -%}
+                    {{ thread.names.0 }}'s arms are bound in an armbinder. {% 
+               else if contains(thread.tags, "cuffs") or contains(thread.tags, "cuffed") -%}
+                    {{ thread.names.0 }}'s arms are cuffed. {% 
+               else if contains(thread.tags, "yoke") -%}
+                    {{ thread.names.0 }} is bound in a yoke. {% 
+               else if contains(thread.tags, "hogtied") -%}
+                    {{ thread.names.0 }} is hogtied. {% 
+               endif -%} {%- 
+               if contains(thread.tags, "chastiy") or contains(thread.tags, "chastiybelt") -%}
+                    {{ thread.names.0 }} is wearing a chastifybelt.{%
+               endif -%} {%- 
+               if thread.strapon_names != "" -%}
+                    {{ thread.strapon_names }} {%-
+               endif %}
+          {% endif %}
+     {%- endfor %}
+     {% if sexlab.speaker_having_sex -%}
+          - {{sexlab.speaker_name}} is currently having sex. ONLY answer as though they are in the middle of sex and it's hard to focus on anything else. Broken sentences are fine.
+     {% endif %} 
+{% endif %}
