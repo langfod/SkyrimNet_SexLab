@@ -27,12 +27,12 @@ bool Property sex_edit_tags_player = true Auto
 bool Property sex_edit_tags_nonplayer = False Auto
 
 int Property actorLock = 0 Auto 
-float Property actorLockTimeout = 60.0 Auto
+float Property actorLockTimeout = 0.00069444444 Auto ;  1 day / (24 hours  * 60 minutes ) 
 
 int Property group_tags = 0 Auto
 int Property group_ordered = 0 Auto
 
-String storage_key = "skyrimnet_sexlab_storage_items"
+String Property storage_key = "skyrimnet_sexlab_storage_items" Auto
 
 Event OnInit()
     Debug.Trace("[SkyrimNet_SexLab] OnInit")
@@ -44,6 +44,7 @@ EndEvent
 
 Function Setup()
     Debug.Trace("[SkyrimNet_SexLab] SetUp")
+    Debug.MessageBox("storage_key:"+storage_key)
 
     SkyrimNet_SexLab_Stages stages = (self as Quest) as SkyrimNet_SexLab_Stages
     stages.Setup() 

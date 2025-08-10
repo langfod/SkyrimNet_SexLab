@@ -19,15 +19,30 @@ Function Trace(String msg, Bool notification=False) global
     endif 
 EndFunction
 
+String page_options = "options"
+String page_actors = "actors debug (can be slow)"
+
 Event OnConfigOpen()
 
-    ;Pages = new String[1]
-    ;pages[0] = "options"
+    Pages = new String[2]
+    pages[0] = page_options
+    pages[1] = page_actors
 
 EndEvent
 
-Event OnPageReset(string page)
+;-----------------------------------------------------------------
+; Create Pages 
+;-----------------------------------------------------------------
 
+Event OnPageReset(string page)
+    if page == page_actors
+        PageActors() 
+    else 
+        PageOptions() 
+    endif 
+EndEvent 
+
+Function PageOptions() 
     if stages == None 
        stages = Game.GetFormFromFile(0x800, "SkyrimNet_SexLab.esp") as SkyrimNet_SexLab_Stages
     endif
@@ -50,8 +65,65 @@ Event OnPageReset(string page)
     if hot_key_toggle 
         RegisterForKey(sex_edit_key)
     endif 
+EndFunction 
 
-EndEvent
+Function PageActors() 
+    SetCursorFillMode(LEFT_TO_RIGHT)
+    SetCursorPosition(0)
+
+    AddHeaderOption("Actors")
+    AddHeaderOption("")
+
+    int actor_infos = JFormMap.object() 
+
+    ; Get all the actors who have been stripped 
+    int i = 0 
+    int count = main.nude_refs.Length
+    while i < count 
+        Actor akActor = main.nude_refs[i].GetActorReference()
+        if akActor != None 
+            Debug.Notification(akActor.GetDisplayName())
+            JFormMap.setStr(actor_infos, akActor, "undressed")
+        endif 
+        i += 1
+    endwhile 
+
+    ; Get all the actors who are been locked 
+    Form[] forms = JFormMap.allKeysPArray(main.actorLock)
+    i = forms.length - 1
+    while 0 <= i 
+        String info = JFormMap.getStr(actor_infos, forms[i], "") 
+        if info != "" 
+            info += ", "
+        endif 
+        Float minute_scaler = 24*60
+        Float time = JFormMap.getFlt(main.actorLock, forms[i])
+        info += "locked: "+(time*minute_scaler)+"/"+(main.actorLocktimeout*minute_scaler)
+        i += 1
+    endwhile 
+
+    ; Print out the combined list 
+    forms = JFormMap.allKeysPArray(actor_infos) 
+    i = forms.length - 1
+    while 0 <= i 
+        Actor akActor = forms[i] as Actor 
+        String info = JFormMap.getStr(actor_infos, forms[i], "") 
+        AddTextOptionST("ActorInfo", akActor.GetDisplayName(),info)
+        i -= 1
+    endwhile 
+    
+EndFunction 
+
+State ActorInfo
+    Event OnHighlightST()
+        SetInfoText("Actors who have state stored by SkyrimNet_SexLab." \
+            +" undressed: SNSL keeping undressed. locked: locked by actorLock.")
+    EndEvent
+EndState
+
+;-----------------------------------------------------------------
+; Set Toggles 
+;-----------------------------------------------------------------
 
 State RapeAllowedToggle
     Event OnSelectST()
