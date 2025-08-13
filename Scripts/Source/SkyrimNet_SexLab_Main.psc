@@ -44,7 +44,6 @@ EndEvent
 
 Function Setup()
     Debug.Trace("[SkyrimNet_SexLab] SetUp")
-    Debug.MessageBox("storage_key:"+storage_key)
 
     SkyrimNet_SexLab_Stages stages = (self as Quest) as SkyrimNet_SexLab_Stages
     stages.Setup() 
@@ -390,10 +389,10 @@ Function Orgasm_Event(int ThreadID) global
         endif 
         position += 1
     endwhile
-    String desc = GetStageDescription(thread)
-    if desc != ""
-        narration = desc+" "+narration
-    endif 
+    ;String desc = GetStageDescription(thread)
+    ;if desc != ""
+    ;    narration = desc+" "+narration
+    ;endif 
 
     ;SkyrimNetApi.DirectNarration(narration, actors[1], actors[0])
     SkyrimNetApi.DirectNarration(narration)

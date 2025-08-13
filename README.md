@@ -78,8 +78,13 @@ The following and depedancies:
     -  [Papyrus MessageBox](https://www.nexusmods.com/skyrimspecialedition/mods/83578)
     -   SkyrimNet 
 - **nude body (not required)**
-    -   [Scholongs of Skyrim SE](https://www.loverslab.com/files/file/5355-schlongs-of-skyrim-se/)
     -   [Caliente's Beautiful Bodies Enhancer -CBBE-](https://www.nexusmods.com/skyrimspecialedition/mods/198) or BHUNP
+    -   [The New Gentlemen](https://www.loverslab.com/files/file/5355-schlongs-of-skyrim-se/)
+        - [The New Gentlewomen](https://www.nexusmods.com/skyrimspecialedition/mods/105649) futanari support
+            - https://www.loverslab.com/files/file/11344-sos-addon-futanari-cbbe-sse/
+            - TRX Futanari for New Gentlemen (TRX-Corner on [Vermi Discord](https://discord.gg/vermishub))
+            - You will need to add using T.N.G's hotkey after exiting racemenu
+            - Change the character's gender to male in SexLab only.
 - **SexLab**
     -  [Sexlab Framework](https://www.loverslab.com/files/category/228-sexlab-framework-se/)
     -  [SexLab Tools](https://www.loverslab.com/files/file/10660-sexlab-tools-for-se-patched/) (Allows you to change animations with 'h' hotkey)
