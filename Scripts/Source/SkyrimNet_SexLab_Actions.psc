@@ -21,7 +21,7 @@ Function RegisterActions() global
     int count = types.Length 
     String type = ""
     while i < count 
-        if type != "any" && type != "bondge"
+        if type != "any" && type != "bondage"
             if type != "" 
                 type += "|"
             endif 
@@ -31,18 +31,22 @@ Function RegisterActions() global
     endwhile 
 
     ; ------------------------
-    SkyrimNetApi.RegisterAction("SexLabSexTarget", \
-            "Start having consensual sex with {target}.", \
-            "SkyrimNet_SexLab_Actions", "SexTarget_IsEligible",  \
-            "SkyrimNet_SexLab_Actions", "SexTarget_Execute",  \
-            "", "PAPYRUS", 1, \
-            "{\"target\": \"Actor\", \"type\":\""+type+"\", \"rape\":false, \"victim\":true}")
-    SkyrimNetApi.RegisterAction("SexLabSexMasturbation", \
-            "Start masturbating.",\
-            "SkyrimNet_SexLab_Actions", "SexTarget_IsEligible",  \
-            "SkyrimNet_SexLab_Actions", "SexTarget_Execute",  \
-            "", "PAPYRUS", 1, \
-            "{\"type\":\"masturbation\", \"rape\":{true|false}}")
+    ; This also has a undress/dress action
+    Quest sexbot = Game.GetFormFromFile(0x800, "ArcaneSexbot.esl") as Quest
+    if sexbot == None 
+        SkyrimNetApi.RegisterAction("SexLabSexTarget", \
+                "Start having consensual sex with {target}.", \
+                "SkyrimNet_SexLab_Actions", "SexTarget_IsEligible",  \
+                "SkyrimNet_SexLab_Actions", "SexTarget_Execute",  \
+                "", "PAPYRUS", 1, \
+                "{\"target\": \"Actor\", \"type\":\""+type+"\", \"rape\":false, \"victim\":true}")
+        SkyrimNetApi.RegisterAction("SexLabSexMasturbation", \
+                "Start masturbating.",\
+                "SkyrimNet_SexLab_Actions", "SexTarget_IsEligible",  \
+                "SkyrimNet_SexLab_Actions", "SexTarget_Execute",  \
+                "", "PAPYRUS", 1, \
+                "{\"type\":\"masturbation\", \"rape\":{true|false}}")
+    endif 
 
     ; ------------------------
     SkyrimNetApi.RegisterAction("SexLabDress", \

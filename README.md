@@ -96,5 +96,12 @@ The following and depedancies:
     -   [SL Animation Loader](https://www.loverslab.com/files/file/5328-sexlab-animation-loader-sse/)
 - **animations** (you might be able to get away with less ... )
     -   [Billyy](https://www.loverslab.com/files/file/3999-billyys-slal-animations-2025-1-1/)
-
+- **Devious Devices** 
+    - [SkyrimNet DDUNDNG](https://github.com/naitro2010/SkyrimNet_UDNG/releases/download/alpha2/SkyrimNetDDUDNG.zip)
+    - [Devious Devices](https://www.loverslab.com/files/file/5878-devious-devices-se/) (and it's requirements)
+    - [Papyrus Tweaks NG](https://www.nexusmods.com/skyrimspecialedition/mods/77779)
+    - [Devious Devices NG](https://www.loverslab.com/files/file/29779-devious-devices-ng/)
+        - [Blind people DAR](https://www.nexusmods.com/skyrimspecialedition/mods/90947)
+        - [Bound hands DAR](https://www.nexusmods.com/skyrimspecialedition/mods/89247) (required for next file) 
+        - [Bound hands OAR](https://www.nexusmods.com/skyrimspecialedition/mods/143622?tab=files)
 

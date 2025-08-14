@@ -1,4 +1,4 @@
-{% if isValidActor(actorUUID) and (render_mode == "full" or render_mode == "thoughts" or render_mode == "dialogue_target") %}
+{% if  not isTimePaused and isValidActor(actorUUID) and (render_mode == "full" or render_mode == "thoughts" or render_mode == "dialogue_target") %}
 {% set nudity = sexlab_nudity(actorUUID) %} 
 {% if nudity.topless and nudity.bottomless %} 
 # Nudity
