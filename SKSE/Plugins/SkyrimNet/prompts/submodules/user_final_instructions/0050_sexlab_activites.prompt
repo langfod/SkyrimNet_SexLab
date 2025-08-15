@@ -1,6 +1,3 @@
-{% if worn_has_keyword(npc.UUID, "zad_DeviousYoke") or worn_has_keyword(npc.UUID, "zad_DeviousYokeBB") %}
-     - {{ decnpc(npc.UUID).name }} arms are locked in a yoke a foot to either side of thier head. They can do nothing with thier hands.
-{%- endif %}
 {% if not isTimePaused and get_global_value("sexlab_active_sex") == 1.0 %}
      {% set sexlab = sexlab_get_threads(npc.UUID) -%}
      {% if length(sexlab.threads) > 0 %} 
