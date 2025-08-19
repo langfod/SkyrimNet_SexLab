@@ -58,6 +58,7 @@ The following and depedancies:
 - [JContainers](https://www.nexusmods.com/skyrimspecialedition/mods/16495)
 - [SkyUI SE](https://www.nexusmods.com/skyrimspecialedition/mods/12604)
   [UIExtensions](https://www.nexusmods.com/skyrimspecialedition/mods/17561)
+   - [UIExtensions_UITextEntryMenu_with_VR_support](https://github.com/mrowrpurr/UIExtensions_UITextEntryMenu_with_VR_support) (VR users)
 - SkyrimNet
    - You must have narration enabled
 - **SkyrimNet**
