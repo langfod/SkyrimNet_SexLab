@@ -56,11 +56,13 @@ Function PageOptions()
     AddToggleOptionST("PublicSexAcceptedToggle","Public sex accepted",sexlab_public_sex_accepted.GetValue() == 1.0)
     AddToggleOptionST("SexEditTagsPlayer","Show Tags_Editor for player sex",main.sex_edit_tags_player)
     AddToggleOptionST("SexEditTagsNonPlayer","Show Tags_Editor for nonplayer sex",main.sex_edit_tags_nonplayer)
+    AddToggleOptionST("SexEditTagsNonPlayer","Show Tags_Editor for nonplayer sex",main.sex_edit_tags_nonplayer)
 
     AddHeaderOption("")
     AddHeaderOption("")
     AddToggleOptionST("HotKeyToggle","Enable the Start Sex / Edit Stage hot key",hot_key_toggle)
     AddKeyMapOptionST("SexEditKeySet", "Start Sex / Edit Stage Description", sex_edit_key)
+    AddToggleOptionST("SexEdithelpToggle","Hide Edit Stage Discription Help",stages.hide_help)
 
     if hot_key_toggle 
         RegisterForKey(sex_edit_key)
@@ -219,6 +221,18 @@ State SexEditKeySet
           + "Without any actor in the crosshair, it will allow you to start sex between a near by set of eligible actors.")
     EndEvent
 EndState
+
+State SexEditHelpToggle
+    Event OnSelectST()
+        stages.hide_help = !stages.hide_help
+        SetToggleOptionValueST(stages.hide_help)
+        ForcePageReset()
+    EndEvent
+    Event OnHighlightST()
+        SetInfoText("Hides the help dialogue that appears if no stage description is found.\n")
+    EndEvent
+EndState
+
 
 ; --------------------------------------------
 ; Handles OnKeyDown 
@@ -451,7 +465,6 @@ Function StartSex(Actor[] actors, bool is_rape)
     if cancel
         i = 0 
         while i <= num_actors 
-            Debug.Notification("releasing actor "+actors[i].GetDisplayName())
             main.ReleaseActorLock(actors[i])
             i += 1 
         endwhile 
