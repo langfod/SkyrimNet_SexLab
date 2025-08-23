@@ -2,6 +2,8 @@ Scriptname SkyrimNet_SexLab_Stages extends Quest
 
 import SkyrimNet_SexLab_Main
 
+Bool Property hide_help = false Auto
+
 sslThreadSlots ThreadSlots = None
 Actor player = None 
 
@@ -13,6 +15,10 @@ String VERSION_2_0 = "2.0"
 
 String desc_input = "" 
 
+String tracking_db = ""
+
+int tracking_thread_id = 0
+
 Function Trace(String msg, Bool notification=False) global
     msg = "[SkyrimNet_SexLab_Stages] "+msg
     Debug.Trace(msg)
@@ -20,7 +26,6 @@ Function Trace(String msg, Bool notification=False) global
         Debug.Notification(msg)
     endif 
 EndFunction
-
 
 Function Setup()
     desc_input = ""
@@ -34,6 +39,11 @@ Function Setup()
         Debug.Notification("[SkyrimNet_SexLab] Thread_Dialog: ThreadSlots is None")
         return  
     endif
+
+    if tracking_thread_id <= 0 
+        tracking_thread_id = JIntMap.object() 
+        JValue.retain(tracking_thread_id)
+    endif 
 EndFunction
 
 String Function GetStageDescription(sslThreadController thread) global
@@ -86,6 +96,28 @@ String Function Description_Add_Actors(String version, Actor[] actors, String de
         return "" 
     endif 
 EndFunction 
+; ------------------------------------
+; Tracking Function 
+; ------------------------------------
+Function StartThreadTracking(int thread_id)
+    JIntMap.setInt(tracking_thread_id, thread_id, 1)
+EndFunction
+
+Function StopThreadTracking(int thread_id)
+    JIntMap.removeKey(tracking_thread_id, thread_id)
+EndFunction 
+
+function ToggleThreadTracking(int thread_id)
+    if IsThreadTracking(thread_id)
+        StopThreadTracking(thread_id)
+    else
+        StartThreadTracking(thread_id)
+    endif
+EndFunction
+
+bool Function IsThreadTracking(int thread_id)
+    return JIntmap.hasKey(tracking_thread_id, thread_id)
+EndFunction
 
 ; ------------------------------------
 ; Edit Description Function 
@@ -98,20 +130,48 @@ Function EditDescriptions(sslThreadController thread)
     endif 
     Actor[] actors = thread.Positions
 
-    int undefined = -1
-    int rewrite = 0 
-    int cancel = 1
+    sslBaseAnimation anim = thread.animation
+    Debug.Notification("stage "+thread.stage+" of "+anim.StageCount())
+
 
     String fname = GetFilename(thread)
     Trace("EditDescriptions thread: "+fname,true)
     int anim_info = GetAnim_Info(animations_folder, fname)
     String stage_id = "stage "+thread.stage
     int desc_info = JMap.getObj(anim_info, stage_id)
-    if desc_info != 0 
+    if desc_info == 0 
+        if !hide_help && !IsThreadTracking(thread.tid)
+            String help_message = "You will enter a description of the current stage. An example:\n" 
+            help_message += BuildExample(actors)
+
+            int ok = 0 
+            int stop_showing = 1
+            int cancel = 2
+            String[] buttons = new String[3]
+            buttons[ok] = "ok"
+            buttons[stop_showing] = "never show again"  
+            buttons[cancel] = "cancel"
+            int button = SkyMessage.ShowArray(help_message, buttons, getIndex = true) as int  
+            if button == cancel
+                return
+            elseif button == stop_showing 
+                hide_help = true 
+            endif 
+        endif 
+    else
         String desc = JMap.getStr(desc_info, "description")
         if desc != ""
-            String[] buttons = new String[2]
+            String[] buttons = new String[3]
+            int rewrite = 0 
+            int tracking = 1
+            int cancel = 2
             buttons[rewrite] = "replace"
+
+            if IsThreadTracking(thread.tid)
+                buttons[tracking] = "Stop Tracking"
+            else
+                buttons[tracking] = "Start Tracking"
+            endif 
             buttons[cancel] = "cancel"
             String source = JMap.getStr(desc_info, "source")
             String version = JMap.getStr(desc_info, "version")
@@ -119,42 +179,97 @@ Function EditDescriptions(sslThreadController thread)
             int button = SkyMessage.ShowArray(full, buttons, getIndex = true) as int  
             if button == cancel
                 return
+            elseif button == tracking 
+                ToggleThreadTracking(thread.tid)
+                return 
             endif 
         endif 
     endif 
 
-    EditorDescription(fname, actors, stage_id)
+    EditorDescription(thread.tid, fname, actors, stage_id)
     return
 EndFunction 
 
 ; ------------------------------------
 ; Editor Functions 
 ; ------------------------------------
-Function EditorDescription(String fname, Actor[] actors, String stage_id)
+Function EditorDescription(int thread_id, String fname, Actor[] actors, String stage_id)
     uiextensions.InitMenu("UITextEntryMenu")
     uiextensions.OpenMenu("UITextEntryMenu")
     desc_input = UIExtensions.GetMenuResultString("UITextEntryMenu")
     String version = VERSION_2_0
     if desc_input != ""
-        int undefined = -1
-        int accept = 0
-        int rewrite = 1 
-        int cancel = 2
-        String[] buttons = new String[3]
-        buttons[accept] = "accept"
-        buttons[rewrite] = "replace"
-        buttons[cancel] = "cancel"
+        String desc = Description_Add_Actors(version, actors, desc_input)
+        if desc != ""
+            int undefined = -1
+            int accept = 0
+            int rewrite = 1 
+            int tracking = 2
+            int cancel = 3
+            String[] buttons = new String[4]
+            buttons[accept] = "accept"
+            buttons[rewrite] = "replace"
+            if IsThreadTracking(thread_id)
+                buttons[tracking] = "Stop Tracking"
+            else
+                buttons[tracking] = "Start Tracking"
+            endif 
+            buttons[cancel] = "cancel"
+            String full = "On {the floor/a bed}, "+desc 
 
-        String full = "On {the floor/a bed}, "+Description_Add_Actors(version, actors, desc_input)
-        int button = SkyMessage.ShowArray(full, buttons, getIndex = true) as int  
+            int button = SkyMessage.ShowArray(full, buttons, getIndex = true) as int  
 
-        if button == accept 
-            SaveAnimInfo(fname, stage_id, version)
-        elseif button == rewrite
-            EditorDescription(fname, actors, stage_id)
+            if button == accept 
+                StartThreadTracking(thread_id)
+                SaveAnimInfo(fname, stage_id, version)
+            elseif button == rewrite
+                EditorDescription(thread_id, fname, actors, stage_id)
+            elseif button == Tracking
+                ToggleThreadTracking(thread_id)
+            endif 
+        else
+            String msg = "Your description wasn't parsed correctly.\n"
+            int i = 0 
+            int count = actors.length
+            while i < count
+                msg += "{{sl.actors."+i+"}}: "+actors[i].GetDisplayName()+"\n"
+                i += 1
+            endwhile 
+            msg += BuildExample(actors)
+
+            String[] buffers = new String[2]
+            int ok = 0 
+            int tracking = 1
+            int cancel = 2
+            String[] buttons = new String[3]    
+            buttons[ok] = "ok"
+            if IsThreadTracking(thread_id)
+                buttons[tracking] = "Stop Tracking"
+            else
+                buttons[tracking] = "Start Tracking"
+            endif 
+            buttons[cancel] = "cancel"
+            int button = SkyMessage.ShowArray(msg, buttons, getIndex = true) as int  
+
+            if button == ok
+                EditorDescription(thread_id, fname, actors, stage_id)
+            elseif button == tracking
+                StopThreadTracking(thread_id)
+            endif 
         endif 
     endif 
     desc_input = ""
+EndFunction
+
+String Function BuildExample(Actor[] actors)
+    String example = "{{sl.actors.1}} are having sex {{sl.actors.0}}."
+    if actors.length == 1
+        example = "{{sl.actors.0}} is masturbating."
+    elseif actors.length > 3
+        example = "{{sl.actors.2}}, {{sl.actors.1}}, and {{sl.actors.0}} are having an orgy."
+    endif 
+    String desc = Description_Add_Actors(VERSION_2_0, actors, example)
+    return "\""+example+"\"\n"+ "\""+desc+"\""
 EndFunction
 
 Function SaveAnimInfo(String fname, String stage_id, String version)

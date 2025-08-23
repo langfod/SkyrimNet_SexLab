@@ -32,6 +32,8 @@ float Property actorLockTimeout = 0.00069444444 Auto ;  1 day / (24 hours  * 60 
 int Property group_tags = 0 Auto
 int Property group_ordered = 0 Auto
 
+int skynet_tag_sex_lock = 0 
+
 String Property storage_key = "skyrimnet_sexlab_storage_items" Auto
 
 Event OnInit()
@@ -181,6 +183,19 @@ Function ReleaseActorLock(Actor akActor)
 EndFunction
 
 ;----------------------------------------------------------------------------------------------------
+bool Function Tag_SexAnimation(Actor akActor) 
+    if akActor == None 
+        return false 
+    endif 
+    if MiscUtil.FileExists("Data/SexLab.esm") 
+        SexLabFramework SexLab = Game.GetFormFromFile(0xD62, "SexLab.esm") as SexLabFramework
+        return SexLab.AnimSlots.IsRegistered(akActor)
+    endif
+    return false
+EndFunction
+
+
+;----------------------------------------------------------------------------------------------------
 ; SexLab Events
 ;----------------------------------------------------------------------------------------------------
 Function RegisterSexlabEvents() 
@@ -189,8 +204,8 @@ Function RegisterSexlabEvents()
 
     UnRegisterForModEvent("HookAnimationStart")
     RegisterForModEvent("HookAnimationStart", "AnimationStart")
-    ;UnRegisterForModEvent("HookStageStart")
-    ;RegisterForModEvent("HookStageStart", "StageStart")
+    UnRegisterForModEvent("HookStageStart")
+    RegisterForModEvent("HookStageStart", "StageStart")
     ;UnRegisterForModEvent("HookStageEnd")
     ;RegisterForModEvent("HookStageEnd", "SexLab_StageEnd")
     UnRegisterForModEvent("HookOrgasmStart")
@@ -217,8 +232,20 @@ event AnimationStart(int ThreadID, bool HasPlayer)
     active_sex = true
 endEvent
 
-;Event StartStage(int ThreadID, bool HasPlayer)
-;EndEvent
+Event StageStart(int ThreadID, bool HasPlayer)
+    SkyrimNet_SexLab_Stages stages = (self as Quest) as SkyrimNet_SexLab_Stages
+
+    if !stages.IsThreadTracking(ThreadID)
+        return
+    endif 
+    SexLabFramework SexLab = Game.GetFormFromFile(0xD62, "SexLab.esm") as SexLabFramework
+    if SexLab == None
+        Debug.Notification("[SkyrimNet_SexLab] Thread_Dialog: SexLab is None")
+        return  
+    endif
+    sslThreadController thread = SexLab.GetController(ThreadID)
+    Debug.Notification("stage "+thread.stage+" of "+ thread.animation.StageCount())
+EndEvent
 
 Event OrgasmStart(int ThreadID, bool HasPlayer)
     Orgasm_Event(ThreadID)

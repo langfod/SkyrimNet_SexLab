@@ -1,6 +1,5 @@
 Scriptname SkyrimNet_SexLab_Actions 
 
-
 Function Trace(String msg, Bool notification=False) global
     msg = "[SkyrimNet_SexLab_Actions] "+msg
     Debug.Trace(msg)
@@ -32,8 +31,12 @@ Function RegisterActions() global
 
     ; ------------------------
     ; This also has a undress/dress action
-    Quest sexbot = Game.GetFormFromFile(0x800, "ArcaneSexbot.esl") as Quest
-    if sexbot == None 
+    bool sexbot_found = false
+    if MiscUtil.FileExists("Data/ArcaneSexBot.esl") 
+        ; Quest sexbot = Game.Game.GetFormFromFile(0x800, "ArcaneSexbot.esl") as Quest
+        sexbot_found  = true
+    endif 
+    if !sexbot_found 
         SkyrimNetApi.RegisterAction("SexLabSexTarget", \
                 "Start having consensual sex with {target}.", \
                 "SkyrimNet_SexLab_Actions", "SexTarget_IsEligible",  \
