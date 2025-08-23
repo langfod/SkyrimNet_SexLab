@@ -28,6 +28,8 @@ Function Trace(String msg, Bool notification=False) global
 EndFunction
 
 Function Setup()
+    String temp = "sl" ; attempt to set the caplitiization of sl 
+
     desc_input = ""
     animations_folder = "Data/SkyrimNet_SexLab/animations"
     local_folder =      animations_folder+"/_local_"
