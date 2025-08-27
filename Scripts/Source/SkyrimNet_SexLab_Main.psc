@@ -5,6 +5,7 @@ import UIExtensions
 import SkyrimNet_SexLab_Decorators
 import SkyrimNet_SexLab_Actions
 import SkyrimNet_SexLab_Stages
+import StorageUtil
 
 ReferenceAlias[] Property nude_refs Auto
 
@@ -34,7 +35,10 @@ int Property group_ordered = 0 Auto
 
 int skynet_tag_sex_lock = 0 
 
-String Property storage_key = "skyrimnet_sexlab_storage_items" Auto
+String Property storage_items_key = "skyrimnet_sexlab_storage_items" Auto
+String Property storage_arousal_key = "skyrimnet_sexlab_arousal_level" Auto
+
+SkyrimNet_SexLab_Stages Property stages Auto
 
 Event OnInit()
     Debug.Trace("[SkyrimNet_SexLab] OnInit")
@@ -45,9 +49,12 @@ Event OnInit()
 EndEvent
 
 Function Setup()
+
     Debug.Trace("[SkyrimNet_SexLab] SetUp")
 
-    SkyrimNet_SexLab_Stages stages = (self as Quest) as SkyrimNet_SexLab_Stages
+    if stages == None
+        stages = (self as Quest) as SkyrimNet_SexLab_Stages
+    endif 
     stages.Setup() 
     active_sex = false
 
@@ -101,10 +108,10 @@ Function StoreStrippedItems(Actor akActor, Form[] forms)
         return 
     endif 
     Trace("AddStrippedItems: "+akActor.GetDisplayName()+" num_items:"+forms.Length)
-    StorageUtil.FormListClear(akActor, storage_key)
+    StorageUtil.FormListClear(akActor, storage_items_key)
     int i = 0
     while i < forms.Length
-        StorageUtil.FormListAdd(akActor, storage_key, forms[i])
+        StorageUtil.FormListAdd(akActor, storage_items_key, forms[i])
         i += 1
     endwhile
 
@@ -132,13 +139,13 @@ Form[] Function UnStoreStrippedItems(Actor akActor)
     if !HasStrippedItems(akActor)
         return None
     endif
-    Form[] forms = StorageUtil.FormListToArray(akActor, storage_key)
-    StorageUtil.FormListClear(akActor, storage_key)
+    Form[] forms = StorageUtil.FormListToArray(akActor, storage_items_key)
+    StorageUtil.FormListClear(akActor, storage_items_key)
     return forms
 EndFunction
 
 Bool Function HasStrippedItems(Actor akActor)
-    if akActor == None || StorageUtil.FormListCount(akActor, storage_key) == 0
+    if akActor == None || StorageUtil.FormListCount(akActor, storage_items_key) == 0
         return False
     endif 
     return true 
@@ -217,7 +224,7 @@ EndFunction
 event AnimationStart(int ThreadID, bool HasPlayer)
     SexLabFramework SexLab = Game.GetFormFromFile(0xD62, "SexLab.esm") as SexLabFramework
     if SexLab == None
-        Debug.Notification("[SkyrimNet_SexLab] Thread_Dialog: SexLab is None")
+        Trace("[SkyrimNet_SexLab] Thread_Dialog: SexLab is None")
         return  
     endif
     sslThreadController thread = SexLab.GetController(ThreadID)
@@ -233,18 +240,31 @@ event AnimationStart(int ThreadID, bool HasPlayer)
 endEvent
 
 Event StageStart(int ThreadID, bool HasPlayer)
-    SkyrimNet_SexLab_Stages stages = (self as Quest) as SkyrimNet_SexLab_Stages
+
+    SexLabFramework SexLab = Game.GetFormFromFile(0xD62, "SexLab.esm") as SexLabFramework
+    if SexLab == None
+        Trace("[SkyrimNet_SexLab] Thread_Dialog: SexLab is None")
+        return  
+    endif
+    sslThreadController thread = SexLab.GetController(ThreadID)
+    AllowedDeniedOnlyIncrease(thread.positions, thread, "stage") 
 
     if !stages.IsThreadTracking(ThreadID)
         return
     endif 
-    SexLabFramework SexLab = Game.GetFormFromFile(0xD62, "SexLab.esm") as SexLabFramework
-    if SexLab == None
-        Debug.Notification("[SkyrimNet_SexLab] Thread_Dialog: SexLab is None")
-        return  
+    bool[] desc_denied = stages.HasDescriptionOrgasmDenied(thread)
+    String desc = "" 
+    if desc_denied[0]
+        desc = "has description"
     endif
-    sslThreadController thread = SexLab.GetController(ThreadID)
-    Debug.Notification("stage "+thread.stage+" of "+ thread.animation.StageCount())
+    if desc_denied[1]
+        if desc != ""
+            desc += " and "
+        endif 
+        desc += "orgasm denied"        
+    endif
+    Debug.Notification("stage "+thread.stage+" of "+ thread.animation.StageCount()+" "+desc)
+
 EndEvent
 
 Event OrgasmStart(int ThreadID, bool HasPlayer)
@@ -283,7 +303,7 @@ event AnimationEnd(int ThreadID, bool HasPlayer)
     endif
 endEvent
 
-Function Sex_Event(int ThreadID, String status, Bool HasPlayer ) global
+Function Sex_Event(int ThreadID, String status, Bool HasPlayer )
     SexLabFramework SexLab = Game.GetFormFromFile(0xD62, "SexLab.esm") as SexLabFramework
     if SexLab == None
         Debug.Notification("[SkyrimNet_SexLab] Thread_Dialog: SexLab is None")
@@ -317,14 +337,52 @@ Function Sex_Event(int ThreadID, String status, Bool HasPlayer ) global
             ;SkyrimNetApi.RegisterDialogueToListener(actors[1], actors[0], "*"+narration+"*")
         endif 
     else
-        ;SkyrimNetApi.RegisterEvent(eventType, narration,None,None)
+        SkyrimNetApi.RegisterEvent(eventType, narration,None,None)
     endif 
+
+    AllowedDeniedOnlyIncrease(actors, thread, status) 
 EndFunction
 
-Function Orgasm_Event(int ThreadID) global
+Function AllowedDeniedOnlyIncrease(Actor[] actors, sslThreadController thread, String status)
+    if !MiscUtil.FileExists("Data/SexLabAroused.esm") 
+        return
+    endif
+    ; Store orgasm denied actor's arousal level before sex, It is not allowed to lower 
+    ;q = Game.GetFormFromFile(0x800, "SkyrimNet_SexLab.esp") as Quest
+    ;SkyrimNet_SexLab_main main = q as SkyrimNet_SexLab_Main
+    ;SkyrimNet_SexLab_Stages stages_lib = q as SkyrimNet_SexLab_Stages
+    int[] orgasm_denied = stages.GetOrgasmDenied(thread)
+    int satisifcation_idx = slaInternalModules.RegisterStaticEffect("Orgasm")
+
+    int i = orgasm_denied.length - 1
+    while 0 <= i    
+        float sat_value = slaInternalModules.GetStaticEffectValue(actors[i], satisifcation_idx)
+        if orgasm_denied[i] == 1
+            if status == "start"
+                StorageUtil.SetFloatValue(actors[i], storage_arousal_key, sat_value)
+            else
+                float stored_value = StorageUtil.GetFloatValue(actors[i], storage_arousal_key)
+                if stored_value < sat_value
+                    StorageUtil.SetFloatValue(actors[i], storage_arousal_key, sat_value)
+                elseif stored_value > sat_value
+                    slaInternalModules.SetStaticArousalValue(actors[i], satisifcation_idx, stored_value)
+                    Trace(actors[i].GetDisplayName()+" orgasm denied, so erasing orgasm satisifaction "+sat_value+" -> "+stored_value)
+                endif 
+            endif 
+        endif 
+        sat_value = slaInternalModules.GetStaticEffectValue(actors[i], satisifcation_idx)
+        i -= 1
+    endwhile
+EndFunction
+
+Function Orgasm_Event(int ThreadID)
+    
     Quest q = Game.GetFormFromFile(0xD62, "SexLab.esm") as Quest 
     SexLabFramework SexLab = q  as SexLabFramework
     sslActorLibrary ActorLib = q as sslActorLibrary
+
+    
+    ; Store orgasm denied actor's arousal level before orgasm, we need to prevent the denied orgasm lower it 
 
     if SexLab == None
         Debug.Notification("[SkyrimNet_SexLab] Thread_Dialog: SexLab is None")
@@ -332,6 +390,9 @@ Function Orgasm_Event(int ThreadID) global
     endif
     sslThreadController thread = SexLab.GetController(ThreadID)
     Actor[] actors = thread.Positions
+
+    AllowedDeniedOnlyIncrease(actors, thread, "orgasm") 
+
     String[] names = new String[2]
     names[0] = actors[0].GetDisplayName()
     if actors.length > 1
@@ -344,6 +405,11 @@ Function Orgasm_Event(int ThreadID) global
     endif 
 
     sslBaseAnimation anim = thread.Animation
+
+    q = Game.GetFormFromFile(0x800, "SkyrimNet_SexLab.esp") as Quest
+    SkyrimNet_SexLab_main main = q as SkyrimNet_SexLab_Main
+    SkyrimNet_SexLab_Stages stages_lib = q as SkyrimNet_SexLab_Stages
+    int[] orgasm_denied = stages_lib.GetOrgasmDenied(thread)
 
     int position = 0
     String narration = ""
@@ -361,7 +427,9 @@ Function Orgasm_Event(int ThreadID) global
         loc_str[loc_oral] = "mouth"
         loc_str[loc_chest] = "chest"
 
-        if can_ejaculate[position]
+        if position < orgasm_denied.length && orgasm_denied[position] == 1
+            narration += names[position]+" was denied orgasm. "
+        elseif can_ejaculate[position]
 
             if anim.HasTag("anal")
                 loc[loc_anal] = true
@@ -421,7 +489,6 @@ Function Orgasm_Event(int ThreadID) global
     ;    narration = desc+" "+narration
     ;endif 
 
-    ;SkyrimNetApi.DirectNarration(narration, actors[1], actors[0])
     SkyrimNetApi.DirectNarration(narration)
 EndFunction  
 
@@ -464,7 +531,7 @@ String Function Thread_Narration(sslThreadController thread, String status) glob
             if status == "start" 
                 return actors_str+" starts having sex."
             elseif status == "are"
-                return actors_str+" are having sex."
+                return actors_str+" is having sex."
             else 
                 return actors_str+" stops having sex."
             endif 

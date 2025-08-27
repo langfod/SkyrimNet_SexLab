@@ -267,7 +267,6 @@ Function SexTarget_Execute(Actor akActor, string contextJson, string paramsJson)
         return
     endif
 
-    ; Debug.Notification(subActor.GetDisplayName()+" will have sex with "+akTarget.GetDisplayName())
     if rape
         thread.SetVictim(subActor)
     endif 

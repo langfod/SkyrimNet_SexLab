@@ -63,6 +63,9 @@ The following and depedancies:
 - **SkyrimNet**
     - SkryimNet_SexLab (this mod) 
  
+**Optional**
+    -  [OSL Aroused](https://www.nexusmods.com/skyrimspecialedition/mods/65454)
+        - if detected will remove orgasm satasfication if flagged in the animation 
 
 **Recommendations**
 - **Utils**
@@ -88,7 +91,6 @@ The following and depedancies:
 - **SexLab**
     -  [Sexlab Framework](https://www.loverslab.com/files/category/228-sexlab-framework-se/)
     -  [SexLab Tools](https://www.loverslab.com/files/file/10660-sexlab-tools-for-se-patched/) (Allows you to change animations with 'h' hotkey)
-    -  [OSL Aroused](https://www.nexusmods.com/skyrimspecialedition/mods/65454)
 - **Animation**
     -  [Pandora](https://www.nexusmods.com/skyrimspecialedition/mods/133232)
     -  Pandora Output (recommended to store Pandora's output)
