@@ -31,6 +31,7 @@
         <Import>@ModsFolder\Fores New Idles in Skyrim SE - FNIS SE\scripts\source</Import>
 
         <Import>@ModsFolder\SexLabFrameworkAE_v166b\scripts\Source</Import>
+        <Import>.\Headers\SLO Aroused NG</Import>
         <!--
         <Import>@ModsFolder\OSL Aroused\Scripts\Source</Import>
         <Import>.\Headers</Import>

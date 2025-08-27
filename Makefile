@@ -1,7 +1,13 @@
-VERSION=0.19.0
+VERSION=0.21.0
 NAM0=SkyrimNet_SexLab
 
 RELEASE_FILE=versions/SkyrimNet_SexLab ${VERSION}.zip
+
+ANIM_SRC= C:\Skyrim\dev\overwrite\SkyrimNet_SexLab\animations\_local_
+ANIM_DST= SkyrimNet_SexLab\animations\GoodProvider
+
+merge:
+	python3 ./python_scripts/merge_animations.py -s ${ANIM_SRC} -d ${ANIM_DST}
 
 release: 
 	python3 ./python_scripts/fomod-info.py -v ${VERSION} -n '${NAME}' -o fomod/info.xml fomod-source/info.xml

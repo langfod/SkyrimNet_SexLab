@@ -88,7 +88,7 @@ String Function Get_Threads(Actor speaker) global
     SkyrimNet_SexLab_Stages stages = (main as Quest) as SkyrimNet_SexLab_Stages
 
     if main == None
-        Debug.Notification("[SkyrimNet_SexLab] Get_Threads: main is None")
+        Trace("[SkyrimNet_SexLab] Get_Threads: main is None",true)
         return ""
     endif
 
@@ -99,7 +99,7 @@ String Function Get_Threads(Actor speaker) global
 
     sslThreadSlots ThreadSlots = Game.GetFormFromFile(0xD62, "SexLab.esm") as sslThreadSlots
     if ThreadSlots == None
-        Debug.Notification("[SkyrimNet_SexLab] Get_Threads: ThreadSlots is None")
+        Trace("[SkyrimNet_SexLab] Get_Threads: ThreadSlots is None",true)
         return ""
     endif
 
@@ -345,7 +345,6 @@ String Function GetCreatures(sslThreadController thread) global
         endif 
         i += 1
     endwhile
-    Debug.Notification(names)
     return names
 EndFunction
 

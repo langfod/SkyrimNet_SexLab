@@ -84,7 +84,6 @@ Function PageActors()
     while i < count 
         Actor akActor = main.nude_refs[i].GetActorReference()
         if akActor != None 
-            Debug.Notification(akActor.GetDisplayName())
             JFormMap.setStr(actor_infos, akActor, "undressed")
         endif 
         i += 1
@@ -251,6 +250,11 @@ Event OnKeyDown(int key_code)
         Actor player = Game.GetPlayer() 
         if target != None 
             if SexTarget_IsEligible(target,"","")
+                bool target_is_undressed = main.HasStrippedItems(target)
+                String clothing_string = "undress"
+                if target_is_undressed 
+                    clothing_string = "dress"
+                endif 
                 int masturbate = 0
                 int sex = 1
                 int raped_by = 2
@@ -262,11 +266,7 @@ Event OnKeyDown(int key_code)
                 buttons[sex] = "have sex with player"
                 buttons[raped_by] = "raped by player"
                 buttons[rapes] = "rapes the player"
-                if main.HasStrippedItems(target)
-                    buttons[clothing] = "dress"
-                else
-                    buttons[clothing] = "undress"
-                endif 
+                buttons[clothing] = clothing_string
                 buttons[cancel] = "cancel"
                 int button = SkyMessage.ShowArray("Should "+target.getDisplayName()+":", buttons, getIndex = true) as int  
 
@@ -279,7 +279,18 @@ Event OnKeyDown(int key_code)
                 elseif button == raped_by
                     SkyrimNet_SexLab_Actions.SexTarget_Execute(target, "", "{\"rape\":true, \"target\":\""+player.GetDisplayName()+"\",\"victim\":true,\"target_is_player\":true}")
                 elseif button == clothing
-                    if main.HasStrippedItems(target)
+                    int No = 0
+                    int Yes = 1 
+                    buttons = new String[2]
+                    buttons[No] = "No"
+                    buttons[Yes] = "Yes" 
+
+                    button = SkyMessage.ShowArray("Does the player "+clothing_string+" "+target.getDisplayName()+"?", buttons, getIndex = true) as int  
+                    if button == Yes
+                        SkyrimNetApi.DirectNarration(player.GetDisplayName()+" "+clothing_string+"es "+target.GetDisplayName()+".", player, target)
+                    endif 
+                    
+                    if target_is_undressed
                         SkyrimNet_SexLab_Actions.Dress_Execute(target, "", "")
                     else
                         SkyrimNet_SexLab_Actions.Undress_Execute(target, "", "")

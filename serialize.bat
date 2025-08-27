@@ -4,7 +4,7 @@ dealyed expansion enabled
 setlocal EnableDelayedExpansion
 
 rem --- Set this to your skyrim install dir if search doesnt work
-set SKYRIM_INSTALL_PATH=
+set SKYRIM_INSTALL_PATH="C:\Skyrim\dev\skyrim\"
 
 if not defined SKYRIM_INSTALL_PATH (
     rem --- Find Skyrim Special Edition (SSE) directory ---
@@ -29,7 +29,7 @@ if not exist "SpriggitCLI\" (
     updateSpriggit.bat
 )
 
-SpriggitCLI\Spriggit.CLI.exe convert-from-plugin --InputPath "%SKYRIM_INSTALL_PATH%Data\SkyrimNet_Sexlab.esp" --OutputPath "Spriggit\SkyrimNet_Sexlab" --GameRelease SkyrimSE -p Spriggit.Json -v  0.38.6
+SpriggitCLI\Spriggit.CLI.exe convert-from-plugin --InputPath "SkyrimNet_Sexlab.esp" --OutputPath "Spriggit\SkyrimNet_Sexlab" --GameRelease SkyrimSE -p Spriggit.Json -v  0.38.6
 
 
 
