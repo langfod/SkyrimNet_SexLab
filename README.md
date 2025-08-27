@@ -6,6 +6,11 @@ Adds SkyrimNet support to SexLab.
 - NPC will be able to start sex
 - NPC will be able to dress and undress
 
+# Descriptions 
+- Descriptions of the sex will be added to the prompt
+- Ability to create hand crafted description for each animation
+- Ability to flag some animations has dening orgasm to some actors 
+
 # Hot Key
 There is an optional hot key, must be enabled in the MCM.  It supports: 
 - ability to start a sexual act with an NPC in the crosshairs or between NPCs not in the crosshairs.
