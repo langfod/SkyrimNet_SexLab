@@ -73,8 +73,10 @@ The following and depedancies:
     - SkryimNet_SexLab (this mod) 
  
 **Optional**
-    -  [OSL Aroused](https://www.nexusmods.com/skyrimspecialedition/mods/65454)
-        - if detected will remove orgasm satasfication if flagged in the animation 
+- [SkyrimNet_Arousal](https://github.com/GoodProvider/SkyrimNet_Arousal) adds arousal to prompt / add arousal actions 
+- [OSL Aroused](https://www.nexusmods.com/skyrimspecialedition/mods/65454)
+   - if detected will remove orgasm satasfication if flagged in the animation 
+        
 
 **Recommendations**
 - **Utils**
