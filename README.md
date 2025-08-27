@@ -79,7 +79,7 @@ The following and depedancies:
 **Optional**
 - [SkyrimNet_Arousal](https://github.com/GoodProvider/SkyrimNet_Arousal) adds arousal to prompt / add arousal actions 
 - [OSL Aroused](https://www.nexusmods.com/skyrimspecialedition/mods/65454)
-   - if detected will remove orgasm satasfication if flagged in the animation 
+   - Will prevent orgasm from increasing satisfaction for tagged actors for a given animations
         
 
 **Recommendations**
