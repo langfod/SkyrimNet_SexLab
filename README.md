@@ -32,6 +32,13 @@ Descriptions you create will be stored in `SkyrimNet_SexLab/animations/\_local\_
   - {{sl.actors.1}} is the second, etc 
   - {{sl.actors.2}} is the third, etc 
 
+## Orgasm Denied 
+Some animation do not provide a justification for all actors getting a chance to orgasm.
+It is stored as an array of integers matching the position of the actors in the thread. 
+- 0: the actor is allowed an orgasm
+- 1: the actor is denied an orgrasm 
+
+## Examples 
 Examples can be found in the animations/GoodProvider sub directory.
 
 `SkyrimNet_SexLab\animations\_local_\file.json
@@ -41,7 +48,8 @@ Examples can be found in the animations/GoodProvider sub directory.
         "description":"{{sl.actors.1}} kisses {{sl.actors.0}}.",
         "id":"stage 1",
         "version": "1.0"
-    }
+    },
+    "orgasm_denied":[0,1]
 }
 ~~~
 
