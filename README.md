@@ -9,7 +9,7 @@ Adds SkyrimNet support to SexLab.
 # Descriptions 
 - Descriptions of the sex will be added to the prompt
 - Ability to create hand crafted description for each animation
-- Ability to flag some animations has dening orgasm to some actors 
+- Ability to flag some positions as not being able to get satisifation from the sex animation
 
 # Hot Key
 There is an optional hot key, must be enabled in the MCM.  It supports: 
