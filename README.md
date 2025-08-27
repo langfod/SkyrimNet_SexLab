@@ -74,8 +74,7 @@ The following and depedancies:
    - [UIExtensions_UITextEntryMenu_with_VR_support](https://github.com/mrowrpurr/UIExtensions_UITextEntryMenu_with_VR_support) (VR users)
 - SkyrimNet
    - You must have narration enabled
-- **SkyrimNet**
-    - SkryimNet_SexLab (this mod) 
+- SkryimNet_SexLab (this mod) 
  
 **Optional**
 - [SkyrimNet_Arousal](https://github.com/GoodProvider/SkyrimNet_Arousal) adds arousal to prompt / add arousal actions 
