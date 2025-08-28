@@ -279,22 +279,30 @@ Event OnKeyDown(int key_code)
                 elseif button == raped_by
                     SkyrimNet_SexLab_Actions.SexTarget_Execute(target, "", "{\"rape\":true, \"target\":\""+player.GetDisplayName()+"\",\"victim\":true,\"target_is_player\":true}")
                 elseif button == clothing
-                    int No = 0
-                    int Yes = 1 
-                    buttons = new String[2]
-                    buttons[No] = "No"
-                    buttons[Yes] = "Yes" 
 
-                    button = SkyMessage.ShowArray("Does the player "+clothing_string+" "+target.getDisplayName()+"?", buttons, getIndex = true) as int  
-                    if button == Yes
-                        SkyrimNetApi.DirectNarration(player.GetDisplayName()+" "+clothing_string+"es "+target.GetDisplayName()+".", player, target)
+                    int Forcefully = 0
+                    int Gently = 1 
+                    int Silently = 2
+                    buttons = new String[3]
+                    buttons[Forcefully] = "Forcefully by player"
+                    buttons[Gently] = "Gently by player" 
+                    buttons[Silently] = "Silently" 
+
+                    button = SkyMessage.ShowArray("How is "+target.getDisplayName()+" to be "+clothing_string+"ed?", buttons, getIndex = true) as int  
+                    if button == Forcefully || button == Gently
+                        String style = "forcefully"
+                        if button == Gently 
+                            style = "gently"
+                        endif 
+                        String msg = player.GetDisplayName()+" "+style+" "+clothing_string+"es "+target.GetDisplayName()+"."
+                        SkyrimNetApi.DirectNarration(msg, player, target) 
                     endif 
-                    
                     if target_is_undressed
                         SkyrimNet_SexLab_Actions.Dress_Execute(target, "", "")
                     else
                         SkyrimNet_SexLab_Actions.Undress_Execute(target, "", "")
                     endif
+
                 else 
                     return 
                 endif 
