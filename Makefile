@@ -9,6 +9,10 @@ ANIM_DST= SkyrimNet_SexLab\animations\GoodProvider
 merge:
 	python3 ./python_scripts/merge_animations.py -s ${ANIM_SRC} -d ${ANIM_DST}
 
+update: 
+	updateSpriggit.bat 
+	serialize.bat 
+
 release: 
 	python3 ./python_scripts/fomod-info.py -v ${VERSION} -n '${NAME}' -o fomod/info.xml fomod-source/info.xml
 	python3 ./python_scripts/info.py -v ${VERSION} -n '${NAME}' -o SkyrimNet_SexLab/info.json

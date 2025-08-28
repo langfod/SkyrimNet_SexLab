@@ -217,6 +217,7 @@ Function EditDescriptions(sslThreadController thread)
             buttons[cancel] = Button_Cancel
             String source = JMap.getStr(desc_info, "source")
             if previous_stage != 0
+                buttons[rewrite] = "add for stage "+thread.stage
                 source = "from "+previous_stage+" stage"
             endif 
             source += " "+thread.stage+"/"+thread.animation.StageCount() 

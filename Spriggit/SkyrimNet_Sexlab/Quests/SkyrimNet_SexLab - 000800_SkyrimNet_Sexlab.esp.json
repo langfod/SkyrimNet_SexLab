@@ -17,7 +17,7 @@
           {
             "MutagenObjectType": "ScriptObjectProperty",
             "Name": "sexlab_public_sex_accepted",
-            "Object": "003DD6:SkyrimNet_Sexlab.esp"
+            "Object": "000801:SkyrimNet_Sexlab.esp"
           },
           {
             "MutagenObjectType": "ScriptObjectProperty",
@@ -93,7 +93,7 @@
           {
             "MutagenObjectType": "ScriptObjectProperty",
             "Name": "SexLab_Active_Sex",
-            "Object": "004339:SkyrimNet_Sexlab.esp"
+            "Object": "000802:SkyrimNet_Sexlab.esp"
           }
         ]
       }
