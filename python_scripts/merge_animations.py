@@ -12,8 +12,11 @@ args = parser.parse_args()
 
 fname_info = {} 
 for fname in os.listdir(args.src):
-    with open(f"{args.src}/{fname}") as fin: 
+    path = f"{args.src}/{fname}"
+    with open(path) as fin:
         fname_info[fname] = json.load(fin) 
+    if fname_info[fname]:
+        os.remove(path) 
 
 for fname,info in fname_info.items(): 
     path = f"{args.dst}/{fname}"
@@ -26,6 +29,5 @@ for fname,info in fname_info.items():
                 if key not in info: 
                     merged = "M" 
                     info[key] = value 
-    print (merged,fname)
     with open(path,"w") as fout: 
         json.dump(info,indent=4,fp=fout)
