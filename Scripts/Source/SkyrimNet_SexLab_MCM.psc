@@ -11,6 +11,8 @@ SkyrimNet_SexLab_Stages Property stages Auto
 bool hot_key_toggle = False 
 int sex_edit_key = 40 ; 26
 
+bool clear_JSON = False
+
 Function Trace(String msg, Bool notification=False) global
     msg = "[SkyrimNet_SexLab_MCM] "+msg
     Debug.Trace(msg)
