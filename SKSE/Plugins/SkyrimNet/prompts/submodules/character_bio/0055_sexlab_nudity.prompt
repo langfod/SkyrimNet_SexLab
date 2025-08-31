@@ -1,7 +1,6 @@
 {% if  not isTimePaused and isValidActor(actorUUID) and (render_mode == "full" or render_mode == "thoughts" or render_mode == "dialogue_target") %}
 {% set nudity = sexlab_nudity(actorUUID) %} 
 {% if nudity.topless and nudity.bottomless %} 
-# Nudity
-- {{ decnpc(actorUUID).name }} is nude
+- {{ decnpc(actorUUID).name }} is nude {% if  is_narration_enabled() %} Narration can not include clothing descriptions {% endif %} 
 {% endif %}
 {% endif %}
