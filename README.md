@@ -47,11 +47,10 @@ It is stored as an array of integers matching the position of the actors in the 
 Examples can be found in the animations/GoodProvider sub directory.
 
 `SkyrimNet_SexLab\animations\_local_\file.json
-~~~
+~~~json
 {
     "stage 1": {
         "description":"{{sl.actors.1}} kisses {{sl.actors.0}}.",
-        "id":"stage 1",
         "version": "1.0"
     },
     "orgasm_denied":[0,1]
