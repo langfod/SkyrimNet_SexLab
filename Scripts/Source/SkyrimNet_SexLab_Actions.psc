@@ -31,12 +31,7 @@ Function RegisterActions() global
 
     ; ------------------------
     ; This also has a undress/dress action
-    bool sexbot_found = false
     if MiscUtil.FileExists("Data/ArcaneSexBot.esl") 
-        ; Quest sexbot = Game.Game.GetFormFromFile(0x800, "ArcaneSexbot.esl") as Quest
-        sexbot_found  = true
-    endif 
-    if !sexbot_found 
         SkyrimNetApi.RegisterAction("SexLabSexTarget", \
                 "Start having consensual sex with {target}.", \
                 "SkyrimNet_SexLab_Actions", "SexTarget_IsEligible",  \
