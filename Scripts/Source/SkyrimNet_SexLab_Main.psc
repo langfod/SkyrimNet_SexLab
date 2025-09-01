@@ -60,11 +60,15 @@ Function Setup()
 
     Trace("SetUp")
 
+    ; Setup related Scripts 
     if stages == None
         stages = (self as Quest) as SkyrimNet_SexLab_Stages
     endif 
     stages.Setup() 
     active_sex = false
+
+    SkyrimNet_SexLab_MCM mcm = (self as Quest) as SkyrimNet_SexLab_MCM
+    mcm.Setup() 
 
     if actorLock == 0 
         actorLock = JFormMap.object() 

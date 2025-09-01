@@ -26,18 +26,23 @@ EndFunction
 String page_options = "options"
 String page_actors = "actors debug (can be slow)"
 
-Event OnConfigOpen()
-
-    Pages = new String[2]
-    pages[0] = page_options
-    pages[1] = page_actors
-
+Function Setup() 
 
     if MiscUtil.FileExists("Data/SkyrimNetUDNG.esp")
         group_devices = Game.GetFormFromFile(0x800, "SkyrimNetUDNG.esp") as skyrimnet_UDNG_Groups
     else 
         group_devices = None 
     endif
+    group_devices = None 
+    Debug.MessageBox("group: "+group_devices)
+EndFunction 
+
+
+Event OnConfigOpen()
+
+    Pages = new String[2]
+    pages[0] = page_options
+    pages[1] = page_actors
 
 EndEvent
 
@@ -276,11 +281,14 @@ Event OnKeyDown(int key_code)
                 String[] buttons = new String[6]
                 int bondage = -2
                 if group_devices != None 
+                    Debug.MessageBox("group_devices: "+group_devices) 
                     bondage = 5
                     cancel = 6
 
                     buttons = new String[7]
                     buttons[bondage] = "bondage"
+                else 
+                    bondage = -2
                 endif 
 
                 buttons[masturbate] = "masturbate"
@@ -309,7 +317,7 @@ Event OnKeyDown(int key_code)
                     buttons[Forcefully] = "Forcefully by player"
                     buttons[Normally] = "By player" 
                     buttons[Gently] = "Gently by player" 
-                    buttons[Silently] = "Silently" 
+                    buttons[Silently] = "( Silently )" 
 
                     button = SkyMessage.ShowArray("How is "+target.getDisplayName()+" to be "+clothing_string+"ed?", buttons, getIndex = true) as int  
                     if button == Forcefully || button == Gently
@@ -328,7 +336,7 @@ Event OnKeyDown(int key_code)
                         SkyrimNet_SexLab_Actions.Undress_Execute(target, "", "")
                     endif
 
-                elseif group_devices != None 
+                elseif button == bondage 
                     group_devices.UpdateDevices(target) 
                 else 
                     return 
