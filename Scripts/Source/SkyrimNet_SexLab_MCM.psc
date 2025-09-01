@@ -302,20 +302,24 @@ Event OnKeyDown(int key_code)
                 elseif button == clothing
 
                     int Forcefully = 0
-                    int Gently = 1 
-                    int Silently = 2
-                    buttons = new String[3]
+                    int Normally = 1
+                    int Gently = 2 
+                    int Silently = 3
+                    buttons = new String[4]
                     buttons[Forcefully] = "Forcefully by player"
+                    buttons[Normally] = "By player" 
                     buttons[Gently] = "Gently by player" 
                     buttons[Silently] = "Silently" 
 
                     button = SkyMessage.ShowArray("How is "+target.getDisplayName()+" to be "+clothing_string+"ed?", buttons, getIndex = true) as int  
                     if button == Forcefully || button == Gently
-                        String style = "forcefully"
+                        String style = " "
                         if button == Gently 
-                            style = "gently"
+                            style = " gently "
+                        else 
+                            style = " forcefully "
                         endif 
-                        String msg = player.GetDisplayName()+" "+style+" "+clothing_string+"es "+target.GetDisplayName()+"."
+                        String msg = player.GetDisplayName()+style+clothing_string+"es "+target.GetDisplayName()+"."
                         SkyrimNetApi.DirectNarration(msg, player, target) 
                     endif 
                     if target_is_undressed
