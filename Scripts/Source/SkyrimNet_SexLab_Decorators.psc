@@ -4,7 +4,7 @@ import SkyrimNet_SexLab_Main
 import SkyrimNet_SexLab_Stages
 
 Function Trace(String msg, Bool notification=False) global
-    msg = "[SkyrimNet_SexLab_Decorators] "+msg
+    msg = "[SkyrimNet_SexLab.Decorators] "+msg
     Debug.Trace(msg)
     if notification
         Debug.Notification(msg)
@@ -83,7 +83,7 @@ String Function Is_Nudity(Actor akActor) global
 EndFunction
 
 String Function Get_Threads(Actor speaker) global
-    Debug.Trace("[SkyrimNet_SexLab] Get_Threads called for "+speaker.GetDisplayName())
+    Trace("Get_Threads called for "+speaker.GetDisplayName())
     SkyrimNet_SexLab_Main main = Game.GetFormFromFile(0x800, "SkyrimNet_SexLab.esp") as SkyrimNet_SexLab_Main
     SkyrimNet_SexLab_Stages stages = (main as Quest) as SkyrimNet_SexLab_Stages
 

@@ -23,6 +23,14 @@ Bool Property active_sex
     EndFunction 
 EndProperty
 
+Function Trace(String msg, Bool notification=False) global
+    if notification
+        Debug.Notification(msg)
+    endif 
+    msg = "[SkyrimNet_SexLab.Main] "+msg
+    Debug.Trace(msg)
+EndFunction
+
 bool Property rape_allowed = true Auto
 bool Property sex_edit_tags_player = true Auto 
 bool Property sex_edit_tags_nonplayer = False Auto
@@ -41,7 +49,7 @@ String Property storage_arousal_key = "skyrimnet_sexlab_arousal_level" Auto
 SkyrimNet_SexLab_Stages Property stages Auto
 
 Event OnInit()
-    Debug.Trace("[SkyrimNet_SexLab] OnInit")
+    Trace("OnInit")
     rape_allowed = true
 
     ; Register for all SexLab events using the framework's RegisterForAllEvents function
@@ -50,7 +58,7 @@ EndEvent
 
 Function Setup()
 
-    Debug.Trace("[SkyrimNet_SexLab] SetUp")
+    Trace("SetUp")
 
     if stages == None
         stages = (self as Quest) as SkyrimNet_SexLab_Stages
@@ -87,18 +95,6 @@ Function Setup()
     SkyrimNet_SexLab_Decorators.RegisterDecorators() 
 
 EndFunction
-;----------------------------------------------------------------------------------------------------
-; Utility function
-;----------------------------------------------------------------------------------------------------
-
-Function Trace(String msg, Bool notification=False) global
-    msg = "[SkyrimNet_SexLab_Main] "+msg
-    Debug.Trace(msg)
-    if notification
-        Debug.Notification(msg)
-    endif 
-EndFunction
-
 ;----------------------------------------------------------------------------------------------------
 ; Stripped Items Storage
 ;----------------------------------------------------------------------------------------------------
@@ -206,7 +202,7 @@ EndFunction
 ; SexLab Events
 ;----------------------------------------------------------------------------------------------------
 Function RegisterSexlabEvents() 
-    Debug.Trace("SkyrimNet_SexLab_Main: RegisterSexlabEvents called")
+    Trace("RegisterSexlabEvents called")
     ; SexLabFramework sexlab = Game.GetForm
 
     UnRegisterForModEvent("HookAnimationStart")

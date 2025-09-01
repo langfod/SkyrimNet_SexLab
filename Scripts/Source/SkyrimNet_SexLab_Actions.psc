@@ -1,11 +1,11 @@
 Scriptname SkyrimNet_SexLab_Actions 
 
 Function Trace(String msg, Bool notification=False) global
-    msg = "[SkyrimNet_SexLab_Actions] "+msg
-    Debug.Trace(msg)
     if notification
         Debug.Notification(msg)
     endif 
+    msg = "[SkyrimNet_SexLab.Actions] "+msg
+    Debug.Trace(msg)
 EndFunction
 
 ;----------------------------------------------------------------------------------------------------
@@ -20,7 +20,7 @@ Function RegisterActions() global
     int count = types.Length 
     String type = ""
     while i < count 
-        if type != "any" && type != "bondage"
+        if type != "any"
             if type != "" 
                 type += "|"
             endif 
@@ -37,7 +37,7 @@ Function RegisterActions() global
                 "SkyrimNet_SexLab_Actions", "SexTarget_IsEligible",  \
                 "SkyrimNet_SexLab_Actions", "SexTarget_Execute",  \
                 "", "PAPYRUS", 1, \
-                "{\"target\": \"Actor\", \"type\":\""+type+"\", \"rape\":false, \"victim\":true}")
+                "{\"target\": \"Actor\", \"type\":\""+type+"\", \"rape\":false, \"target_victim\":false}")
         SkyrimNetApi.RegisterAction("SexLabSexMasturbation", \
                 "Start masturbating.",\
                 "SkyrimNet_SexLab_Actions", "SexTarget_IsEligible",  \
@@ -67,13 +67,13 @@ Function RegisterActions() global
                 "SkyrimNet_SexLab_Actions", "SexTarget_IsEligible",  \
                 "SkyrimNet_SexLab_Actions", "SexTarget_Execute",  \
                 "", "PAPYRUS", 1, \
-                "{\"target\": \"Actor\", \"type\":\""+type+"\", \"rape\":true, \"victim\":false}")
+                "{\"target\": \"Actor\", \"type\":\""+type+"\", \"rape\":true, \"target_victim\":true}")
         SkyrimNetApi.RegisterAction("SexLab_RapedByTarget", \
-                "Starts being sexually assulted by {target}.",\
+                "Start being sexually assulted by {target}.",\
                 "SkyrimNet_SexLab_Actions", "SexTarget_IsEligible",  \
                 "SkyrimNet_SexLab_Actions", "SexTarget_Execute",  \
                 "", "PAPYRUS", 1, \
-                "{\"target\": \"Actor\", \"type\":\""+type+"\", \"rape\":true, \"victim\":true}")
+                "{\"target\": \"Actor\", \"type\":\""+type+"\", \"rape\":true, \"target_victim\":false}")
     endif 
 
 EndFunction
@@ -83,8 +83,8 @@ EndFunction
 ; -------------------------------------------------
 
 String[] Function GetTypes() global
-    String[] types = new String[12]
-    types[0] = "bondage"
+    String[] types = new String[11]
+    types[0] = "handjob"
     types[1] = "oral"
     types[2] = "boobjob"
     types[3] = "thighjob"
@@ -94,7 +94,6 @@ String[] Function GetTypes() global
     types[7] = "dildo"
     types[9] = "fingering"
     types[10] = "footjob"
-    types[11] = "handjob"
     return types
 EndFunction
 
@@ -118,7 +117,7 @@ Bool Function SexTarget_IsEligible(Actor akActor, string contextJson, string par
 EndFunction
 
 Function SexTarget_Execute(Actor akActor, string contextJson, string paramsJson) global
-    Trace("SexTarget_Execute: "+paramsJson)
+    Trace("SexTarget_Execute: "+akActor.GetDisplayName()+" "+paramsJson)
     SexLabFramework SexLab = Game.GetFormFromFile(0xD62, "SexLab.esm") as SexLabFramework
     if SexLab == None
         Trace("SexTarget_Execute: SexLab is None", true)
@@ -130,14 +129,14 @@ Function SexTarget_Execute(Actor akActor, string contextJson, string paramsJson)
         return
     endif
 
-    bool rape = SkyrimNetApi.GetJsonBool(paramsJson, "rape", false)
+    Actor player = Game.GetPlayer()
     String type = SkyrimNetApi.GetJsonString(paramsJson, "type","")
     Actor akTarget = None
     if type != "masturbation" && type != "masturbate"
         akTarget = SkyrimNetApi.GetJsonActor(paramsJson, "target", None)
         if akTarget == None 
             if SkyrimNetApi.GetJsonBool(paramsJson, "target_is_player", false)
-                akTarget = Game.GetPlayer() 
+                akTarget = player
             endif 
         endif 
     endif 
@@ -155,15 +154,20 @@ Function SexTarget_Execute(Actor akActor, string contextJson, string paramsJson)
         main.ReleaseActorLock(akTarget) 
     endif 
 
-    Actor player = Game.GetPlayer()
-    Bool victim = SkyrimNetApi.GetJsonBool(paramsJson, "victim", true)
-    Debug.Trace("[SkyrimNet_SexLab] SexTarget_Execute type:"+type+" akTarget:"+akTarget)
-    Actor subActor = akActor 
-    Actor domActor = akTarget
-    if akTarget != None && !victim 
-        subActor = akTarget
-        domActor = akActor
+    Actor domActor = akActor
+    Actor subActor = akTarget 
+    if akTarget != None 
+        Trace("before: "+domActor.GetDisplayName()+">"+subActor.GetDisplayName(),true)
+    endif 
+    Bool target_is_victim = SkyrimNetApi.GetJsonBool(paramsJson, "target_is_victim", true)
+    if akTarget != None && !target_is_victim 
+        Trace("switching sub and dom")
+        domActor = akTarget
+        subActor = akActor
     endif
+    if akTarget != None 
+        Trace("after: "+domActor.GetDisplayName()+">"+subActor.GetDisplayName()+" target_is_victum:"+target_is_victim,true)
+    endif 
 
     int YES = 0
     int YES_RANDOM = 1
@@ -175,6 +179,7 @@ Function SexTarget_Execute(Actor akActor, string contextJson, string paramsJson)
     buttons[NO_SILENT] = "No (Silent)"
     buttons[NO] = "No "
 
+    bool rape = SkyrimNetApi.GetJsonBool(paramsJson, "rape", false)
     int button = YES
     if subActor == player || (domActor != None && domActor == player)
         button = YesNoDialog(buttons, YES, type, rape, domActor, subActor, player)

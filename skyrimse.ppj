@@ -20,6 +20,9 @@
         <Import>@ModsFolder\powerofthree's Tweaks\Source\Scripts</Import>
         <Import>@ModsFolder\Papyrus MessageBox - SKSE NG\Scripts\Source</Import>
 
+        <Import>@ModsFolder\SkyrimNet_DDUDNG\Scripts\Source</Import>
+        <Import>@ModsFolder\SkyrimNet_DDUDNG\Headers</Import>
+
         <Import>@ModsFolder\JContainers\scripts\source</Import>
 
         <Import>@ModsFolder\MfgFix\Source\Scripts</Import>

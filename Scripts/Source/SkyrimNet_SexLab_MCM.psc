@@ -13,12 +13,14 @@ int sex_edit_key = 40 ; 26
 
 bool clear_JSON = False
 
+skyrimnet_UDNG_Groups group_devices = None
+
 Function Trace(String msg, Bool notification=False) global
-    msg = "[SkyrimNet_SexLab_MCM] "+msg
-    Debug.Trace(msg)
     if notification
         Debug.Notification(msg)
     endif 
+    msg = "[SkyrimNet_SexLab.MCM] "+msg
+    Debug.Trace(msg)
 EndFunction
 
 String page_options = "options"
@@ -29,6 +31,13 @@ Event OnConfigOpen()
     Pages = new String[2]
     pages[0] = page_options
     pages[1] = page_actors
+
+
+    if MiscUtil.FileExists("Data/SkyrimNetUDNG.esp")
+        group_devices = Game.GetFormFromFile(0x800, "SkyrimNetUDNG.esp") as skyrimnet_UDNG_Groups
+    else 
+        group_devices = None 
+    endif
 
 EndEvent
 
@@ -263,7 +272,17 @@ Event OnKeyDown(int key_code)
                 int rapes = 3
                 int clothing = 4
                 int cancel = 5
+
                 String[] buttons = new String[6]
+                int bondage = -2
+                if group_devices != None 
+                    bondage = 5
+                    cancel = 6
+
+                    buttons = new String[7]
+                    buttons[bondage] = "bondage"
+                endif 
+
                 buttons[masturbate] = "masturbate"
                 buttons[sex] = "have sex with player"
                 buttons[raped_by] = "raped by player"
@@ -277,9 +296,9 @@ Event OnKeyDown(int key_code)
                 elseif button == sex
                     SkyrimNet_SexLab_Actions.SexTarget_Execute(target, "", "{\"rape\":false, \"target\":\""+player.GetDisplayName()+"\",\"target_is_player\":true}")
                 elseif button == rapes
-                    SkyrimNet_SexLab_Actions.SexTarget_Execute(target, "", "{\"rape\":true, \"target\":\""+player.GetDisplayName()+"\",\"victim\":false, \"target_is_player\":true}")
+                    SkyrimNet_SexLab_Actions.SexTarget_Execute(target, "", "{\"rape\":true, \"target\":\""+player.GetDisplayName()+"\",\"target_is_victim\":True, \"target_is_player\":true}")
                 elseif button == raped_by
-                    SkyrimNet_SexLab_Actions.SexTarget_Execute(target, "", "{\"rape\":true, \"target\":\""+player.GetDisplayName()+"\",\"victim\":true,\"target_is_player\":true}")
+                    SkyrimNet_SexLab_Actions.SexTarget_Execute(target, "", "{\"rape\":true, \"target\":\""+player.GetDisplayName()+"\",\"target_is_victim\":false,\"target_is_player\":true}")
                 elseif button == clothing
 
                     int Forcefully = 0
@@ -305,6 +324,8 @@ Event OnKeyDown(int key_code)
                         SkyrimNet_SexLab_Actions.Undress_Execute(target, "", "")
                     endif
 
+                elseif group_devices != None 
+                    group_devices.UpdateDevices(target) 
                 else 
                     return 
                 endif 

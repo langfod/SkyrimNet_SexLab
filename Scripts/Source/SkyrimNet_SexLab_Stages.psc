@@ -39,11 +39,11 @@ String storage_key = "skyrimnet_sexlab_stages_anim_info"
 int anim_info_cache = 0
 
 Function Trace(String msg, Bool notification=False) global
-    msg = "[SkyrimNet_SexLab_Stages] "+msg
-    Debug.Trace(msg)
     if notification
         Debug.Notification(msg)
     endif 
+    msg = "[SkyrimNet_SexLab.Stages] "+msg
+    Debug.Trace(msg)
 EndFunction
 
 Function Setup()
