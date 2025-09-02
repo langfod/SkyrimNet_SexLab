@@ -20,7 +20,6 @@ Function Trace(String msg, Bool notification=False) global
         Debug.Notification(msg)
     endif 
     msg = "[SkyrimNet_SexLab.MCM] "+msg
-    Debug.Trace(msg)
 EndFunction
 
 String page_options = "options"
