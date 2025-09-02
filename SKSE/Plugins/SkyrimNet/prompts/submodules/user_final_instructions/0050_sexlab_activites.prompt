@@ -80,7 +80,7 @@
                     endif -%} {%- 
                endif -%} {%-
                if thread.strapon_names != "" -%}
-                    {{ thread.strapon_names }} {%
+                    {{ thread.strapon_names }}. Always describe as strapon or dildo. {%
                endif %} {%
                if thread.futa_names != "" -%}
                     {{ thread.futa_names }} {%

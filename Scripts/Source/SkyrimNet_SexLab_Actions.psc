@@ -139,11 +139,16 @@ Function SexTarget_Execute(Actor akActor, string contextJson, string paramsJson)
                 akTarget = player
             endif 
         endif 
+        if akTarget == None 
+            Trace("SexTarget type != masturbation, but target is None (likely in complete Actor name)", true )
+            return 
+        endif 
     endif 
     if akActor == akTarget
         type = "masturbation"
         akTarget = None
     endif 
+
 
     if !main.SetActorLock(akActor) 
         main.ReleaseActorLock(akActor) 
@@ -156,18 +161,11 @@ Function SexTarget_Execute(Actor akActor, string contextJson, string paramsJson)
 
     Actor domActor = akActor
     Actor subActor = akTarget 
-    if akTarget != None 
-        Trace("before: "+domActor.GetDisplayName()+">"+subActor.GetDisplayName(),true)
-    endif 
     Bool target_is_victim = SkyrimNetApi.GetJsonBool(paramsJson, "target_is_victim", true)
     if akTarget != None && !target_is_victim 
-        Trace("switching sub and dom")
         domActor = akTarget
         subActor = akActor
     endif
-    if akTarget != None 
-        Trace("after: "+domActor.GetDisplayName()+">"+subActor.GetDisplayName()+" target_is_victum:"+target_is_victim,true)
-    endif 
 
     int YES = 0
     int YES_RANDOM = 1
