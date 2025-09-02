@@ -57,7 +57,7 @@ Function Setup()
         player = Game.GetPlayer()
     endif 
     if ThreadSlots == None
-        Debug.Notification("[SkyrimNet_SexLab] Thread_Dialog: ThreadSlots is None")
+        Trace("Thread_Dialog: ThreadSlots is None")
         return  
     endif
 
@@ -530,7 +530,7 @@ int Function GetAnim_Info(sslThreadController thread, Bool force_load=False)
                     k -= 1
                 endwhile 
             else 
-                Debug.Notification("Parse error for '"+fn+"'")
+                Trace("Parse error for '"+fn+"'",true)
             endif 
         endif
         i -= 1
@@ -592,7 +592,7 @@ Function UpdateAnimInfo(sslThreadController thread, String field, String version
         JMap.setObj(anim_info, "orgasm_denied", orgasm_denied_id)
     endif 
 
-    Debug.Notification("saving "+fname)
+    Trace("saving "+fname,true)
     JValue.writeToFile(anim_info, path)
     JValue.writeToFile(anim_info, animations_folder+"/last.json")
 EndFunction 

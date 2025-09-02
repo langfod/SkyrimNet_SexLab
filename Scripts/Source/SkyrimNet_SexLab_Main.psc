@@ -282,7 +282,7 @@ event AnimationEnd(int ThreadID, bool HasPlayer)
 
    sslThreadSlots ThreadSlots = Game.GetFormFromFile(0xD62, "SexLab.esm") as sslThreadSlots
     if ThreadSlots == None
-        Debug.Notification("[SkyrimNet_SexLab] Get_Threads: ThreadSlots is None")
+        Trace("[SkyrimNet_SexLab] Get_Threads: ThreadSlots is None", true)
         return
     endif
 
@@ -306,7 +306,7 @@ endEvent
 Function Sex_Event(int ThreadID, String status, Bool HasPlayer )
     SexLabFramework SexLab = Game.GetFormFromFile(0xD62, "SexLab.esm") as SexLabFramework
     if SexLab == None
-        Debug.Notification("[SkyrimNet_SexLab] Thread_Dialog: SexLab is None")
+        Trace("[SkyrimNet_SexLab] Thread_Dialog: SexLab is None", true)
         return  
     endif
     sslThreadController thread = SexLab.GetController(ThreadID)
@@ -385,7 +385,7 @@ Function Orgasm_Event(int ThreadID)
     ; Store orgasm denied actor's arousal level before orgasm, we need to prevent the denied orgasm lower it 
 
     if SexLab == None
-        Debug.Notification("[SkyrimNet_SexLab] Thread_Dialog: SexLab is None")
+        Trace(" Thread_Dialog: SexLab is None")
         return  
     endif
     sslThreadController thread = SexLab.GetController(ThreadID)
@@ -498,7 +498,7 @@ EndFunction
 String Function Thread_Narration(sslThreadController thread, String status) global
     SexLabFramework SexLab = Game.GetFormFromFile(0xD62, "SexLab.esm") as SexLabFramework
     if SexLab == None
-        Debug.Notification("[SkyrimNet_SexLab] GetThreadDescription: SexLab is None")
+        Trace("[SkyrimNet_SexLab] GetThreadDescription: SexLab is None")
         return None
     endif
     SkyrimNet_SexLab_Main main = Game.GetFormFromFile(0x800, "SkyrimNet_SexLab.esp") as SkyrimNet_SexLab_Main

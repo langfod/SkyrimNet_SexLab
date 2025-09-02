@@ -220,7 +220,7 @@ Function SexTarget_Execute(Actor akActor, string contextJson, string paramsJson)
                 thread.SetAnimations(anims)
                 thread.addTag(type)
             else
-                Debug.Notification("No kissing animation found")
+                Trace("No kissing animation found",true)
                 return 
             endif 
         else
@@ -475,7 +475,7 @@ sslBaseAnimation[] Function AnimsDialog(SexLabFramework sexlab, Actor[] actors, 
         if anims.length > 0
             return anims 
         else
-            Debug.Notification("No animations found for: "+tags_str)
+            Trace("No animations found for: "+tags_str, true)
         endif 
     endwhile 
     sslBaseAnimation[] empty = new sslBaseAnimation[1]

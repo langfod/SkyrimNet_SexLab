@@ -34,7 +34,6 @@ Function Setup()
         group_devices = None 
     endif
     group_devices = None 
-    Debug.MessageBox("group: "+group_devices)
 EndFunction 
 
 
@@ -281,7 +280,6 @@ Event OnKeyDown(int key_code)
                 String[] buttons = new String[6]
                 int bondage = -2
                 if group_devices != None 
-                    Debug.MessageBox("group_devices: "+group_devices) 
                     bondage = 5
                     cancel = 6
 
@@ -363,7 +361,7 @@ Event OnKeyDown(int key_code)
         if actors.length < 2
             actors = MiscUtil.ScanCellActors(player, 2000)
             if actors.length == 0
-                Debug.Notification("No eligible actors found in the area.")
+                Trace("No eligible actors found in the area.")
                 return
             endif 
         endif 
