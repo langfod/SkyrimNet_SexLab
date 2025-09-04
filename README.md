@@ -57,7 +57,7 @@ Examples can be found in the animations/GoodProvider sub directory.
 }
 ~~~
 
-## 
+## Load Order
 Please send me any animations you create by zipping your \_local\_ directory and give me an authors name you would like to use.  I will also accept annoymous submissions.
 
 - Send the zip file to me on discord
