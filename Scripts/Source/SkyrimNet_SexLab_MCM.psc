@@ -32,7 +32,7 @@ Function Setup()
     else 
         group_devices = None 
     endif
-    group_devices = None 
+    ;group_devices = None 
 EndFunction 
 
 
@@ -264,7 +264,25 @@ Event OnKeyDown(int key_code)
         Actor player = Game.GetPlayer() 
         if target != None 
             if SexTarget_IsEligible(target,"","")
-                bool target_is_undressed = main.HasStrippedItems(target)
+                DOM_Actor slave = None 
+                if MiscUtil.FileExists("Data/DiaryOfMine.esm")
+                    DOM_API d_api = Game.GetFormFromFile(0x00000D61, "DiaryOfMine.esm") as DOM_API
+                    if d_api.IsDOMSlave(target) 
+                        slave = d_api.GetDOMActor(target) 
+                    endif 
+                endif 
+
+                bool target_is_undressed = false 
+                if slave != None 
+			        DOM_Mind sl_mind = slave.mind
+			        if sl_mind != None
+				        if sl_mind.should_be_naked ; && sl_alias.is_naked
+                            target_is_undressed = True 
+                        endif 
+                    endif 
+                else 
+                    target_is_undressed = main.HasStrippedItems(target)
+                endif 
                 String clothing_string = "undress"
                 if target_is_undressed 
                     clothing_string = "dress"
@@ -294,7 +312,11 @@ Event OnKeyDown(int key_code)
                 buttons[rapes] = "rapes the player"
                 buttons[clothing] = clothing_string
                 buttons[cancel] = "cancel"
-                int button = SkyMessage.ShowArray("Should "+target.getDisplayName()+":", buttons, getIndex = true) as int  
+                String msg = "Should "+target.getDisplayName()+":"
+                if slave != None 
+                    msg += "\nDOM slave's mind can not refuse these actions."
+                endif 
+                int button = SkyMessage.ShowArray(msg, buttons, getIndex = true) as int  
 
                 if button == masturbate
                     SkyrimNet_SexLab_Actions.SexTarget_Execute(target, "", "{\"type\":\"masturbation\"}")
@@ -317,21 +339,36 @@ Event OnKeyDown(int key_code)
                     buttons[Silently] = "( Silently )" 
 
                     button = SkyMessage.ShowArray("How is "+target.getDisplayName()+" to be "+clothing_string+"ed?", buttons, getIndex = true) as int  
-                    if button == Forcefully || button == Gently
+                    if button != Silently
                         String style = " "
                         if button == Gently 
                             style = " gently "
-                        else 
+                        elseif button == Forcefully 
                             style = " forcefully "
                         endif 
                         String msg = player.GetDisplayName()+style+clothing_string+"es "+target.GetDisplayName()+"."
                         SkyrimNetApi.DirectNarration(msg, player, target) 
                     endif 
-                    if target_is_undressed
-                        SkyrimNet_SexLab_Actions.Dress_Execute(target, "", "")
-                    else
-                        SkyrimNet_SexLab_Actions.Undress_Execute(target, "", "")
-                    endif
+                    if slave != None 
+                        if target_is_undressed 
+                            Trace("DOM slave"+target.GetDisplayName()+" dressed", true)
+                            slave.UnsetShouldBeNaked(Game.GetPlayer())
+                            slave.Anim_DressUp(true)
+                        else 
+                            Trace("DOM slave"+target.GetDisplayName()+" undressed", true)
+                            if button == Forcefully 
+                                slave.Interact_UndressNoChoice(player, false) 
+                            else 
+                                slave.Interact_Undress(player) 
+                            endif 
+                        endif 
+                    else 
+                        if target_is_undressed
+                            SkyrimNet_SexLab_Actions.Dress_Execute(target, "", "")
+                        else
+                            SkyrimNet_SexLab_Actions.Undress_Execute(target, "", "")
+                        endif
+                    endif 
 
                 elseif button == bondage 
                     group_devices.UpdateDevices(target) 

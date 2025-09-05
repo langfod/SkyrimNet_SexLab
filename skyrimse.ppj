@@ -15,6 +15,7 @@
     </Variables>
     <Imports>
         <Import>.\Scripts\Source</Import>
+        <Import>.\Scripts\Source</Import>
         <Import>@ModsFolder\SKSE64\Scripts\Source</Import>
         <Import>@ModsFolder\SkyrimNet\Source\Scripts</Import>
         <Import>@ModsFolder\powerofthree's Tweaks\Source\Scripts</Import>
@@ -35,6 +36,7 @@
 
         <Import>@ModsFolder\SexLabFrameworkAE_v166b\scripts\Source</Import>
         <Import>.\Headers\SLO Aroused NG</Import>
+        <Import>.\Headers\PAH Diary of Mine</Import>
         <!--
         <Import>@ModsFolder\OSL Aroused\Scripts\Source</Import>
         <Import>.\Headers</Import>

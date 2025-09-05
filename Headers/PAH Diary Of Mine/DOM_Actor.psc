@@ -45,6 +45,16 @@ EndFunction
 Function StartSexWithNPC(Actor akAbuser, string type, bool aggro)
 EndFunction
 
+; Undress 
+Function Interact_Undress(Actor akAbuser)
+EndFunction 
+
+Function Interact_UndressNoChoice(Actor akAbuser, bool do_anim)
+EndFunction
+
+Function Interact_UndressNoAnim(Actor akAbuser)
+EndFunction
+
 ;#############################################################
 bool Property wait_for_equipment = false Auto Hidden
 int cuffs_material = 0
