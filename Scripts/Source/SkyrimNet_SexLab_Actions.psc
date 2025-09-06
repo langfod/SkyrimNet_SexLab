@@ -97,8 +97,6 @@ String[] Function GetTypes() global
     return types
 EndFunction
 
-
-
 Bool Function SexTarget_IsEligible(Actor akActor, string contextJson, string paramsJson) global
     Trace("SexTaget_IsEligible: attempting "+akActor.GetDisplayName())
     SexLabFramework SexLab = Game.GetFormFromFile(0xD62, "SexLab.esm") as SexLabFramework
@@ -118,11 +116,6 @@ EndFunction
 
 Function SexTarget_Execute(Actor akActor, string contextJson, string paramsJson) global
     Trace("SexTarget_Execute: "+akActor.GetDisplayName()+" "+paramsJson)
-    SexLabFramework SexLab = Game.GetFormFromFile(0xD62, "SexLab.esm") as SexLabFramework
-    if SexLab == None
-        Trace("SexTarget_Execute: SexLab is None", true)
-        return
-    endif
     SkyrimNet_SexLab_Main main = Game.GetFormFromFile(0x800, "SkyrimNet_SexLab.esp") as SkyrimNet_SexLab_Main
     if main == None
         Trace("SexTarget_Execute: main is None", true)
@@ -149,6 +142,18 @@ Function SexTarget_Execute(Actor akActor, string contextJson, string paramsJson)
         akTarget = None
     endif 
 
+    Bool target_is_victim = SkyrimNetApi.GetJsonBool(paramsJson, "target_is_victim", true)
+    bool rape = SkyrimNetApi.GetJsonBool(paramsJson, "rape", false)
+
+    SexTarget_Attempt(main, akActor, akTarget, player, rape, target_is_victim, type) 
+EndFunction 
+
+Function SexTarget_Attempt(SkyrimNet_SexLab_Main main, Actor akActor, Actor akTarget, Actor player, bool rape, bool target_is_victim, String type) global
+    SexLabFramework SexLab = Game.GetFormFromFile(0xD62, "SexLab.esm") as SexLabFramework
+    if SexLab == None
+        Trace("SexTarget_Execute: SexLab is None", true)
+        return
+    endif
 
     if !main.SetActorLock(akActor) 
         main.ReleaseActorLock(akActor) 
@@ -161,28 +166,18 @@ Function SexTarget_Execute(Actor akActor, string contextJson, string paramsJson)
 
     Actor domActor = akActor
     Actor subActor = akTarget 
-    Bool target_is_victim = SkyrimNetApi.GetJsonBool(paramsJson, "target_is_victim", true)
     if akTarget != None && !target_is_victim 
         domActor = akTarget
         subActor = akActor
     endif
 
-    int YES = 0
-    int YES_RANDOM = 1
-    int NO_SILENT = 2
-    int NO = 3
-
-    bool rape = SkyrimNetApi.GetJsonBool(paramsJson, "rape", false)
-    int button = YES 
-    if subActor == player || (domActor != None && domActor == player)
-        button = SkyrimNet_SexLab_Utils.YesNoSexDialog(type, rape, domActor, subActor, player)
-        if button == NO || button == NO_SILENT
-            Trace("SexTarget_Execute: User declined")
-            main.ReleaseActorLock(akActor)
-            main.ReleaseActorLock(akTarget)
-            return 
-        endif 
-    endif
+    int button = main.YesNoSexDialog(type, rape, domActor, subActor, player)
+    if button == main.BUTTON_NO || button == main.BUTTON_NO_SILENT
+        Trace("SexTarget_Execute: User declined")
+        main.ReleaseActorLock(akActor)
+        main.ReleaseActorLock(akTarget)
+        return 
+    endif 
 
     int num_actors = 1
     if domActor != None
@@ -195,7 +190,7 @@ Function SexTarget_Execute(Actor akActor, string contextJson, string paramsJson)
         Trace("SexTarget_Execute: Failed to create thread")
         failure = true 
     endif
-    if button != YES_RANDOM
+    if button != main.BUTTON_YES_RANDOM
         if type == "kissing"
             String tagSupress = "oral,vaginal,anal,spanking,masturbate,handjob,footjob,masturbation,breastfeeding,fingering"
             sslBaseAnimation[] anims =  SexLab.GetAnimationsByTags(num_actors, type, tagSupress, true)
@@ -207,21 +202,17 @@ Function SexTarget_Execute(Actor akActor, string contextJson, string paramsJson)
                 return 
             endif 
         else
-            bool includes_player = akActor == player || (akTarget != None && akTarget == player )
-            if (includes_player && main.sex_edit_tags_player) || (!includes_player && main.sex_edit_tags_nonplayer)
-                Actor[] actors = PapyrusUtil.ActorArray(num_actors)
-                if num_actors == 1
-                    actors[0] = subActor
-                else
-                    actors[0] = subActor
-                    actors[1] = domActor
-                endif
+            Actor[] actors = PapyrusUtil.ActorArray(num_actors)
+            if num_actors == 1
+                actors[0] = subActor
+            else
+                actors[0] = subActor
+                actors[1] = domActor
+            endif
 
-                sslBaseAnimation[] anims = SkyrimNet_SexLab_Utils.AnimsDialog(sexlab, actors, "")
-                if anims.length > 0 && anims[0] != None  
-                    thread.SetAnimations(anims)
-                endif 
-    
+            sslBaseAnimation[] anims = main.AnimsDialog(sexlab, actors, "")
+            if anims.length > 0 && anims[0] != None  
+                thread.SetAnimations(anims)
             endif 
         endif 
     endif 

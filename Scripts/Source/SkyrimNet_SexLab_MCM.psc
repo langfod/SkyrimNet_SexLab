@@ -547,7 +547,7 @@ Function StartSex(Actor[] actors, bool is_rape)
         thread.SetVictim(actors[0])
     endif 
 
-    sslBaseAnimation[] anims = SkyrimNet_SexLab_Utils.AnimsDialog(sexlab, actors, "")
+    sslBaseAnimation[] anims = main.AnimsDialog(sexlab, actors, "")
     if anims.length > 0 && anims[0] != None  
         thread.SetAnimations(anims)
     endif 
