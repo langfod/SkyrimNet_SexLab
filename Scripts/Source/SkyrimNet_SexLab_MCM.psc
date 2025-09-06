@@ -346,7 +346,7 @@ Event OnKeyDown(int key_code)
                         elseif button == Forcefully 
                             style = " forcefully "
                         endif 
-                        String msg = player.GetDisplayName()+style+clothing_string+"es "+target.GetDisplayName()+"."
+                        msg = player.GetDisplayName()+style+clothing_string+"es "+target.GetDisplayName()+"."
                         SkyrimNetApi.DirectNarration(msg, player, target) 
                     endif 
                     if slave != None 
@@ -356,11 +356,7 @@ Event OnKeyDown(int key_code)
                             slave.Anim_DressUp(true)
                         else 
                             Trace("DOM slave"+target.GetDisplayName()+" undressed", true)
-                            if button == Forcefully 
-                                slave.Interact_UndressNoChoice(player, false) 
-                            else 
-                                slave.Interact_Undress(player) 
-                            endif 
+                            slave.Interact_UndressNoChoice(player, false) 
                         endif 
                     else 
                         if target_is_undressed
@@ -528,18 +524,6 @@ Function StartSex(Actor[] actors, bool is_rape)
         endif
     endif 
 
-    ; Attempt to add the actors 
-    if !cancel
-        sslBaseAnimation[] anims = SkyrimNet_SexLab_Actions.AnimsDialog(sexlab, actors, "")
-        if anims.length > 0
-            if anims[0] == None 
-                cancel = true
-            else 
-                thread.SetAnimations(anims)
-            endif 
-        endif 
-    endif
-
     i = 0
     while !cancel && i < num_actors 
         if thread.addActor(actors[i]) < 0   
@@ -561,6 +545,11 @@ Function StartSex(Actor[] actors, bool is_rape)
 
     if is_rape
         thread.SetVictim(actors[0])
+    endif 
+
+    sslBaseAnimation[] anims = SkyrimNet_SexLab_Utils.AnimsDialog(sexlab, actors, "")
+    if anims.length > 0 && anims[0] != None  
+        thread.SetAnimations(anims)
     endif 
 
     thread.StartThread() 

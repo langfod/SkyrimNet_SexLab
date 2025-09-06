@@ -171,32 +171,15 @@ Function SexTarget_Execute(Actor akActor, string contextJson, string paramsJson)
     int YES_RANDOM = 1
     int NO_SILENT = 2
     int NO = 3
-    String[] buttons = new String[4]
-    buttons[YES] = "Yes "
-    buttons[YES_RANDOM] = "Yes (Random)"
-    buttons[NO_SILENT] = "No (Silent)"
-    buttons[NO] = "No "
 
     bool rape = SkyrimNetApi.GetJsonBool(paramsJson, "rape", false)
-    int button = YES
+    int button = YES 
     if subActor == player || (domActor != None && domActor == player)
-        button = YesNoDialog(buttons, YES, type, rape, domActor, subActor, player)
+        button = SkyrimNet_SexLab_Utils.YesNoSexDialog(type, rape, domActor, subActor, player)
         if button == NO || button == NO_SILENT
             Trace("SexTarget_Execute: User declined")
             main.ReleaseActorLock(akActor)
             main.ReleaseActorLock(akTarget)
-            if button == NO 
-                if !rape
-                    String msg = "*"+akTarget.GetDisplayName()+" refuses "+akActor.GetDisplayName()+"'s sex request*"
-                    SkyrimNetApi.RegisterEvent("sex refuses", msg, akTarget, akActor)
-                elseif domActor == player 
-                    String msg = "*"+akTarget.GetDisplayName()+" refuses to rape "+akActor.GetDisplayName()+".*"
-                    SkyrimNetApi.RegisterEvent("rape refuses", msg, akTarget, akActor)
-                else
-                    String msg = "*"+akTarget.GetDisplayName()+" refuses "+akActor.GetDisplayName()+"'s rape attempt.*"
-                    SkyrimNetApi.RegisterEvent("rape refuses", msg, akTarget, akActor)
-                endif
-            endif
             return 
         endif 
     endif
@@ -233,18 +216,15 @@ Function SexTarget_Execute(Actor akActor, string contextJson, string paramsJson)
                     actors[0] = subActor
                     actors[1] = domActor
                 endif
-                sslBaseAnimation[] anims = AnimsDialog(sexlab, actors, type)
-                if anims.length > 0
-                    if anims[0] == None 
-                        failure = true
-                    else
-                        thread.SetAnimations(anims)
-                    endif 
+
+                sslBaseAnimation[] anims = SkyrimNet_SexLab_Utils.AnimsDialog(sexlab, actors, "")
+                if anims.length > 0 && anims[0] != None  
+                    thread.SetAnimations(anims)
                 endif 
+    
             endif 
         endif 
     endif 
-
     
     if !failure 
         if !failure && thread.addActor(subActor) < 0   
@@ -273,28 +253,6 @@ Function SexTarget_Execute(Actor akActor, string contextJson, string paramsJson)
     thread.StartThread() 
 EndFunction
 
-int function YesNoDialog(String[] buttons, int YES, String type, Bool rape, Actor domActor, Actor subActor, Actor player) global
-    String name = None 
-    if subActor == player
-        name = domActor.GetDisplayName()
-    else
-        name = subActor.GetDisplayName()
-    endif
-    String question = None
-    if rape
-        if domActor == player
-            question = "Would like to rape "+name+"?"
-        else
-            question = "Would like to be raped by "+name+"?"
-        endif 
-    elseif type == "kissing"
-        question = "Would like to kissing "+name+"?"
-    else
-        question = "Would like to have sex "+name+"?"
-    endif 
-    
-    return SkyMessage.ShowArray(question, buttons, getIndex = true) as int  
-EndFunction
 
 ; -------------------------------------------------
 ; Dress and Undress
@@ -371,143 +329,3 @@ EndFunction
 ; -------------------------------------------------
 ; Tools
 ; -------------------------------------------------
-
-sslBaseAnimation[] Function AnimsDialog(SexLabFramework sexlab, Actor[] actors, String tag) global
-    SkyrimNet_SexLab_Main main = Game.GetFormFromFile(0x800, "SkyrimNet_SexLab.esp") as SkyrimNet_SexLab_Main
-
-    int i = 0
-    int count = actors.Length
-    String names = ""
-    while i < count
-        if names != ""
-            names += "+" 
-        endif
-        names += actors[i].GetDisplayName()
-        i += 1 
-    endwhile
-    names += " | "
-
-
-    ; Current set of tags
-    String[] tags = new String[10]
-    int count_max = 10
-    int next = 0
-    if tag != ""
-        tags[next] = tag
-        next += 1
-    endif 
-
-    ; the order of the groups 
-    int group_tags = JMap.getObj(main.group_tags,"group_tags",0)
-    if group_tags == 0 
-        Trace("TagsDialog group_tags not found in group_tags.json")
-        return None
-    endif 
-
-    int groups = JMap.getObj(main.group_tags,"groups",0)
-    if groups == 0
-        groups = JMap.allKeys(group_tags)
-    endif 
-
-    while True
-        bool finished = false
-        String tags_str= ""
-        while next < count_max && !finished
-
-            ; build the current tags
-            tags_str = "" 
-            i = 0
-            while i < next
-                if i > 0 
-                    tags_str += ","
-                endif 
-                tags_str += tags[i]
-                i += 1
-            endwhile 
-
-
-            uilistmenu listMenu = uiextensions.GetMenu("UIListMenu") AS uilistmenu
-            listMenu.ResetMenu()
-            ; Use the current set of tags 
-            String use_tags = names + " tags: "+tags_str
-            listMenu.AddEntryItem(use_tags)
-            ; Remove one tag 
-            if 0 < next 
-                listMenu.AddEntryItem("<remove")
-            endif 
-
-            ; Add groups
-            count = JArray.count(groups)
-            i =  0
-            while i < count
-                String group = JArray.getStr(groups,i)
-                listMenu.AddEntryItem(group)
-                i += 1
-            endwhile
-
-
-            ; add the actions 
-            ;ListAddTags(listMenu, group_tags, "actions>") 
-
-            ; just give up
-            listMenu.AddEntryItem("<cancel>")
-
-            listMenu.OpenMenu()
-            String button =  listmenu.GetResultString()
-            if JMap.hasKey(group_tags, button)
-                button = GroupDialog(group_tags, button)
-            endif 
-
-            if button == "<cancel>"
-                sslBaseAnimation[] empty = new sslBaseAnimation[1]
-                empty[0] = None 
-                return empty
-            elseif button == "<remove"
-                next -= 1
-            elseif button == use_tags
-                finished = true
-            elseif button != "-continue-"
-                tags[next] = button 
-                next += 1
-            endif 
-        endwhile 
-        sslBaseAnimation[] anims =  SexLab.GetAnimationsByTags(actors.length, tags_str, "", true)
-        if anims.length > 0
-            return anims 
-        else
-            Trace("No animations found for: "+tags_str, true)
-        endif 
-    endwhile 
-    sslBaseAnimation[] empty = new sslBaseAnimation[1]
-    empty[0] = None 
-    return empty
-EndFunction
-
-Function ListAddTags(uilistmenu listMenu, int group_tags, String group) global
-    int tags = JMap.getObj(group_tags, group, 0)
-    if tags != 0 
-        int i = 0
-        int count = JArray.count(tags)
-        while i < count
-            String tag = JArray.getStr(tags, i, "")
-            if tag != ""
-                listMenu.AddEntryItem(tag)
-            endif
-            i += 1
-        endwhile 
-    endif 
-EndFunction
-
-String Function GroupDialog(int group_tags, String group)  global
-    uilistmenu listMenu = uiextensions.GetMenu("UIListMenu") AS uilistmenu
-    listMenu.ResetMenu()
-    listMenu.AddEntryItem("<back")
-    ListAddTags(listMenu, group_tags, group) 
-    listMenu.OpenMenu()
-    String button =  listmenu.GetResultString()
-    if button == "<back"
-        button = "-continue-"
-    endif 
-    return button
-EndFunction
-

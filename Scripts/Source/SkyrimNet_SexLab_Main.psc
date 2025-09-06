@@ -230,11 +230,6 @@ event AnimationStart(int ThreadID, bool HasPlayer)
     sslThreadController thread = SexLab.GetController(ThreadID)
     Actor[] actors = thread.Positions
 
-    sslBaseAnimation[] anims = AnimsDialog(sexlab, actors, "")
-    if anims.length > 0 && anims[0] != None  
-        thread.SetAnimations(anims)
-    endif 
-    
     int i = actors.length - 1
     while 0 <= i 
         ReleaseActorLock(actors[i])
