@@ -4,7 +4,7 @@
           # Current Ongoing Sexual Activity
           {% for thread in sexlab.threads %}
                {%- if thread.stage_description_has %} 
-               - On {{ thread.location}}, {{ thread.stage_description }} {% 
+                    - On {{ thread.location}}, {{thread.style}}. {{ thread.stage_description }} {% 
                else %} {%-
                     if length(thread.names) == 1 %}
                          - {{ thread.names.0 }} is {% 
@@ -23,15 +23,8 @@
                               - While in the missionary position, {%-
                          else if contains(thread.tags, "doggy") -%} 
                               - While in the doggy position, {%-
-                         endif -%} {%-
-                         if length(thread.names) > 2 -%}
-                              {{ thread.names_str }} {%- 
-                         else -%} {%-
-                              if thread.rape -%} 
-                                   {{ thread.names.1 }} is raping {{ thread.names.0 }}. {%-
-                              endif -%} {%-
                          endif -%} 
-                         {{- thread.names.1  }} is {%- 
+                         {{thread.style}} {{ thread.names.1  }} is {%- 
                     endif -%} {%-
                     if contains(thread.tags, "Anal") or contains(thread.tags, "anal") or contains(thread.tags, "assjob") -%}
                          fucking the {{ thread.names.0 -}}'s ass {%-

@@ -11,15 +11,24 @@ SkyrimNet_SexLab_Stages Property stages Auto
 bool hot_key_toggle = False 
 int sex_edit_key = 40 ; 26
 
+bool dom_debug_toggle = False 
+int dom_debug_key = 41
+
 bool clear_JSON = False
 
+; Devious Device Support 
 skyrimnet_UDNG_Groups group_devices = None
 
-Function Trace(String msg, Bool notification=False) global
+; DOM Support 
+DOM_api d_api = None 
+SkyrimNet_DOM_Main dom_main = None 
+
+Function Trace(String func, String msg, Bool notification=False) global
+    msg = "[SkyrimNet_SexLab_MCM."+func+"] "+msg
+    Debug.Trace(msg) 
     if notification
         Debug.Notification(msg)
     endif 
-    msg = "[SkyrimNet_SexLab.MCM] "+msg
 EndFunction
 
 String page_options = "options"
@@ -27,12 +36,29 @@ String page_actors = "actors debug (can be slow)"
 
 Function Setup() 
 
+    ; -------------------------------
+    ; Checks for Devious Support mod 
     if MiscUtil.FileExists("Data/SkyrimNetUDNG.esp")
+        Trace("SetUp","found SkyrimNetUDNG.esp")
         group_devices = Game.GetFormFromFile(0x800, "SkyrimNetUDNG.esp") as skyrimnet_UDNG_Groups
     else 
         group_devices = None 
     endif
-    ;group_devices = None 
+
+    ; -------------------------------
+    ; Check if SkyrimNet_DOM is installed and the target is a slave
+    if MiscUtil.FileExists("Data/DiaryOfMine.esm")
+        Trace("SetUp","found DiaryOfMine.esm")
+        d_api = Game.GetFormFromFile(0x00000D61, "DiaryOfMine.esm") as DOM_API
+    else 
+        d_api = None 
+    endif 
+    if MiscUtil.FileExists("Data/SkyrimNet_DOM.esp")
+        Trace("SetUp","found SkyrimNet_DOM.esp")
+        dom_main = Game.GetFormFromFile(0x800, "SkyrimNet_DOM.esp") as SkyrimNet_DOM_Main
+    else 
+        dom_main = None 
+    endif 
 EndFunction 
 
 
@@ -70,13 +96,19 @@ Function PageOptions()
     AddToggleOptionST("PublicSexAcceptedToggle","Public sex accepted",sexlab_public_sex_accepted.GetValue() == 1.0)
     AddToggleOptionST("SexEditTagsPlayer","Show Tags_Editor for player sex",main.sex_edit_tags_player)
     AddToggleOptionST("SexEditTagsNonPlayer","Show Tags_Editor for nonplayer sex",main.sex_edit_tags_nonplayer)
-    AddToggleOptionST("SexEditTagsNonPlayer","Show Tags_Editor for nonplayer sex",main.sex_edit_tags_nonplayer)
 
-    AddHeaderOption("")
+    AddHeaderOption("Sex Description Editor")
     AddHeaderOption("")
     AddToggleOptionST("HotKeyToggle","Enable the Start Sex / Edit Stage hot key",hot_key_toggle)
     AddKeyMapOptionST("SexEditKeySet", "Start Sex / Edit Stage Description", sex_edit_key)
     AddToggleOptionST("SexEdithelpToggle","Hide Edit Stage Discription Help",stages.hide_help)
+
+    if dom_main != None 
+        AddHeaderOption("                              ")
+        AddHeaderOption("Debug")
+        AddHeaderOption("")
+        AddToggleOptionST("DomDebugToggle","Enable DOM debugs",dom_debug_toggle)
+    Endif 
 
     if hot_key_toggle 
         RegisterForKey(sex_edit_key)
@@ -160,7 +192,7 @@ State PublicSexAcceptedToggle
             sexlab_public_sex_accepted.SetValue(1.0)
         endif 
         SetToggleOptionValueST(public_bool)
-        Trace("PublicSexAcceptedToggle: sexlab_public"+sexlab_public_sex_accepted.GetValue(),true)
+        Trace("PublicSexAcceptedToggle","sexlab_public: "+sexlab_public_sex_accepted.GetValue())
     EndEvent
     Event OnHighlightST()
         SetInfoText("Makes public sex a socially accepted activity..")
@@ -246,6 +278,20 @@ State SexEditHelpToggle
     EndEvent
 EndState
 
+; --------------------------------------------
+; Dom Debug Hotkey
+; --------------------------------------------
+
+State DomDebugToggle
+    Event OnSelectST()
+        dom_debug_toggle = !dom_debug_toggle
+        SetToggleOptionValueST(dom_debug_toggle)
+        ForcePageReset()
+    EndEvent
+    Event OnHighlightST()
+        SetInfoText("Adds the DOM debug option to the hotkey.\n")
+    EndEvent
+EndState
 
 ; --------------------------------------------
 ; Handles OnKeyDown 
@@ -263,23 +309,31 @@ Event OnKeyDown(int key_code)
         Actor target = Game.GetCurrentCrosshairRef() as Actor 
         Actor player = Game.GetPlayer() 
         if target != None 
+            ;---------------------------------
+            ; The original 
             if SexTarget_IsEligible(target,"","")
+
                 DOM_Actor slave = None 
-                if MiscUtil.FileExists("Data/DiaryOfMine.esm")
-                    DOM_API d_api = Game.GetFormFromFile(0x00000D61, "DiaryOfMine.esm") as DOM_API
-                    if d_api.IsDOMSlave(target) 
-                        slave = d_api.GetDOMActor(target) 
-                    endif 
+                if d_api != None && d_api.IsDOMSlave(target) 
+                    slave = d_api.GetDOMActor(target) 
                 endif 
 
+                ;if slave != None && dom_main != None 
+                    ;dom_main.SelectPlayerAction(target, slave) 
+                    ;return 
+                ;endif 
+
                 bool target_is_undressed = false 
+                Trace("OnKeyDown","slave:"+slave+" dom_main:"+dom_main)
                 if slave != None 
-			        DOM_Mind sl_mind = slave.mind
-			        if sl_mind != None
-				        if sl_mind.should_be_naked ; && sl_alias.is_naked
-                            target_is_undressed = True 
-                        endif 
-                    endif 
+                    Trace("OnKeyDown","slave.is_naked:"+slave.is_naked+" should_be_naked:"+slave.mind.should_be_naked)
+                    target_is_undressed = slave.is_naked
+			        ;DOM_Mind sl_mind = slave.mind
+			        ;if sl_mind != None
+				        ;if sl_mind.should_be_naked ; && sl_alias.is_naked
+                            ;target_is_undressed = True 
+                        ;endif 
+                    ;endif 
                 else 
                     target_is_undressed = main.HasStrippedItems(target)
                 endif 
@@ -294,24 +348,33 @@ Event OnKeyDown(int key_code)
                 int clothing = 4
                 int cancel = 5
 
-                String[] buttons = new String[6]
                 int bondage = -2
+                int dom_debug = -2 
                 if group_devices != None 
-                    bondage = 5
-                    cancel = 6
-
-                    buttons = new String[7]
-                    buttons[bondage] = "bondage"
-                else 
-                    bondage = -2
-                endif 
+                    bondage = cancel
+                    cancel += 1 
+                endif  
+                if dom_main != None && dom_debug_toggle
+                    dom_debug = cancel
+                    cancel += 1 
+                endif  
+                String[] buttons = Utility.CreateStringArray(cancel+1)
 
                 buttons[masturbate] = "masturbate"
                 buttons[sex] = "have sex with player"
                 buttons[raped_by] = "raped by player"
                 buttons[rapes] = "rapes the player"
                 buttons[clothing] = clothing_string
+                if bondage != -2 
+                    buttons[bondage] = "bondage"
+                endif 
+                if dom_debug != -2 
+                    buttons[dom_debug] = "dom Debug"
+                endif 
                 buttons[cancel] = "cancel"
+
+                Trace("OnKeyDown","buttons:" +buttons)
+
                 String msg = "Should "+target.getDisplayName()+":"
                 if slave != None 
                     msg += "\nDOM slave's mind can not refuse these actions."
@@ -328,34 +391,36 @@ Event OnKeyDown(int key_code)
                     SkyrimNet_SexLab_Actions.SexTarget_Execute(target, "", "{\"rape\":true, \"target\":\""+player.GetDisplayName()+"\",\"target_is_victim\":false,\"target_is_player\":true}")
                 elseif button == clothing
 
-                    int Forcefully = 0
-                    int Normally = 1
-                    int Gently = 2 
-                    int Silently = 3
-                    buttons = new String[4]
-                    buttons[Forcefully] = "Forcefully by player"
-                    buttons[Normally] = "By player" 
-                    buttons[Gently] = "Gently by player" 
-                    buttons[Silently] = "( Silently )" 
+                    ;--------------------------------------------------
+                    ; How would they like it appear? 
+                    buttons = new String[4] 
+                    buttons[main.STYLE_FORCEFULLY] = "Forcefully by player "
+                    buttons[main.STYLE_NORMALLY] = "By player"
+                    buttons[main.STYLE_GENTLY] = "Gently by player"
+                    buttons[main.STYLE_SILENTLY] = "( Silently )"
 
-                    button = SkyMessage.ShowArray("How is "+target.getDisplayName()+" to be "+clothing_string+"ed?", buttons, getIndex = true) as int  
-                    if button != Silently
+                    msg = "How is "+target.getDisplayName()+" to be "+clothing_string+"ed?"
+                    button = SkyMessage.ShowArray(msg, buttons, getIndex = true) as int 
+                    if button != main.STYLE_SILENTLY
                         String style = " "
-                        if button == Gently 
+                        if button == main.STYLE_GENTLY 
                             style = " gently "
-                        elseif button == Forcefully 
+                        elseif button == main.STYLE_FORCEFULLY 
                             style = " forcefully "
                         endif 
                         msg = player.GetDisplayName()+style+clothing_string+"es "+target.GetDisplayName()+"."
                         SkyrimNetApi.DirectNarration(msg, player, target) 
                     endif 
+
+                    ;--------------------------------------------------
+                    ; Now do the action 
                     if slave != None 
                         if target_is_undressed 
-                            Trace("DOM slave"+target.GetDisplayName()+" dressed", true)
-                            slave.UnsetShouldBeNaked(Game.GetPlayer())
+                            Trace("OnKeyDown","DOM slave"+target.GetDisplayName()+" dressing", true)
+                            slave.UnsetShouldBeNaked(player)
                             slave.Anim_DressUp(true)
                         else 
-                            Trace("DOM slave"+target.GetDisplayName()+" undressed", true)
+                            Trace("OnKeyDown","DOM slave"+target.GetDisplayName()+" undressing", true)
                             slave.Interact_UndressNoChoice(player, false) 
                         endif 
                     else 
@@ -368,8 +433,8 @@ Event OnKeyDown(int key_code)
 
                 elseif button == bondage 
                     group_devices.UpdateDevices(target) 
-                else 
-                    return 
+                elseif button == dom_debug
+                    dom_main.DebugMenuOpen(target) 
                 endif 
                 return 
             else
@@ -393,11 +458,11 @@ Event OnKeyDown(int key_code)
         if actors.length < 2
             actors = MiscUtil.ScanCellActors(player, 2000)
             if actors.length == 0
-                Trace("No eligible actors found in the area.")
+                Trace("OnKeyDown","No eligible actors found in the area.")
                 return
             endif 
         endif 
-        Trace("Found "+actors.length+" actors in the area.")
+        Trace("OnKeyDown","Found "+actors.length+" actors in the area.")
 
         int i = 0 
         int num_actors = actors.Length
@@ -496,10 +561,10 @@ Event OnKeyDown(int key_code)
 EndEvent 
 
 Function StartSex(Actor[] actors, bool is_rape) 
-    Trace("SexTarget_Execute: "+actors+" num_actors:"+num_actors+" is_rape:"+is_rape)
+    Trace("StartSex","num_actors:"+num_actors+" is_rape:"+is_rape)
     SexLabFramework SexLab = Game.GetFormFromFile(0xD62, "SexLab.esm") as SexLabFramework
     if SexLab == None
-        Trace("SexTarget_Execute: SexLab is None", true)
+        Trace("StartSex","SexLab is None")
         return
     endif
 
@@ -519,7 +584,7 @@ Function StartSex(Actor[] actors, bool is_rape)
     if !cancel
         thread = sexlab.NewThread()
         if thread == None
-            Trace("StartSex: Failed to create thread")
+            Trace("StartSex","Failed to create thread")
             cancel = true
         endif
     endif 
@@ -527,7 +592,7 @@ Function StartSex(Actor[] actors, bool is_rape)
     i = 0
     while !cancel && i < num_actors 
         if thread.addActor(actors[i]) < 0   
-            Trace("StartSex: Starting sex couldn't add "+i+" "+actors[i].GetDisplayName())
+            Trace("StartSex","Starting sex couldn't add "+i+" "+actors[i].GetDisplayName())
             cancel = true 
         endif  
         i += 1

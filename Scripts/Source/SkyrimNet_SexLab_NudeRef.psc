@@ -5,16 +5,16 @@ String storage_key = "skyrimnet_sexlab_storage_items"
 sslSystemConfig Config 
 sslActorLibrary Lib 
 
-Function Trace(String msg, Bool notification=False) global
+Function Trace(String func, String msg, Bool notification=False) global
+    msg = "[SkyrimNet_SexLab_NudeRef."+func+"] "+msg
+    Debug.Trace(msg) 
     if notification
         Debug.Notification(msg)
     endif 
-    msg = "[SkyrimNet_SexLab.NudeRef] "+msg
-    Debug.Trace(msg)
 EndFunction
 
 Event OnObjectEquipped(Form akBaseObject, ObjectReference akReference)
-    Trace("OnObjectEquipped "+akBaseObject+" ref:"+akReference)
+    Trace("OnObjectEquipped",akBaseObject+" ref:"+akReference)
     Actor akActor = GetActorRef()
 	if !Config
 		Quest q = Game.GetFormFromFile(0xD62, "SexLab.esm") as Quest 

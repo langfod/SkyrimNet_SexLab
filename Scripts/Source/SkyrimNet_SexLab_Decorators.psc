@@ -3,9 +3,9 @@ Scriptname SkyrimNet_SexLab_Decorators
 import SkyrimNet_SexLab_Main
 import SkyrimNet_SexLab_Stages
 
-Function Trace(String msg, Bool notification=False) global
-    msg = "[SkyrimNet_SexLab.Decorators] "+msg
-    Debug.Trace(msg)
+Function Trace(String func, String msg, Bool notification=False) global
+    msg = "[SkyrimNet_SexLab_Decorators."+func+"] "+msg
+    Debug.Trace(msg) 
     if notification
         Debug.Notification(msg)
     endif 
@@ -18,7 +18,7 @@ EndFunction
 Function RegisterDecorators() global
     SkyrimNetApi.RegisterDecorator("sexlab_get_threads", "SkyrimNet_SexLab_Decorators", "Get_Threads")
     SkyrimNetApi.RegisterDecorator("sexlab_nudity", "SkyrimNet_SexLab_Decorators", "Is_Nudity")
-    Trace("SkyrimNet_SexLab_Decorators: RegisterDecorattors called")
+    Trace("SkyrimNet_SexLab_Decorators","RegisterDecorattors called")
 EndFunction
 
 ; animal & ActorTypeCreature & ACtorTypeFamiliar 
@@ -83,12 +83,12 @@ String Function Is_Nudity(Actor akActor) global
 EndFunction
 
 String Function Get_Threads(Actor speaker) global
-    Trace("Get_Threads called for "+speaker.GetDisplayName())
+    Trace("Get_Threads", speaker.GetDisplayName())
     SkyrimNet_SexLab_Main main = Game.GetFormFromFile(0x800, "SkyrimNet_SexLab.esp") as SkyrimNet_SexLab_Main
     SkyrimNet_SexLab_Stages stages = (main as Quest) as SkyrimNet_SexLab_Stages
 
     if main == None
-        Trace("[SkyrimNet_SexLab] Get_Threads: main is None",true)
+        Trace("Get_Threads","main is None")
         return ""
     endif
 
@@ -99,7 +99,7 @@ String Function Get_Threads(Actor speaker) global
 
     sslThreadSlots ThreadSlots = Game.GetFormFromFile(0xD62, "SexLab.esm") as sslThreadSlots
     if ThreadSlots == None
-        Trace("[SkyrimNet_SexLab] Get_Threads: ThreadSlots is None",true)
+        Trace("Get_Threads","ThreadSlots is None",true)
         return ""
     endif
 
@@ -125,22 +125,25 @@ String Function Get_Threads(Actor speaker) global
             endif 
             String stage_desc = GetStageDescription(threads[i])
             if stage_desc != ""
-                String loc = GetLocation(threads[i].Animation, threads[i].BedTypeId) 
-                threads_str += "{\"stage_description_has\":true,\"stage_description\":\""+stage_desc+"\","
-
-                String strapon_names = GetNames(threads[i])
-                threads_str += " \"strapon_names\":\""+strapon_names+"\","
-
-                String futa_names = GetNames(threads[i], actorLib)
-                threads_str += " \"futa_names\":\""+futa_names+"\","
-
-                String creature_names = GetCreatures(threads[i])
-                threads_str += " \"creature_names\":\""+creature_names+"\","
-
-                threads_str += " \"location\":\""+loc+"\"}"
-            else
-                threads_str += Thread_Json(threads[i], actorLib)
+                threads_str += "{\"stage_description_has\":true,\"stage_description\":\""+stage_desc+"\""
+            else 
+                threads_str += Thread_Json(threads[i], actorLib) 
             endif 
+
+            threads_str += ",\"style\":\""+main.Thread_Narration(threads[i], "are")+"\""
+
+            String strapon_names = GetNames(threads[i])
+            threads_str += ",\"strapon_names\":\""+strapon_names+"\""
+
+            String futa_names = GetNames(threads[i], actorLib)
+            threads_str += ", \"futa_names\":\""+futa_names+"\""
+
+            String creature_names = GetCreatures(threads[i])
+            threads_str += ", \"creature_names\":\""+creature_names+"\""
+
+            String loc = GetLocation(threads[i].Animation, threads[i].BedTypeId) 
+            threads_str += ", \"location\":\""+loc+"\""
+            threads_str += "}"
 
             Actor[] actors = threads[i].Positions
             int j = actors.Length - 1
@@ -164,7 +167,7 @@ String Function Thread_Json(sslThreadController thread,sslActorLibrary actorLib)
 
     SkyrimNet_SexLab_Main main = Game.GetFormFromFile(0x800, "SkyrimNet_SexLab.esp") as SkyrimNet_SexLab_Main
 
-    String thread_str = "{\"stage_description_has\":false, "
+    String thread_str = "{\"stage_description_has\":false"
 
     Actor[] actors = thread.Positions
     String names = "" 
@@ -181,12 +184,14 @@ String Function Thread_Json(sslThreadController thread,sslActorLibrary actorLib)
         i += 1
     endwhile 
     if actors.length > 2 
-        thread_str += "\"orgy\":true, "
+        thread_str += ", \"orgy\":true"
     else 
-        thread_str += "\"orgy\":false, "
+        thread_str += ", \"orgy\":false"
     endif
-    thread_str += "\"names\":["+names+"], "
-    thread_str += "\"names_str\":\""+Thread_Narration(thread,"are")+"\", "
+    thread_str += ", \"names\":["+names+"]"
+    thread_str += ", \"names_str\":\""+main.Thread_Narration(thread,"are")+"\""
+
+    String style = ""
 
     if num_victims > 0
         String victims = "" 
@@ -206,21 +211,12 @@ String Function Thread_Json(sslThreadController thread,sslActorLibrary actorLib)
             endif
             i += 1
         endwhile
-        thread_str += "\"victims\":["+victims+"], "
-        thread_str += "\"aggressors\":["+aggressors+"], "
-        thread_str += "\"rape\": true, "
+        thread_str += ", \"victims\":["+victims+"]"
+        thread_str += ", \"aggressors\":["+aggressors+"]"
+        thread_str += ", \"rape\": true"
     else
-        thread_str += "\"rape\": false, "
+        thread_str += ", \"rape\": false"
     endif 
-
-    String strapon_names = GetNames(thread)
-    thread_str += " \"strapon_names\":\""+strapon_names+"\","
-
-    String futa_names = GetNames(thread, actorLib)
-    thread_str += " \"futa_names\":\""+futa_names+"\","
-
-    String creature_names = GetCreatures(thread)
-    thread_str += " \"creature_names\":\""+creature_names+"\","
 
     sslBaseAnimation anim = thread.Animation
     i = 0
@@ -233,7 +229,7 @@ String Function Thread_Json(sslThreadController thread,sslActorLibrary actorLib)
         tags_str += "\""+tags[i]+"\""
         i += 1
     endwhile
-    thread_str += "\"tags\": ["+tags_str+"], "
+    thread_str += ", \"tags\": ["+tags_str+"]"
 
     String[] positions = new String[7]
     positions[0] = "69"
@@ -254,21 +250,15 @@ String Function Thread_Json(sslThreadController thread,sslActorLibrary actorLib)
         endif
         i += 1
     endwhile
-    thread_str += "\"position\":\""+position+"\","
+    thread_str += ", \"position\":\""+position+"\""
     
-    String loc = GetLocation(anim, thread.BedTypeId) 
-
-    thread_str += "\"location\":\""+loc+"\","
-
     String emotion = ""
     if anim.HasTag("rough")
         emotion += " roughly"
     elseif anim.HasTag("loving")
         emotion += " lovingly"
     endif
-    thread_str += "\"emotion\":\""+emotion+"\""
-
-    thread_str += "}"
+    thread_str += ",\"emotion\":\""+emotion+"\""
     return thread_str
 EndFunction
 

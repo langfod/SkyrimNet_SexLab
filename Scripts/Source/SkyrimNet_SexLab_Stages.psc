@@ -157,86 +157,84 @@ Function EditDescriptions(sslThreadController thread)
     Actor[] actors = thread.Positions
 
     sslBaseAnimation anim = thread.animation
-
     String fname = GetFilename(thread)
     Trace("EditDescriptions thread: "+fname,true)
-    int anim_info = GetAnim_Info(thread, true)
 
-    int previous_stage = 0 
-    int stage = thread.stage 
-    int desc_info = 0 
-    while 0 <= stage && desc_info == 0 
-        String stage_id = "stage "+stage
-        desc_info = JMap.getObj(anim_info, stage_id)
-        if desc_info != 0 && stage < thread.stage 
-            previous_stage = stage 
+    String[] buttons = new String[7]
+    int desc_prev = 0 
+    int desc_edit = 1 
+    int desc_next = 2 
+    int orgasm_edit = 3 
+    int tracking = 4 
+    int style_edit = 5
+    int done = 6
+    buttons[desc_prev] = "Previous"
+    buttons[desc_edit] = "Desc. Edit"
+    buttons[desc_next] = "Next"
+    buttons[orgasm_edit] = "Orgasm Denal"
+    buttons[tracking] = "Start Tracking" 
+    buttons[style_edit] = "Style"
+    buttons[done] = "Done"
+
+    int button = desc_prev
+
+    SkyrimNet_SexLab_Main main = (self as Quest) as SkyrimNet_SexLab_Main
+    while button != done 
+        String source = "" 
+        String desc = "" 
+        int desc_stage = thread.stage 
+        int anim_info = GetAnim_Info(thread, true)
+        Trace("EditDescrions","desc_stage:"+desc_stage+" desc"+desc+":"+" anime_info:"+anim_info)
+        while 0 <= desc_stage && desc == "" 
+            String stage_id = "stage "+desc_stage
+            int desc_info = JMap.getObj(anim_info, stage_id)
+            Trace("EditDescriptoins","anime_info "+anim_info+" "+desc_info+" stage"+desc_stage) 
+            if desc_info == 0
+                desc_stage -= 1 
+            else 
+                String desc_inja = JMap.getStr(desc_info, "description")
+                source = JMap.getStr(desc_info, "source")
+                String version = JMap.getStr(desc_info, "version")
+                desc = Description_Add_Actors(version, actors, desc_inja)
+                Trace("EditDescriptions",desc_inja+"->"+desc)
+            endif 
+        endwhile 
+
+        if IsThreadTracking(thread.tid)
+            buttons[tracking] = Button_Stop_Tracking
+        else
+            buttons[tracking] = Button_Start_Tracking
         endif 
-        stage -= 1 
+
+        String msg = "" 
+        if desc == "" 
+            msg = "You may enter a description for stage"+thread.stage+". An example:\n" 
+            msg += BuildExample(actors)
+        else 
+            if desc_stage != thread.stage
+                buttons[desc_edit] = "add for stage "+thread.stage
+                source = "from "+desc_stage+" stage"
+            endif 
+            String source_stage = source +" "+thread.stage+"/"+thread.animation.StageCount() 
+            msg = "["+source_stage+"] "+desc
+        endif 
+        msg += "\nstyle:"+main.Thread_Narration(thread,"are") 
+        button = SkyMessage.ShowArray(msg, buttons, getIndex = true) as int  
+
+        if button == desc_prev
+            thread.stage -= 1 
+        elseif button == desc_next 
+            thread.stage += 2 
+        elseif button == desc_edit  
+            EditorDescription(thread)
+        elseif button == orgasm_edit 
+            SetOrgasmDenied(thread)
+        elseif button == tracking 
+            ToggleThreadTracking(thread.tid)
+        elseif button == style_edit 
+            main.SexStyleDialog(thread) 
+        endif 
     endwhile 
-    Trace("desc_info:"+desc_info+" stage:"+stage+" previous_stage:"+previous_stage) 
-    if desc_info == 0 
-        if !hide_help 
-            String help_message = "You will enter a description of the current stage. An example:\n" 
-            help_message += BuildExample(actors)
-
-            int ok = 0 
-            int stop_showing = 1
-            int set_orgasm = 2
-            int cancel = 3
-            String[] buttons = new String[4]
-            buttons[ok] = Button_Ok
-            buttons[stop_showing] = Button_Never_Show_Again
-            buttons[set_orgasm] = Button_Orgasm_Denied 
-            buttons[cancel] = Button_Cancel
-            int button = SkyMessage.ShowArray(help_message, buttons, getIndex = true) as int  
-            if button == cancel
-                return
-            elseif button == set_orgasm
-                SetOrgasmDenied(thread)
-                return
-            elseif button == stop_showing 
-                hide_help = true 
-            endif 
-        endif 
-    else
-        String desc = JMap.getStr(desc_info, "description")
-        if desc != ""
-            String[] buttons = new String[4]
-            int rewrite = 0 
-            int tracking = 1
-            int set_orgasm = 2
-            int cancel = 3
-
-            buttons[rewrite] = Button_Rewrite
-            if IsThreadTracking(thread.tid)
-                buttons[tracking] = Button_Stop_Tracking
-            else
-                buttons[tracking] = Button_Start_Tracking
-            endif 
-            buttons[set_orgasm] = Button_Orgasm_Denied
-            buttons[cancel] = Button_Cancel
-            String source = JMap.getStr(desc_info, "source")
-            if previous_stage != 0
-                buttons[rewrite] = "add for stage "+thread.stage
-                source = "from "+previous_stage+" stage"
-            endif 
-            source += " "+thread.stage+"/"+thread.animation.StageCount() 
-            String version = JMap.getStr(desc_info, "version")
-            String full = "["+source+"] "+Description_Add_Actors(version, actors, desc)
-            int button = SkyMessage.ShowArray(full, buttons, getIndex = true) as int  
-            if button == cancel
-                return
-            elseif button == tracking 
-                ToggleThreadTracking(thread.tid)
-                return 
-            elseif button == set_orgasm
-                SetOrgasmDenied(thread)
-                return 
-            endif 
-        endif 
-    endif 
-
-    EditorDescription(thread)
 EndFunction 
 
 ; ------------------------------------
@@ -257,9 +255,9 @@ Function EditorDescription(sslThreadController thread)
             int rewrite = 1 
             int cancel = 2
             String[] buttons = new String[3]
-            buttons[accept] = Button_Acttept
-            buttons[rewrite] = Button_Rewrite
-            buttons[cancel] = Button_Cancel
+            buttons[accept] = "Accept"
+            buttons[rewrite] = "Rewrite" 
+            buttons[cancel] = "Cancel"
             String full = thread.stage+"/"+thread.animation.StageCount() + \
                    " On {the floor/a bed}, "+desc 
 
@@ -284,8 +282,8 @@ Function EditorDescription(sslThreadController thread)
             int retry = 0 
             int cancel = 1
             String[] buttons = new String[2]    
-            buttons[retry] = Button_Retry
-            buttons[cancel] = Button_Cancel
+            buttons[retry] = "Retry"
+            buttons[cancel] = "Cancel"
 
             int button = SkyMessage.ShowArray(msg, buttons, getIndex = true) as int  
 
