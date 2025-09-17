@@ -14,6 +14,7 @@ fname_info = {}
 for fname in os.listdir(args.src):
     path = f"{args.src}/{fname}"
     with open(path) as fin:
+        print ("loading",fname)
         fname_info[fname] = json.load(fin) 
     if fname_info[fname]:
         os.remove(path) 

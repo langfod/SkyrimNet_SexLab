@@ -20,6 +20,7 @@ int Property STYLE_NORMALLY = 1 Auto
 int Property STYLE_GENTLY = 2 Auto 
 int Property STYLE_SILENTLY = 3 Auto 
 int[] thread_style
+bool[] thread_started
 
 GlobalVariable Property sexlab_active_sex Auto
 Bool Property active_sex 
@@ -75,11 +76,14 @@ EndEvent
 Function Setup()
     Trace("SetUp","")
 
+    thread_started = new bool[32]
     if thread_style.length == 0 
         thread_style = new int[32] 
+        thread_started = new bool[32]
         int j = thread_style.length - 1 
         while 0 <= j 
             thread_style[j] = STYLE_NORMALLY
+            thread_started[j] = false 
             j -= 1 
         endwhile 
     endif 
@@ -288,17 +292,24 @@ event AnimationStart(int ThreadID, bool HasPlayer)
         i -= 1
     endwhile 
 
-    Sex_Event(ThreadID, "start", HasPlayer )
-    active_sex = true
+    thread_started[thread.tid] = False 
 endEvent
 
 Event StageStart(int ThreadID, bool HasPlayer)
     if SexLab == None
         return  
     endif
+
+    if !thread_started[ThreadID]
+        active_sex = true
+        Sex_Event(ThreadID, "start", HasPlayer )
+        thread_started[ThreadID] = True
+    endif 
+
     sslThreadController thread = SexLab.GetController(ThreadID)
     AllowedDeniedOnlyIncrease(thread.positions, thread, "stage") 
 
+    ; This provides the animation updates below this point
     if !stages.IsThreadTracking(ThreadID)
         return
     endif 
@@ -345,6 +356,7 @@ event AnimationEnd(int ThreadID, bool HasPlayer)
         ; Skyrim
     ; endif 
     Sex_Event(ThreadID, "stop", HasPlayer )
+    thread_started[ThreadID] = False 
 
     sslThreadSlots ThreadSlots = Game.GetFormFromFile(0xD62, "SexLab.esm") as sslThreadSlots
     if ThreadSlots == None
@@ -626,7 +638,7 @@ String Function Thread_Narration(sslThreadController thread, String status)
             int style = thread_style[thread.tid] 
             String style_str = "" 
             if style == STYLE_FORCEFULLY 
-                style_str = "violently "
+                style_str = "forcefully "
             elseif style == STYLE_GENTLY
                 style_str = "gently "
             endif 
@@ -802,7 +814,7 @@ sslBaseAnimation[] Function AnimsDialog(SexLabFramework sexlab, Actor[] actors, 
     sslBaseAnimation[] empty = new sslBaseAnimation[1]
     empty[0] = None 
 
-    if (!includes_player || !sex_edit_tags_player) && (includes_player || sex_edit_tags_nonplayer)
+    if (includes_player && !sex_edit_tags_player) || (!includes_player && !sex_edit_tags_nonplayer)
         return empty 
     endif 
 

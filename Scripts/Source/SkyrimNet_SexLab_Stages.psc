@@ -184,11 +184,9 @@ Function EditDescriptions(sslThreadController thread)
         String desc = "" 
         int desc_stage = thread.stage 
         int anim_info = GetAnim_Info(thread, true)
-        Trace("EditDescrions","desc_stage:"+desc_stage+" desc"+desc+":"+" anime_info:"+anim_info)
         while 0 <= desc_stage && desc == "" 
             String stage_id = "stage "+desc_stage
             int desc_info = JMap.getObj(anim_info, stage_id)
-            Trace("EditDescriptoins","anime_info "+anim_info+" "+desc_info+" stage"+desc_stage) 
             if desc_info == 0
                 desc_stage -= 1 
             else 
@@ -196,7 +194,6 @@ Function EditDescriptions(sslThreadController thread)
                 source = JMap.getStr(desc_info, "source")
                 String version = JMap.getStr(desc_info, "version")
                 desc = Description_Add_Actors(version, actors, desc_inja)
-                Trace("EditDescriptions",desc_inja+"->"+desc)
             endif 
         endwhile 
 
@@ -222,9 +219,13 @@ Function EditDescriptions(sslThreadController thread)
         button = SkyMessage.ShowArray(msg, buttons, getIndex = true) as int  
 
         if button == desc_prev
-            thread.stage -= 1 
+            if thread.stage > 1 
+                thread.GoToStage(thread.stage - 1)
+            endif 
         elseif button == desc_next 
-            thread.stage += 2 
+            if thread.stage + 1 <= thread.animation.StageCount()
+                thread.GoToStage(thread.stage + 1)
+            endif 
         elseif button == desc_edit  
             EditorDescription(thread)
         elseif button == orgasm_edit 

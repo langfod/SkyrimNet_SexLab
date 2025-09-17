@@ -127,6 +127,9 @@ Function SexTarget_Execute(Actor akActor, string contextJson, string paramsJson)
             if SkyrimNetApi.GetJsonBool(paramsJson, "target_is_player", false)
                 akTarget = player
             endif 
+            Bool name = SkyrimNetApi.GetJsonString(paramsJson, "target", "")
+            Bool target_is_player = SkyrimNetApi.GetJsonBool(paramsJson, "target_is_player", false)
+            Trace("SexTarget_IsEligible", "name: "+name+" "+target_is_player+" "+akTarget+" "+paramsJson)
         endif 
         if akTarget == None 
             Trace("SexTarget_IsExligible","type != masturbation, but target is None (likely in complete Actor name)", true )
@@ -166,10 +169,12 @@ Function SexTarget_Attempt(SkyrimNet_SexLab_Main main, Actor akActor, Actor akTa
 
     Actor domActor = akTarget
     Actor subActor = akActor 
+    Trace("SexTarget_Attempt",domActor.GetDisplayName()+" > "+subActor.GetDisplayName())
     if rape && target_is_victim 
         domActor = akActor
         subActor = akTarget
     endif
+    Trace("SexTarget_Attempt",domActor.GetDisplayName()+" > "+subActor.GetDisplayName())
 
     int button = main.BUTTON_YES_RANDOM
     if subActor == player || (domActor != None && domActor == player)
@@ -180,6 +185,8 @@ Function SexTarget_Attempt(SkyrimNet_SexLab_Main main, Actor akActor, Actor akTa
             main.ReleaseActorLock(akTarget)
             return 
         endif 
+    elseif main.sex_edit_tags_nonplayer
+        button = main.BUTTON_YES
     endif  
 
     int num_actors = 1
@@ -220,17 +227,15 @@ Function SexTarget_Attempt(SkyrimNet_SexLab_Main main, Actor akActor, Actor akTa
         endif 
     endif 
     
-    if !failure 
-        if !failure && thread.addActor(subActor) < 0   
-            Trace("SexTarget_Execute","Starting sex couldn't add " + subActor.GetDisplayName())
+    if !failure && thread.addActor(subActor) < 0   
+        Trace("SexTarget_Execute","Starting sex couldn't add " + subActor.GetDisplayName())
+        failure = true 
+    endif  
+    if !failure && domActor != None 
+        if thread.addActor(domActor) < 0   
+            Trace("SexTarget_Execute","Starting sex couldn't add DOM actor " + domActor.GetDisplayName())
             failure = true 
         endif  
-        if !failure && domActor != None 
-            if thread.addActor(domActor) < 0   
-                Trace("SexTarget_Execute","Starting sex couldn't add DOM actor " + domActor.GetDisplayName())
-                failure = true 
-            endif  
-        endif 
     endif 
     
     if failure

@@ -384,11 +384,11 @@ Event OnKeyDown(int key_code)
                 if button == masturbate
                     SkyrimNet_SexLab_Actions.SexTarget_Execute(target, "", "{\"type\":\"masturbation\"}")
                 elseif button == sex
-                    SkyrimNet_SexLab_Actions.SexTarget_Execute(target, "", "{\"rape\":false, \"target\":\""+player.GetDisplayName()+"\",\"target_is_player\":true}")
+                    SkyrimNet_SexLab_Actions.SexTarget_Execute(target, "", "{\"rape\":false, \"target\":\""+player.GetDisplayName()+"\", \"target_is_player\":true}")
                 elseif button == rapes
-                    SkyrimNet_SexLab_Actions.SexTarget_Execute(target, "", "{\"rape\":true, \"target\":\""+player.GetDisplayName()+"\",\"target_is_victim\":True, \"target_is_player\":true}")
+                    SkyrimNet_SexLab_Actions.SexTarget_Execute(target, "", "{\"rape\":true, \"target\":\""+player.GetDisplayName()+"\", \"target_is_victim\":true, \"target_is_player\":true}")
                 elseif button == raped_by
-                    SkyrimNet_SexLab_Actions.SexTarget_Execute(target, "", "{\"rape\":true, \"target\":\""+player.GetDisplayName()+"\",\"target_is_victim\":false,\"target_is_player\":true}")
+                    SkyrimNet_SexLab_Actions.SexTarget_Execute(target, "", "{\"rape\":true, \"Target\":\""+player.GetDisplayName()+"\", \"target_is_victim\":false, \"target_is_player\":true}")
                 elseif button == clothing
 
                     ;--------------------------------------------------
