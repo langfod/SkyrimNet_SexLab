@@ -169,12 +169,12 @@ Function SexTarget_Attempt(SkyrimNet_SexLab_Main main, Actor akActor, Actor akTa
 
     Actor domActor = akTarget
     Actor subActor = akActor 
-    Trace("SexTarget_Attempt",domActor.GetDisplayName()+" > "+subActor.GetDisplayName())
+    ;Trace("SexTarget_Attempt",domActor.GetDisplayName()+" > "+subActor.GetDisplayName())
     if rape && target_is_victim 
         domActor = akActor
         subActor = akTarget
     endif
-    Trace("SexTarget_Attempt",domActor.GetDisplayName()+" > "+subActor.GetDisplayName())
+    ;Trace("SexTarget_Attempt",domActor.GetDisplayName()+" > "+subActor.GetDisplayName())
 
     int button = main.BUTTON_YES_RANDOM
     if subActor == player || (domActor != None && domActor == player)
