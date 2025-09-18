@@ -43,6 +43,13 @@ It is stored as an array of integers matching the position of the actors in the 
 - 0: the actor is allowed an orgasm
 - 1: the actor is denied an orgrasm 
 
+## Sex Style 
+If you have enabled the Tag Editor, you will be presented with the ability to set the style,
+This will change how the sex is presented to the LLM:
+- Forcefully fucking
+- having sex
+- gently making love
+
 ## Examples 
 Examples can be found in the animations/GoodProvider sub directory.
 
