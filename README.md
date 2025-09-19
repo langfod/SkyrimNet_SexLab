@@ -58,7 +58,7 @@ Examples can be found in the animations/GoodProvider sub directory.
 {
     "stage 1": {
         "description":"{{sl.actors.1}} kisses {{sl.actors.0}}.",
-        "version": "1.0"
+        "version": "2.0"
     },
     "orgasm_denied":[0,1]
 }
