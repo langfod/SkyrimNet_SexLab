@@ -16,10 +16,12 @@
     <Imports>
         <Import>.\Scripts\Source</Import>
         <Import>.\Scripts\Source</Import>
+        <Import>.\Headers</Import>
         <Import>@ModsFolder\SKSE64\Scripts\Source</Import>
         <Import>@ModsFolder\SkyrimNet\Source\Scripts</Import>
         <Import>@ModsFolder\powerofthree's Tweaks\Source\Scripts</Import>
         <Import>@ModsFolder\Papyrus MessageBox - SKSE NG\Scripts\Source</Import>
+
 
         <Import>@ModsFolder\SkyrimNet_DDUDNG\Scripts\Source</Import>
         <Import>@ModsFolder\SkyrimNet_DDUDNG\Headers</Import>

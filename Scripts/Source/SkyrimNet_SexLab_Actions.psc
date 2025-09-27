@@ -37,13 +37,15 @@ Function RegisterActions() global
                 "SkyrimNet_SexLab_Actions", "SexTarget_IsEligible",  \
                 "SkyrimNet_SexLab_Actions", "SexTarget_Execute",  \
                 "", "PAPYRUS", 1, \
-                "{\"target\": \"Actor\", \"style\":\"fucking|sex|making love\", \"type\":\""+type+"\", \"rape\":false, \"target_victim\":false}")
+                "{\"target\": \"Actor\", \"style\":\"fucking|sex|making love\", \"type\":\""+type+"\", \"rape\":false, \"target_victim\":false}",\
+                "", "BodyAnimation")
         SkyrimNetApi.RegisterAction("SexLabSexMasturbation", \
                 "Start masturbating.",\
                 "SkyrimNet_SexLab_Actions", "SexTarget_IsEligible",  \
                 "SkyrimNet_SexLab_Actions", "SexTarget_Execute",  \
                 "", "PAPYRUS", 1, \
-                "{\"type\":\"masturbation\", \"rape\":{true|false}}")
+                "{\"type\":\"masturbation\", \"rape\":{true|false}}",\
+                "", "BodyAnimation")
     endif 
 
     ; ------------------------
@@ -67,15 +69,56 @@ Function RegisterActions() global
                 "SkyrimNet_SexLab_Actions", "SexTarget_IsEligible",  \
                 "SkyrimNet_SexLab_Actions", "SexTarget_Execute",  \
                 "", "PAPYRUS", 1, \
-                "{\"target\": \"Actor\", \"type\":\""+type+"\", \"rape\":true, \"target_victim\":true}")
+                "{\"target\": \"Actor\", \"type\":\""+type+"\", \"rape\":true, \"target_victim\":true}","","BodyAnimation")
         SkyrimNetApi.RegisterAction("SexLab_RapedByTarget", \
                 "Start being sexually assulted by {target}.",\
                 "SkyrimNet_SexLab_Actions", "SexTarget_IsEligible",  \
                 "SkyrimNet_SexLab_Actions", "SexTarget_Execute",  \
                 "", "PAPYRUS", 1, \
-                "{\"target\": \"Actor\", \"type\":\""+type+"\", \"rape\":true, \"target_victim\":false}")
+                "{\"target\": \"Actor\", \"type\":\""+type+"\", \"rape\":true, \"target_victim\":false}","","BodyAnimation")
     endif 
 
+EndFunction
+; -------------------------------------------------
+; Tag 
+; -------------------------------------------------
+
+Bool Function BodyAnimation_Tag(String tag, Actor akActor) global
+    if akActor.IsDead() || akActor.IsInCombat() 
+        Trace("BodyAnimation_Tag", akActor.GetDisplayName()+" is dead or in combat")
+        return false 
+    endif 
+
+    ; SexLab check
+    SkyrimNet_SexLab_Main sexlab_main = Game.GetFormFromFile(0x800, "SkyrimNet_SexLab.esp") as SkyrimNet_SexLab_Main
+    if sexlab_main.IsActorLocked(akActor) || sexlab_main.sexLab.IsActorActive(akActor) 
+        Trace("BodyAnimation_Tag", akActor.GetDisplayName()+" is locked or SexLab animation")
+        return false 
+    endif
+
+    ; Cuddle check 
+    if MiscUtil.FileExists("Data/SkyrimNet_Cuddle.esp") 
+        if tag == "cuddle"
+            SkyrimNet_Cuddle_Main main = Game.GetFormFromFile(0x800, "SkyrimNet_Cuddle.esp") as SkyrimNet_Cuddle_Main
+            if main == None 
+                Trace("BodyAnimation_Tag","SkyrimNet_Cuddle_Main is None")
+                return false
+            endif
+            int rank = akActor.GetFactionRank(main.skyrimnet_cuddle_faction)
+            if rank > 0
+                Trace("BodyAnimation_Tag",akActor.GetDisplayName()+" is already cuddling")
+                return false
+            endif
+        endif
+    endif 
+
+    ; Ostim check 
+    if MiscUtil.FileExists("Data/OStim.esp") && OActor.IsInOStim(akActor)
+        return false 
+    endif 
+
+    Trace("BodyAnimation_Tag", akActor.GetDisplayName()+" is eligible for sex")
+    return True
 EndFunction
 
 ; -------------------------------------------------
@@ -98,16 +141,17 @@ String[] Function GetTypes() global
 EndFunction
 
 Bool Function SexTarget_IsEligible(Actor akActor, string contextJson, string paramsJson) global
-    SkyrimNet_SexLab_Main main = Game.GetFormFromFile(0x800, "SkyrimNet_SexLab.esp") as SkyrimNet_SexLab_Main
-    if main.sexLab == None || main == None 
-        return false
-    endif 
-    if !main.sexLab.IsValidActor(akActor) || akActor.IsDead() || akActor.IsInCombat() || main.sexLab.IsActorActive(akActor) || main.IsActorLocked(akActor) 
-        Trace("SexTarget_IsEligible",akActor.GetDisplayName()+" can't have sex")
-        return False
-    endif
+    ;SkyrimNet_SexLab_Main main = Game.GetFormFromFile(0x800, "SkyrimNet_SexLab.esp") as SkyrimNet_SexLab_Main
+    ;if main.sexLab == None || main == None 
+    ;    return false
+    ;endif 
+    ;if !main.sexLab.IsValidActor(akActor) || akActor.IsDead() || akActor.IsInCombat() || main.sexLab.IsActorActive(akActor) || main.IsActorLocked(akActor) 
+    ;    Trace("SexTarget_IsEligible",akActor.GetDisplayName()+" can't have sex")
+    ;    return False
+    ;endif
 
-    Trace("SexTarget_IsEligible", akActor.GetDisplayName()+" is eligible for sex")
+;    Trace("SexTarget_IsEligible", akActor.GetDisplayName()+" is eligible for sex")
+;    return True
     return True
 EndFunction
 
@@ -133,6 +177,8 @@ Function SexTarget_Execute(Actor akActor, string contextJson, string paramsJson)
         endif 
         if akTarget == None 
             Trace("SexTarget_IsExligible","type != masturbation, but target is None (likely in complete Actor name)", true )
+            return 
+        elseif !BodyAnimation_Tag("BodyAnimation", akTarget)
             return 
         endif 
     endif 

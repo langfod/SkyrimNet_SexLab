@@ -22,6 +22,7 @@ int Property STYLE_SILENTLY = 3 Auto
 int[] thread_style
 bool[] thread_started
 
+
 GlobalVariable Property sexlab_active_sex Auto
 Bool Property active_sex 
     Bool Function Get()
@@ -64,6 +65,9 @@ SexLabFramework Property sexlab Auto
 
 SkyrimNet_DOM_Main Property dom_main Auto 
 bool Property dom_main_found Auto
+
+; Stores if SLSO.esp is found
+float last_time_direct_narration = 0.0
 
 Event OnInit()
     Trace("OnInit","")
@@ -269,10 +273,14 @@ Function RegisterSexlabEvents()
     RegisterForModEvent("HookStageStart", "StageStart")
     ;UnRegisterForModEvent("HookStageEnd")
     ;RegisterForModEvent("HookStageEnd", "SexLab_StageEnd")
-    UnRegisterForModEvent("HookOrgasmStart")
-    RegisterForModEvent("HookOrgasmStart", "OrgasmStart")
     UnRegisterForModEvent("HookAnimationEnd")
     RegisterForModEvent("HookAnimationEnd", "AnimationEnd")
+
+    UnRegisterForModEvent("HookOrgasmStart")
+    UnRegisterForModEvent("SexLabOrgasm")
+    RegisterForModEvent("SexLabOrgasm", "Orgasm_Individual")
+    RegisterForModEvent("HookOrgasmStart", "Orgasm_Combined")
+
 EndFunction 
 
 event AnimationStart(int ThreadID, bool HasPlayer)
@@ -344,9 +352,68 @@ Event StageStart(int ThreadID, bool HasPlayer)
     endif 
 EndEvent
 
-Event OrgasmStart(int ThreadID, bool HasPlayer)
-    Orgasm_Event(ThreadID)
+; Used for default orgasm
+Event Orgasm_Combined(int ThreadID, bool HasPlayer)
+    Trace("OrgasmStart","ThreadID:"+ThreadID+" HasPlayer:"+HasPlayer)
+    sslSystemConfig config = (SexLab as Quest) as sslSystemConfig
+    if !config.SeparateOrgasms 
+        Orgasm_Event(ThreadID)
+    endif 
 EndEvent
+
+; Used for SLSO.esp orgasm handling
+Event Orgasm_Individual(form akActorForm, int FullEnjoyment, int num_orgasms)
+    sslSystemConfig config = (SexLab as Quest) as sslSystemConfig
+    if !config.SeparateOrgasms 
+        return 
+    endif 
+
+    Actor akActor = akActorForm as Actor
+    Trace("Orgasm_Individual","akActor:"+akActor.GetDisplayName()+" FullEnjoyment:"+FullEnjoyment+" num_orgasms:"+num_orgasms)
+    if akActor == None 
+        return 
+    endif 
+
+    sslActorLibrary ActorLib = (SexLab as Quest) as sslActorLibrary
+    bool can_ejaculate = Actorlib.GetGender(akActor) != 1
+    String msg = ""
+    if can_ejaculate
+        sslThreadController thread = stages.GetThread(akActor)
+        if thread != None 
+            Actor[] actors = thread.Positions
+            int i = actors.length - 1 
+            int position = -1
+            while 0 <= i && position == -1
+                if actors[i] != akActor  
+                    position = i
+                endif 
+                i -= 1
+            endwhile
+
+            if position != -1
+                Actor reciever = actors[position]
+                msg = Ejaculation(akActor.GetDisplayName(), reciever.GetDisplayName(), position, thread)
+                DirectNarration("sexlab_orgasm", msg, akActor, reciever)
+            endif 
+        endif 
+    endif 
+    if msg == ""
+        msg = akActor.GetDisplayName()+" orgasmed."
+        DirectNarration("sexlab_orgasm", msg, akActor, None)
+    endif 
+EndEvent 
+
+Function DirectNarration(String event_type, String msg, Actor originatorActor=None, Actor targetActor=None)
+    float current_time = Utility.GetCurrentRealTime()
+    float delta = current_time - last_time_direct_narration
+    Trace("DirectNarration","msg:"+msg+" delta:"+delta)
+    if last_time_direct_narration == 0.0 || current_time - last_time_direct_narration < 45.0
+        SkyrimNetApi.DirectNarration(msg, originatorActor, targetActor)
+    else 
+        SkyrimNetApi.RegisterEvent(event_type, msg, originatorActor, targetActor)
+    endif 
+    last_time_direct_narration = current_time
+EndFunction
 
 event AnimationEnd(int ThreadID, bool HasPlayer)
     ; String desc = stages.GetStageDescription(SexLab.GetController(ThreadID))
@@ -454,6 +521,10 @@ Function AllowedDeniedOnlyIncrease(Actor[] actors, sslThreadController thread, S
     endwhile
 EndFunction
 
+; ----------------------------------------------------------------------------------------------------
+; Orgasm Event Functions 
+; This function is not called when SLSO.esp is installed, as it has its own orgasm handling
+; ----------------------------------------------------------------------------------------------------
 Function Orgasm_Event(int ThreadID)
     if SexLab == None
         return  
@@ -490,17 +561,6 @@ Function Orgasm_Event(int ThreadID)
     while position < actors.length
         int j = (position+1)%(names.length)
 
-        Bool[] loc = new Bool[4]
-        String[] loc_str = new String[4]
-        int loc_anal = 0
-        int loc_vaginal = 1
-        int loc_oral = 2   
-        int loc_chest = 3
-        loc_str[loc_anal] = "ass"
-        loc_str[loc_vaginal] = "pussy"     
-        loc_str[loc_oral] = "mouth"
-        loc_str[loc_chest] = "chest"
-
         if position < orgasm_denied.length && orgasm_denied[position] == 1
             narration += names[position]+" was denied orgasm. "
         elseif dom_main != None 
@@ -511,54 +571,7 @@ Function Orgasm_Event(int ThreadID)
             ; Do nothing, orgasm handled by Dom 
         elseif can_ejaculate[position]
 
-            if anim.HasTag("anal")
-                loc[loc_anal] = true
-            elseif anim.HasTag("vaginal")
-                loc[loc_vaginal] = true    
-            elseif anim.HasTag("oral") || anim.HasTag("blowjob") || anim.HasTag("cunnilingus") || anim.HasTag("CumInMouth")
-                loc[loc_oral] = true   
-            elseif anim.HasTag("boobjob") 
-                loc[loc_chest] = true      
-            endif 
-
-            int CumId = anim.GetCumId(position, thread.stage)
-            if cumId > 0
-                if cumId == sslObjectFactory.vaginal()
-                    loc[loc_vaginal] = true
-                elseif cumId == sslObjectFactory.oral()
-                    loc[loc_oral] = true
-                elseif cumId == sslObjectFactory.anal()
-                    loc[loc_anal] = true
-                elseif cumId == sslObjectFactory.VaginalOral()
-                    loc[loc_vaginal] = true
-                    loc[loc_oral] = true
-                elseif cumId == sslObjectFactory.VaginalAnal()
-                    loc[loc_vaginal] = true
-                    loc[loc_anal] = true
-                elseif cumId == sslObjectFactory.OralAnal()
-                    loc[loc_oral] = true
-                    loc[loc_anal] = true
-                elseif cumId == sslObjectFactory.VaginalOralAnal()
-                    loc[loc_vaginal] = true
-                    loc[loc_oral] = true
-                    loc[loc_anal] = true
-                endif
-            endif 
-            if loc[loc_anal] || loc[loc_vaginal] || loc[loc_oral] || loc[loc_chest]
-                narration += names[position] + " orgasmed, leaving warm sticky cum dripping from " + names[j] +"'s "
-
-                int i = 0
-                while i < loc_str.length
-                    if loc[i]
-                        narration += loc_str[i]
-                        if i < loc_str.length - 1
-                            narration += ", "
-                        endif
-                    endif
-                    i += 1
-                endwhile
-                narration += ". "
-            endif 
+            narration += Ejaculation(names[position], names[j], j, thread)
         else
             narration += names[position]+" orgasmed. "
         endif 
@@ -571,6 +584,71 @@ Function Orgasm_Event(int ThreadID)
 
     SkyrimNetApi.DirectNarration(narration)
 EndFunction  
+
+String Function Ejaculation(String sender, String reciever, int position ,sslThreadController thread) 
+    sslBaseAnimation anim = thread.Animation
+    Bool[] loc = new Bool[4]
+    String[] loc_str = new String[4]
+    int loc_anal = 0
+    int loc_vaginal = 1
+    int loc_oral = 2   
+    int loc_chest = 3
+    loc_str[loc_anal] = "ass"
+    loc_str[loc_vaginal] = "pussy"     
+    loc_str[loc_oral] = "mouth"
+    loc_str[loc_chest] = "chest"
+
+    if anim.HasTag("anal")
+        loc[loc_anal] = true
+    elseif anim.HasTag("vaginal")
+        loc[loc_vaginal] = true    
+    elseif anim.HasTag("oral") || anim.HasTag("blowjob") || anim.HasTag("cunnilingus") || anim.HasTag("CumInMouth")
+        loc[loc_oral] = true   
+    elseif anim.HasTag("boobjob") 
+        loc[loc_chest] = true      
+    endif 
+
+    int CumId = anim.GetCumId(position, thread.stage)
+    if cumId > 0
+        if cumId == sslObjectFactory.vaginal()
+            loc[loc_vaginal] = true
+        elseif cumId == sslObjectFactory.oral()
+            loc[loc_oral] = true
+        elseif cumId == sslObjectFactory.anal()
+            loc[loc_anal] = true
+        elseif cumId == sslObjectFactory.VaginalOral()
+            loc[loc_vaginal] = true
+            loc[loc_oral] = true
+        elseif cumId == sslObjectFactory.VaginalAnal()
+            loc[loc_vaginal] = true
+            loc[loc_anal] = true
+        elseif cumId == sslObjectFactory.OralAnal()
+            loc[loc_oral] = true
+            loc[loc_anal] = true
+        elseif cumId == sslObjectFactory.VaginalOralAnal()
+            loc[loc_vaginal] = true
+            loc[loc_oral] = true
+            loc[loc_anal] = true
+        endif
+    endif 
+    String narration = sender+" orgasmed"
+    if loc[loc_anal] || loc[loc_vaginal] || loc[loc_oral] || loc[loc_chest]
+        narration += ", leaving warm sticky cum dripping from " + reciever +"'s "
+
+        int i = 0
+        while i < loc_str.length
+            if loc[i]
+                narration += loc_str[i]
+                if i < loc_str.length - 1
+                    narration += ", "
+                endif
+            endif
+            i += 1
+        endwhile
+    endif 
+    narration += ". "
+    return narration 
+EndFunction
 
 ;----------------------------------------------------
 ; Parses the tags
