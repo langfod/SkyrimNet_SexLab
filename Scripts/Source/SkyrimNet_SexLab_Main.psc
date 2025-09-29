@@ -7,6 +7,65 @@ import SkyrimNet_SexLab_Actions
 import SkyrimNet_SexLab_Stages
 import StorageUtil
 
+; ---------------------------------------------------
+; Globals 
+; ---------------------------------------------------
+
+; SexLab Active Sex 
+; 0 - no active sexlab animations 
+; 1 - one or more active sexlab animations
+GlobalVariable Property skyrimnet_sexlab_active_sex Auto
+Bool Property active_sex 
+    Bool Function Get()
+        return skyrimnet_sexlab_active_sex.GetValueInt() == 1
+    EndFunction 
+    Function Set(Bool value)
+        if value
+            skyrimnet_sexlab_active_sex.SetValue(1.0)
+        else
+            skyrimnet_sexlab_active_sex.SetValue(0.0)
+        endif
+    EndFunction 
+EndProperty
+
+; Sexlab or Ostim animation with player
+; 0 - Sexlab
+; 1 - Ostim
+; 2 - Choose per animation
+GlobalVariable Property skyrimnet_sexlab_ostim_player Auto
+int Property sexlab_ostim_player_index
+    int Function Get()
+        return skyrimnet_sexlab_ostim_player.GetValueInt()
+    EndFunction 
+    Function Set(int value)
+        if value
+            skyrimnet_sexlab_ostim_player.SetValue(value)
+        else
+            skyrimnet_sexlab_ostim_player.SetValue(value)
+        endif
+    EndFunction 
+EndProperty
+
+; Sexlab or Ostim animation without player
+; 0 - Sexlab
+; 1 - Ostim
+; 2 - Choose per animation
+GlobalVariable Property skyrimnet_sexlab_ostim_nonplayer Auto
+int Property sexlab_ostim_nonplayer_index
+    int Function Get()
+        return skyrimnet_sexlab_ostim_nonplayer.GetValueInt()
+    EndFunction 
+    Function Set(int value)
+        if value
+            skyrimnet_sexlab_ostim_nonplayer.SetValue(value)
+        else
+            skyrimnet_sexlab_ostim_nonplayer.SetValue(value)
+        endif
+    EndFunction 
+EndProperty
+
+; ---------------------------------------------------
+
 ReferenceAlias[] Property nude_refs Auto
 
 
@@ -22,20 +81,6 @@ int Property STYLE_SILENTLY = 3 Auto
 int[] thread_style
 bool[] thread_started
 
-
-GlobalVariable Property sexlab_active_sex Auto
-Bool Property active_sex 
-    Bool Function Get()
-        return sexlab_active_sex.GetValueInt() == 1
-    EndFunction 
-    Function Set(Bool value)
-        if value
-            sexlab_active_sex.SetValue(1.0)
-        else
-            sexlab_active_sex.SetValue(0.0)
-        endif
-    EndFunction 
-EndProperty
 
 Function Trace(String func, String msg, Bool notification=False) global
     msg = "[SkyrimNet_SexLab_Main."+func+"] "+msg
@@ -63,7 +108,7 @@ String Property storage_arousal_key = "skyrimnet_sexlab_arousal_level" Auto
 SkyrimNet_SexLab_Stages Property stages Auto
 SexLabFramework Property sexlab Auto 
 
-SkyrimNet_DOM_Main Property dom_main Auto 
+Quest Property dom_main Auto 
 bool Property dom_main_found Auto
 
 ; Stores if SLSO.esp is found
@@ -101,7 +146,7 @@ Function Setup()
     SexLab = Game.GetFormFromFile(0xD62, "SexLab.esm") as SexLabFramework
 
     if MiscUtil.FileExists("Data/SkyrimNet_DOM.esp")
-        dom_main = Game.GetFormFromFile(0x800, "SkyrimNet_DOM.esp") as SkyrimNet_DOM_Main
+        dom_main = Game.GetFormFromFile(0x800, "SkyrimNet_DOM.esp") as Quest
         dom_main_found = True
     else 
         dom_main = None 
@@ -119,6 +164,7 @@ Function Setup()
         stages = (self as Quest) as SkyrimNet_SexLab_Stages
     endif 
     stages.Setup() 
+    skyrimnet_sexlab_active_sex = Game.GetformFromFile(0x802, "SkyrimNet_SexLab.esp") as GlobalVariable
     active_sex = false
 
     SkyrimNet_SexLab_MCM mcm = (self as Quest) as SkyrimNet_SexLab_MCM
@@ -342,7 +388,7 @@ Event StageStart(int ThreadID, bool HasPlayer)
         while 0 <= k 
             DOM_Actor slave = SkyrimNet_DOM_Utils.GetSlave("SkyrimNet_SexLab_Main","Start_Sex",actors[k],true,true)
             Debug.Notification("slave:"+slave)
-            if dom_main.IsDomSlave(actors[k]) 
+            if (dom_main as SkyrimNet_DOM_Main).IsDomSlave(actors[k]) 
                 Debug.Notification(actors[k].GetDisplayName()+" denied")
             else
                 Debug.Notification(actors[k].GetDisplayName()+" allowed")

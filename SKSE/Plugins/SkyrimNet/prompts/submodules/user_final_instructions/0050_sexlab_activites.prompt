@@ -1,4 +1,4 @@
-{% if not isTimePaused and get_global_value("sexlab_active_sex") == 1.0 %}
+{% if not isTimePaused and get_global_value("skyrimnet_sexlab_active_sex") == 1.0 %}
      {% set sexlab = sexlab_get_threads(npc.UUID) -%}
      {% if length(sexlab.threads) > 0 %} 
           # Current Ongoing Sexual Activity

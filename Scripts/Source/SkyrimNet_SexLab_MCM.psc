@@ -23,6 +23,10 @@ skyrimnet_UDNG_Groups group_devices = None
 DOM_api d_api = None 
 SkyrimNet_DOM_Main dom_main = None 
 
+; OstimNet Support 
+int ostimnet_player_menu = -1
+int ostimnet_nonplayer_menu = -1
+
 Function Trace(String func, String msg, Bool notification=False) global
     msg = "[SkyrimNet_SexLab_MCM."+func+"] "+msg
     Debug.Trace(msg) 
@@ -34,7 +38,21 @@ EndFunction
 String page_options = "options"
 String page_actors = "actors debug (can be slow)"
 
+; OstimNet found 
+bool ostimnet_found = False
+
+String[] sexlab_ostim_options 
+
+int Property sexlab_ostim_player_menu Auto  ; menu id 
+int Property sexlab_ostim_nonplayer_menu Auto  ; menu id 
+
 Function Setup() 
+;    if sexlab_ostim_options.length == 0
+        sexlab_ostim_options = new String[3]
+        sexlab_ostim_options[0] = "SexLab"
+        sexlab_ostim_options[1] = "Ostim" 
+        sexlab_ostim_options[2] = "Choose each time"
+;    endif 
 
     ; -------------------------------
     ; Checks for Devious Support mod 
@@ -59,6 +77,13 @@ Function Setup()
     else 
         dom_main = None 
     endif 
+
+    if False ; MiscUtil.FileExists("Data/OstimNet.esp")
+        Trace("SetUp","found OstimNet.esp")
+        ostimnet_found = True
+    else 
+        ostimnet_found = False  
+    endif
 EndFunction 
 
 
@@ -112,6 +137,14 @@ Function PageOptions()
 
     if hot_key_toggle 
         RegisterForKey(sex_edit_key)
+    endif 
+
+    if ostimnet_found
+        AddTextOption("","")
+        AddHeaderOption("OstimNet Integration")
+        AddHeaderOption("")
+        ostimnet_player_menu = AddMenuOption("sex with player:", sexlab_ostim_options[main.sexlab_ostim_player_index])
+        ostimnet_nonplayer_menu = AddMenuOption("sex without player:", sexlab_ostim_options[main.sexlab_ostim_player_index])
     endif 
 EndFunction 
 
@@ -293,6 +326,33 @@ State DomDebugToggle
     EndEvent
 EndState
 
+;-----------------------------------------------------------------
+; OstimNet Integration
+; https://github.com/schlangster/skyui/wiki/MCM-Option-Types
+; https://www.nexusmods.com/skyrimspecialedition/articles/925
+;-----------------------------------------------------------------
+Event OnOptionMenuOpen(int menu_id)
+    Trace("OnOptionMenuOpen","options: "+sexlab_ostim_options)
+    SetMenuDialogOptions(sexlab_ostim_options)
+    if menu_id == ostimnet_player_menu
+        SetMenuDialogStartIndex(main.sexlab_ostim_player_index)
+    elseif menu_id == ostimnet_nonplayer_menu
+        SetMenuDialogStartIndex(main.sexlab_ostim_nonplayer_index)
+    endif
+    SetMenuDialogDefaultIndex(0)
+endEvent
+
+
+event OnOptionMenuAccept(int menu_id, int index)
+    Trace("OnOptionMenuAccept","options: "+sexlab_ostim_options)
+    if menu_id == ostimnet_player_menu
+        main.sexlab_ostim_player_index = index
+    else 
+        main.sexlab_ostim_nonplayer_index = index
+    endif 
+    SetMenuOptionValue(menu_id, sexlab_ostim_options[index])
+endEvent
+
 ; --------------------------------------------
 ; Handles OnKeyDown 
 ; --------------------------------------------
@@ -308,10 +368,19 @@ Event OnKeyDown(int key_code)
         ; so the parseJsonActor works
         Actor target = Game.GetCurrentCrosshairRef() as Actor 
         Actor player = Game.GetPlayer() 
-        if target != None 
+        bool player_having_sex = main.sexlab.IsActorActive(player)
+        if player_having_sex || target != None 
             ;---------------------------------
             ; The original 
-            if SexTarget_IsEligible(target,"","")
+            if player_having_sex || main.sexlab.IsActorActive(target)
+                if player_having_sex 
+                    target = player 
+                endif 
+                sslThreadController thread = stages.GetThread(target)
+                if thread != None 
+                    stages.EditDescriptions(thread) 
+                endif 
+            elseif SkyrimNet_SexLab_Actions.BodyAnimation_Tag("BodyAnimation", target)
 
                 DOM_Actor slave = None 
                 if d_api != None && d_api.IsDOMSlave(target) 
@@ -437,44 +506,62 @@ Event OnKeyDown(int key_code)
                     dom_main.DebugMenuOpen(target) 
                 endif 
                 return 
-            else
-                sslThreadController thread = stages.GetThread(target)
-                if thread != None 
-                    stages.EditDescriptions(thread) 
-                endif 
-                return 
             endif 
+            return 
         endif 
 
-        ; See if player is in a sex animation 
-        sslThreadController thread = stages.GetThread(player)
-        if thread != None 
-            stages.EditDescriptions(thread) 
-            return
-        endif
-
         ; If not, then we allow them to start a sex animation with nearby actors
-        Actor[] actors = MiscUtil.ScanCellActors(player, 1000)
-        if actors.length < 2
-            actors = MiscUtil.ScanCellActors(player, 2000)
-            if actors.length == 0
+        Debug.Notification("No target in crosshair, looking for sexable nearby actors")
+        Trace("OnKeyDown","No target in crosshair, looking for nearby actors")
+        ;float time_last = Utility.GetCurrentRealTime()
+        Actor[] actors_all = MiscUtil.ScanCellActors(player, 1000)
+
+        bool[] valid = PapyrusUtil.BoolArray(actors_all.length)
+
+        if actors_all.length < 2
+            actors_all = MiscUtil.ScanCellActors(player, 2000)
+            if actors_all.length == 0
                 Trace("OnKeyDown","No eligible actors found in the area.")
                 return
             endif 
         endif 
-        Trace("OnKeyDown","Found "+actors.length+" actors in the area.")
 
-        int i = 0 
-        int num_actors = actors.Length
-        String[] names = Utility.CreateStringArray(actors.length)
-        while i < num_actors 
-            names[i] = actors[i].GetDisplayName()
-            i += 1
+        int i = actors_all.length - 1 
+        int num_actors = 0 
+
+        while 0 <= i 
+            if SkyrimNet_SexLab_Actions.BodyAnimation_Tag("BodyAnimation", actors_all[i]) && main.sexlab.IsValidActor(actors_all[i])
+                valid[i] = True
+                num_actors += 1
+            else 
+                valid[i] = False
+            endif 
+            i -= 1
         endwhile 
 
-        String[] members = new String[5]
 
-        String remove = "<remove"
+        if num_actors < 2
+            Trace("OnKeyDown","Not enough eligible actors found in the area.")
+            return
+        endif
+        Trace("OnKeyDown","Found "+actors.length+" actors in the area.")
+
+        Actor[] actors = PapyrusUtil.ActorArray(num_actors)
+        String[] names = Utility.CreateStringArray(num_actors)
+        int[] indexes = Utility.CreateIntArray(num_actors)
+        i = actors_all.length - 1
+        int j = 0 
+        while 0 <= i
+            if valid[i]
+                actors[j] = actors_all[i]
+                names[j] = actors[j].GetDisplayName()
+                j += 1
+            endif 
+            i -= 1
+        endwhile 
+
+        int[] selected = new int[5]
+
         String cancel = "<cancel>"
         String type = "sex>"
 
@@ -484,84 +571,89 @@ Event OnKeyDown(int key_code)
         uilistmenu listMenu = uiextensions.GetMenu("UIListMenu") AS uilistmenu
         ; I couldn't compare directly to the strings button in some case
         ; so fell back on next and index :(
-        while next == 0 || index != 0
+        bool finished = false
+        while finished == false
             listMenu.ResetMenu()
-            i = 0
-            String start = ""
-            if next > 0
-                while i < next
-                    if start != ""
-                        start += "+"
-                    endif
-                    start += members[i]
-                    i += 1
-                endwhile 
-                start = "<start with: "+start+">"
-                listMenu.AddEntryItem(start)
-                listMenu.AddEntryItem(remove)
-            endif 
+
+            i = 0 
+            String start = "start | "
+            while i < next 
+                if i > 0 
+                    start += "+"
+                endif 
+                start += names[selected[i]]
+                i += 1
+            endwhile 
+            listMenu.AddEntryItem(start)
             listmenu.AddEntryItem(type)
 
-            if next < members.length
-                i = 0 
-                while i < num_actors
-                    bool found = false 
-                    int j = next - 1
-                    while 0 <= j  && !found
-                        if names[i] == members[j]
-                            found = True
-                        endif 
-                        j -= 1
-                    endwhile
-                    if !found
-                        if SkyrimNet_SexLab_Actions.SexTarget_IsEligible(actors[i], "", "") 
-                            listMenu.AddEntryItem(names[i])
-                        endif 
+            i = 0
+            while i < num_actors
+                bool found = false 
+                j = 0 
+                while j < next && !found 
+                    if selected[j] == i
+                        found = True
+                    else 
+                        j += 1
                     endif 
-                    i += 1
-                endwhile 
-            endif 
+                endwhile
+                String front = "  "
+                if found
+                    front = "- "
+                    indexes[i] = j
+                elseif next < selected.length
+                    front = "+ "
+                    indexes[i] = -1
+                endif
+                listMenu.AddEntryItem(front+names[i])
+                i += 1
+            endwhile 
 
             listMenu.AddEntryItem(cancel)
 
             listMenu.OpenMenu()
-            String button = listMenu.GetResultString()
             index = listMenu.GetResultInt()
-            if next == 0 || index != 0
-                index = 1
-                if button == remove 
-                    next -= 1
-                elseif button == type
-                    type = SexRapeSelection()
-                elseif button == cancel
-                    return 
-                else
-                    members[next] = button
+            if index == 0 
+                if 0 < next 
+                    finished = True 
+                endif 
+            elseif index == 1 
+                type = SexRapeSelection()
+            elseif index < num_actors + 2
+                index -= 2
+                if indexes[index] == -1 
+                    selected[next] = index
                     next += 1
+                else
+                    j = indexes[index]
+                    while j < next - 1 
+                        selected[j] = selected[j+1]
+                        j += 1
+                    endwhile
+                    next -= 1
                 endif
+                if next > 0
+                    Trace("OnKeyDown","after next:"+next+" selected[index]:"+selected[next - 1])
+                endif 
+            else 
+                return 
             endif 
         endwhile
 
-        Actor[] mActors = PapyrusUtil.ActorArray(next)
+        Actor[] group = PapyrusUtil.ActorArray(next)
         i = 0 
         while i < next 
-            int j = 0 
-            while j < num_actors 
-                if members[i] == names[j] 
-                    mActors[i] = actors[j] 
-                    j = num_actors
-                endif 
-                j += 1
-            endwhile 
+            group[i] = actors[selected[i]]
             i += 1 
         endwhile 
 
-        StartSex(mActors, type == "rape>")
+        StartSex(group, type == "rape>")
     endif 
 EndEvent 
 
 Function StartSex(Actor[] actors, bool is_rape) 
-    Trace("StartSex","num_actors:"+num_actors+" is_rape:"+is_rape)
+    Trace("StartSex","num_actors:"+actors.length+" is_rape:"+is_rape)
     SexLabFramework SexLab = Game.GetFormFromFile(0xD62, "SexLab.esm") as SexLabFramework
     if SexLab == None
         Trace("StartSex","SexLab is None")

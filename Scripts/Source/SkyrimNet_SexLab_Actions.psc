@@ -84,17 +84,34 @@ EndFunction
 ; -------------------------------------------------
 
 Bool Function BodyAnimation_Tag(String tag, Actor akActor) global
+;    float time_last = Utility.GetCurrentRealTime()
     if akActor.IsDead() || akActor.IsInCombat() 
         Trace("BodyAnimation_Tag", akActor.GetDisplayName()+" is dead or in combat")
         return false 
     endif 
 
+    ;float time = Utility.GetCurrentRealTime()
+    ;float delta = time- time_last
+    ;time_last = time
+    ;Trace("BodyAnimation_tag","after isdead:"+delta)
+
     ; SexLab check
     SkyrimNet_SexLab_Main sexlab_main = Game.GetFormFromFile(0x800, "SkyrimNet_SexLab.esp") as SkyrimNet_SexLab_Main
+
+    ;time = Utility.GetCurrentRealTime()
+    ;delta = time- time_last
+    ;time_last = time
+    ;Trace("BodyAnimation_tag","after GetFrom :"+delta)
+
     if sexlab_main.IsActorLocked(akActor) || sexlab_main.sexLab.IsActorActive(akActor) 
         Trace("BodyAnimation_Tag", akActor.GetDisplayName()+" is locked or SexLab animation")
         return false 
     endif
+
+    ;time = Utility.GetCurrentRealTime()
+    ;delta = time- time_last
+    ;time_last = time
+    ;Trace("BodyAnimation_tag","locked :"+delta)
 
     ; Cuddle check 
     if MiscUtil.FileExists("Data/SkyrimNet_Cuddle.esp") 
@@ -112,10 +129,20 @@ Bool Function BodyAnimation_Tag(String tag, Actor akActor) global
         endif
     endif 
 
+    ;time = Utility.GetCurrentRealTime()
+    ;delta = time- time_last
+    ;time_last = time
+    ;Trace("BodyAnimation_tag","cuddle :"+delta)
+
     ; Ostim check 
     if MiscUtil.FileExists("Data/OStim.esp") && OActor.IsInOStim(akActor)
         return false 
     endif 
+
+    ;time = Utility.GetCurrentRealTime()
+    ;delta = time- time_last
+    ;time_last = time
+    ;Trace("BodyAnimation_tag","ostim :"+delta)
 
     Trace("BodyAnimation_Tag", akActor.GetDisplayName()+" is eligible for sex")
     return True
@@ -141,17 +168,16 @@ String[] Function GetTypes() global
 EndFunction
 
 Bool Function SexTarget_IsEligible(Actor akActor, string contextJson, string paramsJson) global
-    ;SkyrimNet_SexLab_Main main = Game.GetFormFromFile(0x800, "SkyrimNet_SexLab.esp") as SkyrimNet_SexLab_Main
-    ;if main.sexLab == None || main == None 
-    ;    return false
-    ;endif 
-    ;if !main.sexLab.IsValidActor(akActor) || akActor.IsDead() || akActor.IsInCombat() || main.sexLab.IsActorActive(akActor) || main.IsActorLocked(akActor) 
-    ;    Trace("SexTarget_IsEligible",akActor.GetDisplayName()+" can't have sex")
-    ;    return False
-    ;endif
+    SkyrimNet_SexLab_Main main = Game.GetFormFromFile(0x800, "SkyrimNet_SexLab.esp") as SkyrimNet_SexLab_Main
+    if main.sexLab == None || main == None 
+        return false
+    endif 
+    if !main.sexLab.IsValidActor(akActor)
+        Trace("SexTarget_IsEligible",akActor.GetDisplayName()+" can't have sex")
+        return False
+    endif
 
-;    Trace("SexTarget_IsEligible", akActor.GetDisplayName()+" is eligible for sex")
-;    return True
+    Trace("SexTarget_IsEligible", akActor.GetDisplayName()+" is eligible for sex")
     return True
 EndFunction
 
