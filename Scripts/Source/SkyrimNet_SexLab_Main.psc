@@ -111,6 +111,8 @@ SexLabFramework Property sexlab Auto
 Quest Property dom_main Auto 
 bool Property dom_main_found Auto
 
+
+string actor_num_orgasms_key = "skyrimnet_sexlab_actor_num_orgasms"
 ; Stores if SLSO.esp is found
 float last_time_direct_narration = 0.0
 
@@ -346,6 +348,17 @@ event AnimationStart(int ThreadID, bool HasPlayer)
         i -= 1
     endwhile 
 
+    sslSystemConfig config = (SexLab as Quest) as sslSystemConfig
+    if config.SeparateOrgasms
+        actors = thread.Positions
+        int j = actors.length - 1 
+        while 0 <= j 
+            Trace("AnimationStart","actor:"+actors[j].GetDisplayName()+" reset num orgasm")
+            StorageUtil.SetIntValue(actors[j], actor_num_orgasms_key, 0)
+            j -= 1 
+        endwhile 
+    endif 
+
     thread_started[thread.tid] = False 
 endEvent
 
@@ -359,6 +372,7 @@ Event StageStart(int ThreadID, bool HasPlayer)
         Sex_Event(ThreadID, "start", HasPlayer )
         thread_started[ThreadID] = True
     endif 
+
 
     sslThreadController thread = SexLab.GetController(ThreadID)
     AllowedDeniedOnlyIncrease(thread.positions, thread, "stage") 
@@ -409,12 +423,14 @@ EndEvent
 
 ; Used for SLSO.esp orgasm handling
 Event Orgasm_Individual(form akActorForm, int FullEnjoyment, int num_orgasms)
+
     sslSystemConfig config = (SexLab as Quest) as sslSystemConfig
     if !config.SeparateOrgasms 
         return 
     endif 
 
     Actor akActor = akActorForm as Actor
+    StorageUtil.SetIntValue(akActor, actor_num_orgasms_key, num_orgasms)
     Trace("Orgasm_Individual","akActor:"+akActor.GetDisplayName()+" FullEnjoyment:"+FullEnjoyment+" num_orgasms:"+num_orgasms)
     if akActor == None 
         return 
@@ -453,7 +469,7 @@ Function DirectNarration(String event_type, String msg, Actor originatorActor=No
     float current_time = Utility.GetCurrentRealTime()
     float delta = current_time - last_time_direct_narration
     Trace("DirectNarration","msg:"+msg+" delta:"+delta)
-    if last_time_direct_narration == 0.0 || current_time - last_time_direct_narration < 45.0
+    if last_time_direct_narration == 0.0 || current_time - last_time_direct_narration > 45.0
         SkyrimNetApi.DirectNarration(msg, originatorActor, targetActor)
     else 
         SkyrimNetApi.RegisterEvent(event_type, msg, originatorActor, targetActor)
@@ -462,6 +478,7 @@ Function DirectNarration(String event_type, String msg, Actor originatorActor=No
 EndFunction
 
 event AnimationEnd(int ThreadID, bool HasPlayer)
+    Trace("AnimationEnd","ThreadID:"+ThreadID+" HasPlayer:"+HasPlayer)
     ; String desc = stages.GetStageDescription(SexLab.GetController(ThreadID))
     ; if desc != ""
         ; Actor[] actors = SexLab.GetController(ThreadID).Positions
@@ -471,30 +488,56 @@ event AnimationEnd(int ThreadID, bool HasPlayer)
     Sex_Event(ThreadID, "stop", HasPlayer )
     thread_started[ThreadID] = False 
 
+    Trace("AnimationEnd","got to 1")
+
     sslThreadSlots ThreadSlots = Game.GetFormFromFile(0xD62, "SexLab.esm") as sslThreadSlots
     if ThreadSlots == None
         Trace("[SkyrimNet_SexLab] Get_Threads: ThreadSlots is None", true)
         return
     endif
 
+    Trace("AnimationEnd","got to 2")
     sslThreadController[] threads = ThreadSlots.Threads
 
-    int i = 0
+    int i = threads.length - 1 
     bool found = false
-    while i < threads.length && !found
+    while 0 <= i && !found
         String s = (threads[i] as sslThreadModel).GetState()
         if s == "animating" || s == "prepare"
             found = true
         endif 
+        i -= 1
     endwhile
     if found
         active_sex = true
     else 
         active_sex = false
     endif
+    Trace("AnimationEnd","got to 3")
 
     sslThreadController thread = SexLab.GetController(ThreadID)
     thread_style[thread.tid] = STYLE_NORMALLY
+
+    sslSystemConfig config = (SexLab as Quest) as sslSystemConfig
+    Actor[] actors = thread.Positions
+    Trace("AnimationEnd","checking orgasms for "+ActorsToString(actors))
+    if config.SeparateOrgasms
+        String denied = "" 
+        int j = actors.length - 1 
+        while 0 <= j 
+            int num_orgasms = StorageUtil.GetIntValue(actors[j],actor_num_orgasms_key, 0)
+            Trace("AnimationEnd","actor:"+actors[j].GetDisplayName()+" num orgasm:"+num_orgasms)
+            if num_orgasms < 1
+                denied += actors[j].GetDisplayName()+" was denied an orgasm. "
+            endif 
+            j -= 1 
+        endwhile 
+        if denied != ""
+            DirectNarration(denied, None, None)
+            Trace("AnimationEnd",denied)
+        endif 
+    endif 
+    Trace("AnimationEnd","got to 4")
 endEvent
 
 Function Sex_Event(int ThreadID, String status, Bool HasPlayer )
