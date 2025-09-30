@@ -465,18 +465,6 @@ Event Orgasm_Individual(form akActorForm, int FullEnjoyment, int num_orgasms)
     endif 
 EndEvent 
 
-Function DirectNarration(String event_type, String msg, Actor originatorActor=None, Actor targetActor=None)
-    float current_time = Utility.GetCurrentRealTime()
-    float delta = current_time - last_time_direct_narration
-    Trace("DirectNarration","msg:"+msg+" delta:"+delta)
-    if last_time_direct_narration == 0.0 || current_time - last_time_direct_narration > 45.0
-        SkyrimNetApi.DirectNarration(msg, originatorActor, targetActor)
-    else 
-        SkyrimNetApi.RegisterEvent(event_type, msg, originatorActor, targetActor)
-    endif 
-    last_time_direct_narration = current_time
-EndFunction
-
 event AnimationEnd(int ThreadID, bool HasPlayer)
     Trace("AnimationEnd","ThreadID:"+ThreadID+" HasPlayer:"+HasPlayer)
     ; String desc = stages.GetStageDescription(SexLab.GetController(ThreadID))
@@ -488,15 +476,11 @@ event AnimationEnd(int ThreadID, bool HasPlayer)
     Sex_Event(ThreadID, "stop", HasPlayer )
     thread_started[ThreadID] = False 
 
-    Trace("AnimationEnd","got to 1")
-
     sslThreadSlots ThreadSlots = Game.GetFormFromFile(0xD62, "SexLab.esm") as sslThreadSlots
     if ThreadSlots == None
         Trace("[SkyrimNet_SexLab] Get_Threads: ThreadSlots is None", true)
         return
     endif
-
-    Trace("AnimationEnd","got to 2")
     sslThreadController[] threads = ThreadSlots.Threads
 
     int i = threads.length - 1 
@@ -526,14 +510,13 @@ event AnimationEnd(int ThreadID, bool HasPlayer)
         int j = actors.length - 1 
         while 0 <= j 
             int num_orgasms = StorageUtil.GetIntValue(actors[j],actor_num_orgasms_key, 0)
-            Trace("AnimationEnd","actor:"+actors[j].GetDisplayName()+" num orgasm:"+num_orgasms)
             if num_orgasms < 1
                 denied += actors[j].GetDisplayName()+" was denied an orgasm. "
             endif 
             j -= 1 
         endwhile 
         if denied != ""
-            DirectNarration(denied, None, None)
+            DirectNarration("sexlab_orgasm", denied, None, None)
             Trace("AnimationEnd",denied)
         endif 
     endif 
@@ -1103,4 +1086,19 @@ String Function GroupDialog(int group_tags, String group)  global
         button = "-continue-"
     endif 
     return button
+EndFunction
+
+Function DirectNarration(String event_type, String msg, Actor originatorActor=None, Actor targetActor=None)
+    float current_time = Utility.GetCurrentRealTime()
+    float delta = current_time - last_time_direct_narration
+    String type = "" 
+    if last_time_direct_narration == 0.0 || current_time - last_time_direct_narration > 10.0
+        SkyrimNetApi.DirectNarration(msg, originatorActor, targetActor)
+        type = "directed"
+    else 
+        SkyrimNetApi.RegisterEvent(event_type, msg, originatorActor, targetActor)
+        type = "event"
+    endif 
+    Trace("DirectNarration","msg:"+msg+" delta:"+delta+" "+type)
+    last_time_direct_narration = current_time
 EndFunction

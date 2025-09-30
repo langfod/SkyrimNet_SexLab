@@ -220,15 +220,7 @@ String Function Thread_Json(sslThreadController thread,sslActorLibrary actorLib)
 
     sslBaseAnimation anim = thread.Animation
     i = 0
-    String[] tags = anim.GetRawTags()
-    String tags_str = "" 
-    while i < tags.Length
-        if tags_str != ""
-            tags_str += ", "
-        endif 
-        tags_str += "\""+tags[i]+"\""
-        i += 1
-    endwhile
+    String tags_str = GetTagsString(anim)
     thread_str += ", \"tags\": ["+tags_str+"]"
 
     String[] positions = new String[7]
@@ -415,3 +407,19 @@ bool Function SexLab_Thread_LOS(Actor akActor, sslThreadController thread) globa
     endwhile 
     return false
 endFunction 
+
+String Function GetTagsString(sslBaseAnimation anim) global 
+    String tags_str = ""
+    String[] tags = anim.GetRawTags()
+    int i = 0 
+    while i < tags.Length
+        if tags[i] 1= "" 
+            if tags_str != ""
+                tags_str += ", "
+            endif 
+            tags_str += "\""+tags[i]+"\""
+        endif
+        i += 1
+    endwhile
+    return tags_str 
+EndFunction 

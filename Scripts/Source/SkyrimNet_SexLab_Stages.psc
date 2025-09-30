@@ -205,8 +205,9 @@ Function EditDescriptions(sslThreadController thread)
 
         String msg = "" 
         if desc == "" 
-            msg = "You may enter a description for stage"+thread.stage+". An example:\n" 
-            msg += BuildExample(actors)
+            msg = "You may enter a description for stage "+thread.stage+".\n"
+            msg += "tags:"+SkyrimNet_SexLab_Decorators.GetTagsString(anim)+"\n"
+            msg += "ex: " + BuildExample(actors)
         else 
             if desc_stage != thread.stage
                 buttons[desc_edit] = "add for stage "+thread.stage
@@ -259,7 +260,8 @@ Function EditorDescription(sslThreadController thread)
             buttons[accept] = "Accept"
             buttons[rewrite] = "Rewrite" 
             buttons[cancel] = "Cancel"
-            String full = thread.stage+"/"+thread.animation.StageCount() + \
+            String full = "tags:"+SkyrimNet_SexLab_Decorators.GetTagsString(thread.animation)+"\n\n"
+            full += thread.stage+"/"+thread.animation.StageCount() + \
                    " On {the floor/a bed}, "+desc 
 
             int button = SkyMessage.ShowArray(full, buttons, getIndex = true) as int  
