@@ -88,6 +88,10 @@ The following and depedancies:
    - Will prevent orgasm from increasing satisfaction for tagged actors for a given animations
         
 
+**Other SkyrimNet NSWF**
+- [skyrimNet CumSwallowNeeds](mods/SkyrimNet CumSwallowNeeds.zip) (Author Token) 
+   - [CumSwallowNeeds](https://www.loverslab.com/files/file/29763-cumswallowneedsaddon/)
+
 **Recommendations**
 - **Utils**
     -  [SKSE](https://skse.silverlock.org/)
