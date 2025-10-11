@@ -83,9 +83,9 @@
                endif -%} {%-
                for name, enjoyment in thread.enjoyments %} {%-
                     if enjoyment < 25 %} {%- 
-                    else if enjoyment < 50 -%} {{name}}'s body feels great pleasure and nearing orgasm. {%- 
-                    else if enjoyment < 95 -%} {{name}}'s body feels great pleasure and nearing orgasm. {%-
-                    else -%}                   {{name}}'s body feels great pleasure, and is just about to cum. {%-
+                    else if enjoyment < 50 -%} {{name}}'s body feels pleasure. {%- 
+                    else if enjoyment < 95 -%} {{name}}'s body feels great pleasure and building orgasm. {%-
+                    else -%}                   {{name}}'s body feels great pleasure and is just about to cum. {%-
                     endif -%} 
                {%- endfor %} 
           {%- endfor %}
