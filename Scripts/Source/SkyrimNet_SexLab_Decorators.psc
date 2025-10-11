@@ -150,9 +150,10 @@ String Function Get_Threads(Actor speaker) global
             threads_str += "}"
 
             Actor[] actors = threads[i].Positions
+            bool[] denied = stages.HasDescriptionOrgasmDenied(threads[i])
             int j = actors.Length - 1
             while 0 <= j 
-                if actors[j] == speaker
+                if actors[j] == speaker && !denied[j]
                     speaker_having_sex = true
                 endif 
                 j -= 1

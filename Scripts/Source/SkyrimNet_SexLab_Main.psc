@@ -506,18 +506,22 @@ event AnimationEnd(int ThreadID, bool HasPlayer)
     Actor[] actors = thread.Positions
     Trace("AnimationEnd","checking orgasms for "+ActorsToString(actors))
     if config.SeparateOrgasms
-        String denied = "" 
+        String after = "" 
         int j = actors.length - 1 
         while 0 <= j 
             int num_orgasms = StorageUtil.GetIntValue(actors[j],actor_num_orgasms_key, 0)
             if num_orgasms < 1
-                denied += actors[j].GetDisplayName()+" was denied an orgasm. "
+                after += actors[j].GetDisplayName()+" was denied an orgasm. "
+            elseif num_orgasms < 2
+                after += actors[j].GetDisplayName()+"'s body glows in post orgasm. "
+            else 
+                after += actors[j].GetDisplayName()+"'s body is recovering from "+num_orgasms+" orgasms. "
             endif 
             j -= 1 
         endwhile 
-        if denied != ""
-            DirectNarration("sexlab_orgasm", denied, None, None)
-            Trace("AnimationEnd",denied)
+        if after != ""
+            DirectNarration("sexlab_orgasm", after, None, None)
+            Trace("AnimationEnd",after)
         endif 
     endif 
     Trace("AnimationEnd","got to 4")

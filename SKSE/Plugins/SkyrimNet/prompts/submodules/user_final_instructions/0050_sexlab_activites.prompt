@@ -80,14 +80,14 @@
                endif %} {%
                if thread.creature_names != "" -%}
                     {{ thread.creature_names }} {%-
-               endif %} {% 
-               for name, enjoyment in thread.enjoyments %} {% 
-                    if enjoyment < 25 %} {% 
-                    else if enjoyment < 50 %} {{name}}'s body feels great pleasure and nearing orgasm. {% 
-                    else if enjoyment < 95 %} {{name}}'s body feels great pleasure and nearing orgasm. {% 
-                    else %}                   {{name}}'s body feels great pleasure, and is just about to cum. {% 
-                    endif %} 
-               {% endfor %} 
+               endif -%} {%-
+               for name, enjoyment in thread.enjoyments %} {%-
+                    if enjoyment < 25 %} {%- 
+                    else if enjoyment < 50 -%} {{name}}'s body feels great pleasure and nearing orgasm. {%- 
+                    else if enjoyment < 95 -%} {{name}}'s body feels great pleasure and nearing orgasm. {%-
+                    else -%}                   {{name}}'s body feels great pleasure, and is just about to cum. {%-
+                    endif -%} 
+               {%- endfor %} 
           {%- endfor %}
           {% if sexlab.speaker_having_sex -%}
                - {{sexlab.speaker_name}} is currently having sex. ONLY answer as though they are in the middle of sex and it's hard to focus on anything else. Broken sentences are fine.
