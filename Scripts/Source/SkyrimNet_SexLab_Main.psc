@@ -511,7 +511,7 @@ event AnimationEnd(int ThreadID, bool HasPlayer)
         while 0 <= j 
             int num_orgasms = StorageUtil.GetIntValue(actors[j],actor_num_orgasms_key, 0)
             if num_orgasms < 1
-                after += actors[j].GetDisplayName()+" was denied an orgasm. "
+                after += actors[j].GetDisplayName()+" was denied an orgasm "
             elseif num_orgasms < 2
                 after += actors[j].GetDisplayName()+"'s body glows in post orgasm. "
             else 
