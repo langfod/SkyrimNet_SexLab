@@ -752,11 +752,11 @@ String Function Thread_Narration(sslThreadController thread, String status)
         if num_victims == 0
             String actors_str = ActorsToString(actors)
             int style = thread_style[thread.tid] 
-            String style_str = "having sex." 
+            String style_str = "having a sexual experience." 
             if style == STYLE_FORCEFULLY 
-                style_str = "forcefully fucking."
+                style_str = "having a forcefully sexual experience."
             elseif style == STYLE_GENTLY
-                style_str = "gently making love."
+                style_str = "having a gently making love experience."
             endif 
 
             if status == "start" 
