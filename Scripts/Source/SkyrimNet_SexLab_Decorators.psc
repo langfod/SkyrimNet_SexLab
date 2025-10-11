@@ -143,6 +143,10 @@ String Function Get_Threads(Actor speaker) global
 
             String loc = GetLocation(threads[i].Animation, threads[i].BedTypeId) 
             threads_str += ", \"location\":\""+loc+"\""
+
+            String enjoyments = GetEnjoyments(threads[i])
+            threads_str += ", \"enjoyments\":"+enjoyments
+
             threads_str += "}"
 
             Actor[] actors = threads[i].Positions
@@ -396,6 +400,28 @@ String Function GetNames(sslThreadController thread, sslActorLibrary actorLib = 
     return names 
 EndFunction
 
+String Function GetEnjoyments(sslThreadController controller) global
+    Actor[] actors = controller.positions 
+    String str = ""
+    int i = actors.length - 1 
+    while 0 <= i 
+        if str != "" 
+            str += ", "
+        endif 
+        int enjoyment 
+        sslActorAlias actorAlias = controller.ActorAlias(actors[i]) 
+        if MiscUtil.FileExists("Data/SLSO.esp")
+            enjoyment = actorAlias.GetFullEnjoyment() 
+        else 
+            enjoyment = actorAlias.GetEnjoyment() 
+        endif 
+        str += "\""+actors[i].GetDisplayName()+"\": "+enjoyment
+        bool found = MiscUtil.FileExists("Data/SLSO.esp")
+        i -= 1 
+    endwhile 
+    return "{"+str+"}"
+EndFunction 
+
 bool Function SexLab_Thread_LOS(Actor akActor, sslThreadController thread) global
     Actor[] actors = thread.Positions
     int i = 0
@@ -413,7 +439,7 @@ String Function GetTagsString(sslBaseAnimation anim) global
     String[] tags = anim.GetRawTags()
     int i = 0 
     while i < tags.Length
-        if tags[i] 1= "" 
+        if tags[i] != "" 
             if tags_str != ""
                 tags_str += ", "
             endif 

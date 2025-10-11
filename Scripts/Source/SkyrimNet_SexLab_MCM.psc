@@ -577,13 +577,17 @@ Event OnKeyDown(int key_code)
 
             i = 0 
             String start = "start | "
-            while i < next 
-                if i > 0 
-                    start += "+"
-                endif 
-                start += names[selected[i]]
-                i += 1
-            endwhile 
+            if next > 0
+                while i < next 
+                    if i > 0 
+                        start += "+"
+                    endif 
+                    start += names[selected[i]]
+                    i += 1
+                endwhile 
+            else 
+                start = "select actors to: "
+            endif 
             listMenu.AddEntryItem(start)
             listmenu.AddEntryItem(type)
 

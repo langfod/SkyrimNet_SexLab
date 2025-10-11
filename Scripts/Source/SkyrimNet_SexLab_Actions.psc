@@ -31,22 +31,20 @@ Function RegisterActions() global
 
     ; ------------------------
     ; This also has a undress/dress action
-    if MiscUtil.FileExists("Data/ArcaneSexBot.esl") 
-        SkyrimNetApi.RegisterAction("SexLabSexTarget", \
-                "Start having consensual {style} with {target}.", \
-                "SkyrimNet_SexLab_Actions", "SexTarget_IsEligible",  \
-                "SkyrimNet_SexLab_Actions", "SexTarget_Execute",  \
-                "", "PAPYRUS", 1, \
-                "{\"target\": \"Actor\", \"style\":\"fucking|sex|making love\", \"type\":\""+type+"\", \"rape\":false, \"target_victim\":false}",\
-                "", "BodyAnimation")
-        SkyrimNetApi.RegisterAction("SexLabSexMasturbation", \
-                "Start masturbating.",\
-                "SkyrimNet_SexLab_Actions", "SexTarget_IsEligible",  \
-                "SkyrimNet_SexLab_Actions", "SexTarget_Execute",  \
-                "", "PAPYRUS", 1, \
-                "{\"type\":\"masturbation\", \"rape\":{true|false}}",\
-                "", "BodyAnimation")
-    endif 
+    SkyrimNetApi.RegisterAction("SexLabSexTarget", \
+            "Start having consensual {style} with {target}.", \
+            "SkyrimNet_SexLab_Actions", "SexTarget_IsEligible",  \
+            "SkyrimNet_SexLab_Actions", "SexTarget_Execute",  \
+            "", "PAPYRUS", 1, \
+            "{\"target\": \"Actor\", \"style\":\"fucking|sex|making love\", \"type\":\""+type+"\", \"rape\":false, \"target_victim\":false}",\
+            "", "BodyAnimation")
+    SkyrimNetApi.RegisterAction("SexLabSexMasturbation", \
+            "Start masturbating.",\
+            "SkyrimNet_SexLab_Actions", "SexTarget_IsEligible",  \
+            "SkyrimNet_SexLab_Actions", "SexTarget_Execute",  \
+            "", "PAPYRUS", 1, \
+            "{\"type\":\"masturbation\", \"rape\":{true|false}}",\
+            "", "BodyAnimation")
 
     ; ------------------------
     SkyrimNetApi.RegisterAction("SexLabDress", \
