@@ -373,9 +373,19 @@ Event StageStart(int ThreadID, bool HasPlayer)
         thread_started[ThreadID] = True
     endif 
 
-
     sslThreadController thread = SexLab.GetController(ThreadID)
     AllowedDeniedOnlyIncrease(thread.positions, thread, "stage") 
+
+    Actor[] actors = thread.Positions
+
+    Actor sender = actors[0] 
+    Actor reciever = None 
+    if actors.length > 1 
+        reciever = actors[1] 
+    endif 
+
+    String narration = Thread_Narration(thread, "are")
+    DirectNarration("sexlab_stage_change", narration, sender, reciever, True)
 
     ; This provides the animation updates below this point
     if !stages.IsThreadTracking(ThreadID)
@@ -396,7 +406,6 @@ Event StageStart(int ThreadID, bool HasPlayer)
 
         ; DOM Slaves have thier own orasm system 
 
-    Actor[] actors = SexLab.GetController(ThreadID).Positions
     if dom_main != None 
         int k = actors.length - 1
         while 0 <= k 
@@ -410,6 +419,7 @@ Event StageStart(int ThreadID, bool HasPlayer)
             k -= 1 
         endwhile
     endif 
+
 EndEvent
 
 ; Used for default orgasm
@@ -1092,7 +1102,7 @@ String Function GroupDialog(int group_tags, String group)  global
     return button
 EndFunction
 
-Function DirectNarration(String event_type, String msg, Actor originatorActor=None, Actor targetActor=None)
+Function DirectNarration(String event_type, String msg, Actor originatorActor=None, Actor targetActor=None, bool optional=False)
     float current_time = Utility.GetCurrentRealTime()
     float delta = current_time - last_time_direct_narration
     String type = "" 
@@ -1100,8 +1110,12 @@ Function DirectNarration(String event_type, String msg, Actor originatorActor=No
         SkyrimNetApi.DirectNarration(msg, originatorActor, targetActor)
         type = "directed"
     else 
-        SkyrimNetApi.RegisterEvent(event_type, msg, originatorActor, targetActor)
-        type = "event"
+        if !optional
+            SkyrimNetApi.RegisterEvent(event_type, msg, originatorActor, targetActor)
+            type = "event"
+        else 
+            type = "skipped"
+        endif 
     endif 
     Trace("DirectNarration","msg:"+msg+" delta:"+delta+" "+type)
     last_time_direct_narration = current_time

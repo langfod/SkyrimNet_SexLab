@@ -478,7 +478,7 @@ Event OnKeyDown(int key_code)
                             style = " forcefully "
                         endif 
                         msg = player.GetDisplayName()+style+clothing_string+"es "+target.GetDisplayName()+"."
-                        SkyrimNetApi.DirectNarration(msg, player, target) 
+                        main.DirectNarration(msg, player, target) 
                     endif 
 
                     ;--------------------------------------------------
