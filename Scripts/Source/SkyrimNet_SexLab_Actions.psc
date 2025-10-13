@@ -86,7 +86,7 @@ EndFunction
 bool Function BodyAnimation_IsEligible(Actor akActor, string contextJson, string paramsJson) global
 ;    float time_last = Utility.GetCurrentRealTime()
     if akActor.IsDead() || akActor.IsInCombat() 
-        Trace("BodyAnimation_Tag", akActor.GetDisplayName()+" is dead or in combat")
+        Trace("BodyAnimation_IsEligible", akActor.GetDisplayName()+" is dead or in combat")
         return false 
     endif 
 
@@ -104,7 +104,7 @@ bool Function BodyAnimation_IsEligible(Actor akActor, string contextJson, string
     ;Trace("BodyAnimation_tag","after GetFrom :"+delta)
 
     if sexlab_main.IsActorLocked(akActor) || sexlab_main.sexLab.IsActorActive(akActor) 
-        Trace("BodyAnimation_Tag", akActor.GetDisplayName()+" is locked or SexLab animation")
+        Trace("BodyAnimation_IsEligible", akActor.GetDisplayName()+" is locked or SexLab animation")
         return false 
     endif
 
