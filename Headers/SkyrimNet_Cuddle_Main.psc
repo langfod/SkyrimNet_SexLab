@@ -1,0 +1,2 @@
+Scriptname SkyrimNet_Cuddle_Main extends Quest 
+Faction Property skyrimnet_cuddle_faction Auto

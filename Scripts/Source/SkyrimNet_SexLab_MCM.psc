@@ -40,19 +40,18 @@ String page_actors = "actors debug (can be slow)"
 
 ; OstimNet found 
 bool ostimnet_found = False
-
 String[] sexlab_ostim_options 
 
 int Property sexlab_ostim_player_menu Auto  ; menu id 
 int Property sexlab_ostim_nonplayer_menu Auto  ; menu id 
 
 Function Setup() 
-;    if sexlab_ostim_options.length == 0
-        sexlab_ostim_options = new String[3]
+     ;if sexlab_ostim_options.length == 0
+        sexlab_ostim_options = new String[2]
         sexlab_ostim_options[0] = "SexLab"
         sexlab_ostim_options[1] = "Ostim" 
-        sexlab_ostim_options[2] = "Choose each time"
-;    endif 
+       ; sexlab_ostim_options[2] = "Choose each time"
+     ;endif 
 
     ; -------------------------------
     ; Checks for Devious Support mod 
@@ -78,8 +77,8 @@ Function Setup()
         dom_main = None 
     endif 
 
-    if False ; MiscUtil.FileExists("Data/OstimNet.esp")
-        Trace("SetUp","found OstimNet.esp")
+    if MiscUtil.FileExists("Data/TT_OstimNet.esp")
+        Trace("SetUp","found TT_OstimNet.esp")
         ostimnet_found = True
     else 
         ostimnet_found = False  
@@ -143,8 +142,8 @@ Function PageOptions()
         AddTextOption("","")
         AddHeaderOption("OstimNet Integration")
         AddHeaderOption("")
-        ostimnet_player_menu = AddMenuOption("sex with player:", sexlab_ostim_options[main.sexlab_ostim_player_index])
-        ostimnet_nonplayer_menu = AddMenuOption("sex without player:", sexlab_ostim_options[main.sexlab_ostim_player_index])
+        ostimnet_player_menu = AddMenuOption("sex framework:", sexlab_ostim_options[main.sexlab_ostim_player_index])
+        ; ostimnet_nonplayer_menu = AddMenuOption("sex without player:", sexlab_ostim_options[main.sexlab_ostim_player_index])
     endif 
 EndFunction 
 
@@ -238,7 +237,7 @@ State SexEditTagsPlayer
         SetToggleOptionValueST(main.sex_edit_tags_player)
     EndEvent
     Event OnHighlightST()
-        SetInfoText("Opens a tag editor when sex does not include the player.")
+        SetInfoText("Selects which framework to use.")
     EndEvent
 EndState
 
@@ -380,7 +379,7 @@ Event OnKeyDown(int key_code)
                 if thread != None 
                     stages.EditDescriptions(thread) 
                 endif 
-            elseif SkyrimNet_SexLab_Actions.BodyAnimation_Tag("BodyAnimation", target)
+            elseif SkyrimNet_SexLab_Actions.BodyAnimation_IsEligible(target, "", "") && main.sexlab.IsValidActor(target)
 
                 DOM_Actor slave = None 
                 if d_api != None && d_api.IsDOMSlave(target) 
@@ -451,13 +450,13 @@ Event OnKeyDown(int key_code)
                 int button = SkyMessage.ShowArray(msg, buttons, getIndex = true) as int  
 
                 if button == masturbate
-                    SkyrimNet_SexLab_Actions.SexTarget_Execute(target, "", "{\"type\":\"masturbation\"}")
+                    SkyrimNet_SexLab_Actions.SexStart_Execute(target, "", "{\"type\":\"masturbation\"}")
                 elseif button == sex
-                    SkyrimNet_SexLab_Actions.SexTarget_Execute(target, "", "{\"rape\":false, \"target\":\""+player.GetDisplayName()+"\", \"target_is_player\":true}")
+                    SkyrimNet_SexLab_Actions.SexStart_Execute(target, "", "{\"rape\":false, \"target\":\""+player.GetDisplayName()+"\", \"target_is_player\":true}")
                 elseif button == rapes
-                    SkyrimNet_SexLab_Actions.SexTarget_Execute(target, "", "{\"rape\":true, \"target\":\""+player.GetDisplayName()+"\", \"target_is_victim\":true, \"target_is_player\":true}")
+                    SkyrimNet_SexLab_Actions.SexStart_Execute(target, "", "{\"rape\":true, \"target\":\""+player.GetDisplayName()+"\", \"target_is_victim\":true, \"target_is_player\":true}")
                 elseif button == raped_by
-                    SkyrimNet_SexLab_Actions.SexTarget_Execute(target, "", "{\"rape\":true, \"Target\":\""+player.GetDisplayName()+"\", \"target_is_victim\":false, \"target_is_player\":true}")
+                    SkyrimNet_SexLab_Actions.SexStart_Execute(target, "", "{\"rape\":true, \"Target\":\""+player.GetDisplayName()+"\", \"target_is_victim\":false, \"target_is_player\":true}")
                 elseif button == clothing
 
                     ;--------------------------------------------------
@@ -530,7 +529,7 @@ Event OnKeyDown(int key_code)
         int num_actors = 0 
 
         while 0 <= i 
-            if SkyrimNet_SexLab_Actions.BodyAnimation_Tag("BodyAnimation", actors_all[i]) && main.sexlab.IsValidActor(actors_all[i])
+            if SkyrimNet_SexLab_Actions.BodyAnimation_IsEligible(actors_all[i], "", "") && main.sexlab.IsValidActor(actors_all[i])
                 valid[i] = True
                 num_actors += 1
             else 

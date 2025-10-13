@@ -28,6 +28,7 @@ Bool Property active_sex
     EndFunction 
 EndProperty
 
+; ----- Does all animations -----
 ; Sexlab or Ostim animation with player
 ; 0 - Sexlab
 ; 1 - Ostim
@@ -38,14 +39,12 @@ int Property sexlab_ostim_player_index
         return skyrimnet_sexlab_ostim_player.GetValueInt()
     EndFunction 
     Function Set(int value)
-        if value
-            skyrimnet_sexlab_ostim_player.SetValue(value)
-        else
-            skyrimnet_sexlab_ostim_player.SetValue(value)
-        endif
+        skyrimnet_sexlab_ostim_player.SetValue(value)
+        OstimNet_Reset() 
     EndFunction 
 EndProperty
 
+; ----- Not currently supported ------
 ; Sexlab or Ostim animation without player
 ; 0 - Sexlab
 ; 1 - Ostim
@@ -56,11 +55,8 @@ int Property sexlab_ostim_nonplayer_index
         return skyrimnet_sexlab_ostim_nonplayer.GetValueInt()
     EndFunction 
     Function Set(int value)
-        if value
-            skyrimnet_sexlab_ostim_nonplayer.SetValue(value)
-        else
-            skyrimnet_sexlab_ostim_nonplayer.SetValue(value)
-        endif
+        skyrimnet_sexlab_ostim_nonplayer.SetValue(value)
+        OstimNet_Reset() 
     EndFunction 
 EndProperty
 
@@ -116,6 +112,9 @@ string actor_num_orgasms_key = "skyrimnet_sexlab_actor_num_orgasms"
 ; Stores if SLSO.esp is found
 float last_time_direct_narration = 0.0
 
+; OstimNet 
+bool ostimnet_found = false 
+
 Event OnInit()
     Trace("OnInit","")
     rape_allowed = true
@@ -126,6 +125,15 @@ EndEvent
 
 Function Setup()
     Trace("SetUp","")
+        
+    ; Setup the enable if found 
+    if MiscUtil.FileExists("Data/TT_OStimNet.esp")
+        ostimnet_found = true 
+    else 
+        ostimnet_found = false 
+    endif 
+    Trace("Setup","OstimNet found "+ostimnet_found)
+    OstimNet_Reset() 
 
     thread_started = new bool[32]
     if thread_style.length == 0 
@@ -201,6 +209,20 @@ Function Setup()
     SkyrimNet_SexLab_Decorators.RegisterDecorators() 
 
 EndFunction
+
+
+Function OstimNet_Reset() 
+    if ostimnet_found
+        if sexlab_ostim_player_index == 1 
+            Trace("OstimNet_Reset","enabling StartNewSex")
+            TTON_JData.SetStartNewSexEnable(1)
+        else 
+            Trace("OstimNet_Reset","disabling StartNewSex")
+            TTON_JData.SetStartNewSexEnable(0)
+        endif 
+    endif 
+EndFunction 
+
 ;----------------------------------------------------------------------------------------------------
 ; Stripped Items Storage
 ;----------------------------------------------------------------------------------------------------

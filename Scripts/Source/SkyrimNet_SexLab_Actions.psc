@@ -31,29 +31,29 @@ Function RegisterActions() global
 
     ; ------------------------
     ; This also has a undress/dress action
-    SkyrimNetApi.RegisterAction("SexLabSexTarget", \
+    SkyrimNetApi.RegisterAction("SexLab_SexStart", \
             "Start having consensual {style} with {target}.", \
-            "SkyrimNet_SexLab_Actions", "SexTarget_IsEligible",  \
-            "SkyrimNet_SexLab_Actions", "SexTarget_Execute",  \
+            "SkyrimNet_SexLab_Actions", "SexStart_IsEligible",  \
+            "SkyrimNet_SexLab_Actions", "SexStart_Execute",  \
             "", "PAPYRUS", 1, \
             "{\"target\": \"Actor\", \"style\":\"fucking|sex|making love\", \"type\":\""+type+"\", \"rape\":false, \"target_victim\":false}",\
             "", "BodyAnimation")
-    SkyrimNetApi.RegisterAction("SexLabSexMasturbation", \
+    SkyrimNetApi.RegisterAction("SexLab_MasturbationStart", \
             "Start masturbating.",\
-            "SkyrimNet_SexLab_Actions", "SexTarget_IsEligible",  \
-            "SkyrimNet_SexLab_Actions", "SexTarget_Execute",  \
+            "SkyrimNet_SexLab_Actions", "MastrubationStart_IsEligible",  \
+            "SkyrimNet_SexLab_Actions", "MastrubationStart_Execute",  \
             "", "PAPYRUS", 1, \
             "{\"type\":\"masturbation\", \"rape\":{true|false}}",\
             "", "BodyAnimation")
 
     ; ------------------------
-    SkyrimNetApi.RegisterAction("SexLabDress", \
+    SkyrimNetApi.RegisterAction("SexLab_Dress", \
             "Start to dress in clothing.",\
             "SkyrimNet_SexLab_Actions", "Dress_IsEligible",  \
             "SkyrimNet_SexLab_Actions", "Dress_Execute",  \
             "", "PAPYRUS", 1, \
             "")
-    SkyrimNetApi.RegisterAction("SexLabUndress", \
+    SkyrimNetApi.RegisterAction("SexLab_Undress", \
             "Start to undress clothing.",\
             "SkyrimNet_SexLab_Actions", "Undress_IsEligible",  \
             "SkyrimNet_SexLab_Actions", "Undress_Execute",  \
@@ -62,26 +62,28 @@ Function RegisterActions() global
 
     ; ------------------------
     if main.rape_allowed
-        SkyrimNetApi.RegisterAction("SexLabRapeTarget", \
+        SkyrimNetApi.RegisterAction("SexLab_RapeStart", \
                 "Start to sexually assualt {target}.",\
-                "SkyrimNet_SexLab_Actions", "SexTarget_IsEligible",  \
-                "SkyrimNet_SexLab_Actions", "SexTarget_Execute",  \
+                "SkyrimNet_SexLab_Actions", "SexStart_IsEligible",  \
+                "SkyrimNet_SexLab_Actions", "SexStart_Execute",  \
                 "", "PAPYRUS", 1, \
                 "{\"target\": \"Actor\", \"type\":\""+type+"\", \"rape\":true, \"target_victim\":true}","","BodyAnimation")
-        SkyrimNetApi.RegisterAction("SexLab_RapedByTarget", \
+        SkyrimNetApi.RegisterAction("SexLab_RapedByStart", \
                 "Start being sexually assulted by {target}.",\
-                "SkyrimNet_SexLab_Actions", "SexTarget_IsEligible",  \
-                "SkyrimNet_SexLab_Actions", "SexTarget_Execute",  \
+                "SkyrimNet_SexLab_Actions", "SexStart_IsEligible",  \
+                "SkyrimNet_SexLab_Actions", "SexStart_Execute",  \
                 "", "PAPYRUS", 1, \
                 "{\"target\": \"Actor\", \"type\":\""+type+"\", \"rape\":true, \"target_victim\":false}","","BodyAnimation")
     endif 
+
+    SkyrimNetApi.RegisterTag("BodyAnimation", "SkyrimNet_SexLab_Actions","BodyAnimation_IsEligible")
 
 EndFunction
 ; -------------------------------------------------
 ; Tag 
 ; -------------------------------------------------
 
-Bool Function BodyAnimation_Tag(String tag, Actor akActor) global
+bool Function BodyAnimation_IsEligible(Actor akActor, string contextJson, string paramsJson) global
 ;    float time_last = Utility.GetCurrentRealTime()
     if akActor.IsDead() || akActor.IsInCombat() 
         Trace("BodyAnimation_Tag", akActor.GetDisplayName()+" is dead or in combat")
@@ -113,17 +115,15 @@ Bool Function BodyAnimation_Tag(String tag, Actor akActor) global
 
     ; Cuddle check 
     if MiscUtil.FileExists("Data/SkyrimNet_Cuddle.esp") 
-        if tag == "cuddle"
-            SkyrimNet_Cuddle_Main main = Game.GetFormFromFile(0x800, "SkyrimNet_Cuddle.esp") as SkyrimNet_Cuddle_Main
-            if main == None 
-                Trace("BodyAnimation_Tag","SkyrimNet_Cuddle_Main is None")
-                return false
-            endif
-            int rank = akActor.GetFactionRank(main.skyrimnet_cuddle_faction)
-            if rank > 0
-                Trace("BodyAnimation_Tag",akActor.GetDisplayName()+" is already cuddling")
-                return false
-            endif
+        SkyrimNet_Cuddle_Main main = Game.GetFormFromFile(0x800, "SkyrimNet_Cuddle.esp") as SkyrimNet_Cuddle_Main
+        if main == None 
+            Trace("BodyAnimation_Tag","SkyrimNet_Cuddle_Main is None")
+            return false
+        endif
+        int rank = akActor.GetFactionRank(main.skyrimnet_cuddle_faction)
+        if rank > 0
+            Trace("BodyAnimation_Tag",akActor.GetDisplayName()+" is already cuddling")
+            return false
         endif
     endif 
 
@@ -165,22 +165,44 @@ String[] Function GetTypes() global
     return types
 EndFunction
 
-Bool Function SexTarget_IsEligible(Actor akActor, string contextJson, string paramsJson) global
+Bool Function SexStart_IsEligible(Actor akActor, string contextJson, string paramsJson) global
+    return SexStart_Helper_IsEligible(akActor, contextJson, paramsJson, false)
+EndFunction
+
+Bool Function MastrubationStart_IsEligible(Actor akActor, string contextJson, string paramsJson) global
+    return SexStart_Helper_IsEligible(akActor, contextJson, paramsJson, true)
+EndFunction
+
+Bool Function SexStart_Helper_IsEligible(Actor akActor, string contextJson, string paramsJson, bool masturbation) global
     SkyrimNet_SexLab_Main main = Game.GetFormFromFile(0x800, "SkyrimNet_SexLab.esp") as SkyrimNet_SexLab_Main
     if main.sexLab == None || main == None 
         return false
     endif 
+    if main.sexlab_ostim_player_index == 1 && !masturbation
+        Trace("SexStart_IsEligible", akActor.GetDisplayName()+" sexlab_sexstart is disabled")
+        return false 
+    endif 
     if !main.sexLab.IsValidActor(akActor)
-        Trace("SexTarget_IsEligible",akActor.GetDisplayName()+" can't have sex")
+        Trace("SexStart_IsEligible",akActor.GetDisplayName()+" can't have sex")
         return False
     endif
 
-    Trace("SexTarget_IsEligible", akActor.GetDisplayName()+" is eligible for sex")
+    Trace("SexStart_IsEligible", akActor.GetDisplayName()+" is eligible for sex")
     return True
 EndFunction
 
-Function SexTarget_Execute(Actor akActor, string contextJson, string paramsJson) global
-    Trace("SexTarget_Execute",akActor.GetDisplayName()+" "+paramsJson)
+Function MastrubationStart_Execute(Actor akActor, string contextJson, string paramsJson) global
+    Trace("MastrubationStart_Execute",akActor.GetDisplayName()+" "+paramsJson)
+    SkyrimNet_SexLab_Main main = Game.GetFormFromFile(0x800, "SkyrimNet_SexLab.esp") as SkyrimNet_SexLab_Main
+    if main == None
+        return
+    endif
+    Actor player = Game.GetPlayer()
+    SexStart_Attempt(main, akActor, None, player, false, false, "mastrubation", main.STYLE_NORMALLY) 
+EndFunction
+
+Function SexStart_Execute(Actor akActor, string contextJson, string paramsJson) global
+    Trace("SexStart_Execute",akActor.GetDisplayName()+" "+paramsJson)
     SkyrimNet_SexLab_Main main = Game.GetFormFromFile(0x800, "SkyrimNet_SexLab.esp") as SkyrimNet_SexLab_Main
     if main == None
         return
@@ -197,12 +219,16 @@ Function SexTarget_Execute(Actor akActor, string contextJson, string paramsJson)
             endif 
             Bool name = SkyrimNetApi.GetJsonString(paramsJson, "target", "")
             Bool target_is_player = SkyrimNetApi.GetJsonBool(paramsJson, "target_is_player", false)
-            Trace("SexTarget_IsEligible", "name: "+name+" "+target_is_player+" "+akTarget+" "+paramsJson)
+            Trace("SexStart_IsEligible", "name: "+name+" "+target_is_player+" "+akTarget+" "+paramsJson)
         endif 
         if akTarget == None 
-            Trace("SexTarget_IsExligible","type != masturbation, but target is None (likely in complete Actor name)", true )
+            Trace("SexStart_IsExligible","type != masturbation, but target is None (likely in complete Actor name)", true )
             return 
-        elseif !BodyAnimation_Tag("BodyAnimation", akTarget)
+        elseif !BodyAnimation_IsEligible(akTarget, "", "") 
+            Trace("SexStart_IsExligible","akTarget already in an animation") 
+            return 
+        elseif !main.sexlab.IsValidActor(akTarget) 
+            Trace("SexStart_IsExligible","akTarget is not a valid actor") 
             return 
         endif 
     endif 
@@ -223,10 +249,10 @@ Function SexTarget_Execute(Actor akActor, string contextJson, string paramsJson)
         style = main.STYLE_FORCEFULLY
     endif  
 
-    SexTarget_Attempt(main, akActor, akTarget, player, rape, target_is_victim, type, style) 
+    SexStart_Attempt(main, akActor, akTarget, player, rape, target_is_victim, type, style) 
 EndFunction 
 
-Function SexTarget_Attempt(SkyrimNet_SexLab_Main main, Actor akActor, Actor akTarget, Actor player, bool rape, bool target_is_victim, String type, Int style) global
+Function SexStart_Attempt(SkyrimNet_SexLab_Main main, Actor akActor, Actor akTarget, Actor player, bool rape, bool target_is_victim, String type, Int style) global
     if !main.SetActorLock(akActor) 
         main.ReleaseActorLock(akActor) 
         return 
@@ -239,18 +265,18 @@ Function SexTarget_Attempt(SkyrimNet_SexLab_Main main, Actor akActor, Actor akTa
 
     Actor domActor = akTarget
     Actor subActor = akActor 
-    ;Trace("SexTarget_Attempt",domActor.GetDisplayName()+" > "+subActor.GetDisplayName())
+    ;Trace("SexStart_Attempt",domActor.GetDisplayName()+" > "+subActor.GetDisplayName())
     if rape && target_is_victim 
         domActor = akActor
         subActor = akTarget
     endif
-    ;Trace("SexTarget_Attempt",domActor.GetDisplayName()+" > "+subActor.GetDisplayName())
+    ;Trace("SexStart_Attempt",domActor.GetDisplayName()+" > "+subActor.GetDisplayName())
 
     int button = main.BUTTON_YES_RANDOM
     if subActor == player || (domActor != None && domActor == player)
         button = main.YesNoSexDialog(type, rape, domActor, subActor, player)
         if button == main.BUTTON_NO || button == main.BUTTON_NO_SILENT
-            Trace("SexTarget_Execute","User declined")
+            Trace("SexStart_Execute","User declined")
             main.ReleaseActorLock(akActor)
             main.ReleaseActorLock(akTarget)
             return 
@@ -267,7 +293,7 @@ Function SexTarget_Attempt(SkyrimNet_SexLab_Main main, Actor akActor, Actor akTa
     bool failure = False
     sslThreadModel thread = main.sexlab.NewThread()
     if thread == None
-        Trace("SexTarget_Execute","Failed to create thread")
+        Trace("SexStart_Execute","Failed to create thread")
         failure = true 
     endif
     if button != main.BUTTON_YES_RANDOM
@@ -278,7 +304,7 @@ Function SexTarget_Attempt(SkyrimNet_SexLab_Main main, Actor akActor, Actor akTa
                 thread.SetAnimations(anims)
                 thread.addTag(type)
             else
-                Trace("SexTarget_Exectue","No kissing animation found")
+                Trace("SexStart_Exectue","No kissing animation found")
                 return 
             endif 
         else
@@ -298,12 +324,12 @@ Function SexTarget_Attempt(SkyrimNet_SexLab_Main main, Actor akActor, Actor akTa
     endif 
     
     if !failure && thread.addActor(subActor) < 0   
-        Trace("SexTarget_Execute","Starting sex couldn't add " + subActor.GetDisplayName())
+        Trace("SexStart_Execute","Starting sex couldn't add " + subActor.GetDisplayName())
         failure = true 
     endif  
     if !failure && domActor != None 
         if thread.addActor(domActor) < 0   
-            Trace("SexTarget_Execute","Starting sex couldn't add DOM actor " + domActor.GetDisplayName())
+            Trace("SexStart_Execute","Starting sex couldn't add DOM actor " + domActor.GetDisplayName())
             failure = true 
         endif  
     endif 
