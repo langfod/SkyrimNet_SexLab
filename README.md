@@ -86,6 +86,8 @@ The following and depedancies:
 - [SkyrimNet_Arousal](https://github.com/GoodProvider/SkyrimNet_Arousal) adds arousal to prompt / add arousal actions 
 - [OSL Aroused](https://www.nexusmods.com/skyrimspecialedition/mods/65454)
    - Will prevent orgasm from increasing satisfaction for tagged actors for a given animations
+- [OstimNet](https://github.com/tetherball88/OStimNet)
+  - if install, MCM will allow the user to select which framework will be used by the LLM to start sex.  
         
 
 **Other SkyrimNet NSWF**
