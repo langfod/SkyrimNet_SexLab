@@ -1,273 +1,314 @@
-Convert the JSON into the target inja, have the races ordered alphabetically:
-
-~~~ target inja example
-{% if race == "Bear" %} 
-    {% set speech = "cannot use human words, only animal sounds such as growls and roars." %}
-{% else if race == "Troll" %} 
-    {% set speech = "cannot use human words, only communicates through deep, guttural roars and grunts." %} 
-{% endif %} 
-~~~
-
-
 [
   {
     "name_": "Bear",
     "form_": "__formData|Skyrim.esm|0x131e7",
-    "speech_": "cannot use human words, only animal sounds such as growls and roars."
+    "speech_": "cannot use human words, only animal sounds such as growls and roars.",
+    "description_": "Touching a Bear would feel like thick, warm fur over powerful, dense muscle, evoking a complex mix of awe at its strength and instinctual caution."
   },
   {
     "name_": "Cave Bear",
     "form_": "__formData|Skyrim.esm|0x131e8",
-    "speech_": "cannot use human words, only animal sounds such as growls and roars."
+    "speech_": "cannot use human words, only animal sounds such as growls and roars.",
+    "description_": "Touching a Cave Bear would feel like damp, thick fur over powerful, dense muscle, evoking a complex mix of awe at its strength and instinctual caution, intensified by its cavernous scent."
   },
   {
     "name_": "Chaurus",
     "form_": "__formData|Skyrim.esm|0xa5601",
-    "speech_": "cannot use human words, only makes insect-like chittering and clicking sounds."
+    "speech_": "cannot use human words, only makes insect-like chittering and clicking sounds.",
+    "description_": "Touching a Chaurus would feel like hard, segmented chitin that might be surprisingly warm, evoking a strong sense of revulsion and fear due to its monstrous, insect-like appearance."
   },
   {
     "name_": "ChaurusFlyer",
     "form_": "__formData|Dawnguard.esm|0x51fb",
-    "speech_": "cannot use human words, only makes insect-like chittering and clicking sounds."
+    "speech_": "cannot use human words, only makes insect-like chittering and clicking sounds.",
+    "description_": "Intimate contact with a Chaurus Flyer would involve touching hard, slick chitin over a segmented, flying body, likely provoking intense disgust and deep-seated fear due to its unsettling alien form."
   },
   {
     "name_": "chicken",
     "form_": "__formData|Skyrim.esm|0xa919d",
-    "speech_": "cannot use human words, only makes clucking and crowing sounds."
+    "speech_": "cannot use human words, only makes clucking and crowing sounds.",
+    "description_": "Touching a chicken would involve soft, light feathers over a small, frantic body, likely evoking a feeling of fragile harmlessness and slight annoyance."
   },
   {
     "name_": "Deathhound",
     "form_": "__formData|Dawnguard.esm|0x3d02",
-    "speech_": "cannot use human words, only makes deep, guttural growls and supernatural howls."
+    "speech_": "cannot use human words, only makes deep, guttural growls and supernatural howls.",
+    "description_": "Intimate contact with a Deathhound would feel like cold, matted fur over a surprisingly bony and unnaturally chill body, provoking an immediate sense of supernatural dread and danger."
   },
   {
     "name_": "Deer",
     "form_": "__formData|Skyrim.esm|0x104f45",
-    "speech_": "cannot use human words, only makes animal sounds like bleats."
+    "speech_": "cannot use human words, only makes animal sounds like bleats.",
+    "description_": "Contact with a Deer would feel like soft, smooth fur over lean, warm muscle, likely evoking a feeling of gentle calm and innocent connection."
   },
   {
     "name_": "Dog",
     "form_": "__formData|Dawnguard.esm|0x18b33",
-    "speech_": "cannot use human words, only animal sounds and body language."
+    "speech_": "cannot use human words, only animal sounds and body language.",
+    "description_": "Touching a Dog would feel like soft, warm fur over a solid, friendly body, evoking a comforting sense of warmth and affectionate familiarity."
   },
   {
     "name_": "Dragon Priest",
     "form_": "__formData|Dragonborn.esm|0x3911a",
-    "speech_": "can use human words and Dragon Tongue shouts, speaking with an ancient, raspy voice."
+    "speech_": "can use human words and Dragon Tongue shouts, speaking with an ancient, raspy voice.",
+    "description_": "Contact with a Dragon Priest would be like encountering cold, dry, brittle wraps over mummified remains, instilling profound dread and a sense of ancient, unsettling power."
   },
   {
     "name_": "Dragon Race",
     "form_": "__formData|Skyrim.esm|0x1052a3",
-    "speech_": "can use human words and their own powerful language known as the Dragon Tongue."
+    "speech_": "can use human words and their own powerful language known as the Dragon Tongue.",
+    "description_": "Touching a Dragon would feel like warm, ancient scales over immense, powerful muscle, generating an overwhelming sense of awe and primal fear."
   },
   {
     "name_": "draugr",
     "form_": "__formData|Dragonborn.esm|0x1b637",
-    "speech_": "can use single words of the Dragon Tongue as shouts but otherwise only groans and moans."
+    "speech_": "can use single words of the Dragon Tongue as shouts but otherwise only groans and moans.",
+    "description_": "Touching a Draugr would be like encountering cold, dry, decaying flesh or brittle bone beneath ancient, tattered armor, provoking profound revulsion and terror."
   },
   {
     "name_": "Dwarven Centurion",
     "form_": "__formData|Skyrim.esm|0x131f1",
-    "speech_": "cannot use human words, only communicates through mechanical whirs, hisses, and clanks."
+    "speech_": "cannot use human words, only communicates through mechanical whirs, hisses, and clanks.",
+    "description_": "Touching a Dwarven Centurion would be like encountering immense, hot, unyielding brass, possibly feeling residual steam, inspiring awe at its scale and profound intimidation from its power."
   },
   {
     "name_": "Dwarven Sphere",
     "form_": "__formData|Skyrim.esm|0x131f2",
-    "speech_": "cannot use human words, only communicates through mechanical whirs, hisses, and clanks."
+    "speech_": "cannot use human words, only communicates through mechanical whirs, hisses, and clanks.",
+    "description_": "Touching a Dwarven Sphere would involve smooth, cold, unyielding brass that hums with hidden mechanisms, evoking curiosity at its craftsmanship but also apprehension about its true form."
   },
   {
     "name_": "Dwarven Spider",
     "form_": "__formData|Skyrim.esm|0x131f3",
-    "speech_": "cannot use human words, only communicates through mechanical whirs, hisses, and clanks."
+    "speech_": "cannot use human words, only communicates through mechanical whirs, hisses, and clanks.",
+    "description_": "Contact with a Dwarven Spider would involve rigid, segmented brass, likely vibrating with mechanical energy, evoking a mixture of curiosity at its construction and unease from its spider-like form."
   },
   {
     "name_": "falmer",
     "form_": "__formData|Skyrim.esm|0x131f4",
-    "speech_": "cannot use human words, but communicate through J. R. R. Tolkien's Dark Speech."
+    "speech_": "cannot use human words, but communicate through J. R. R. Tolkien's Dark Speech.",
+    "description_": "Intimate contact with a Falmer would involve clammy, smooth, yet strangely brittle skin over gaunt, cold limbs, provoking an immediate surge of profound disgust and a sense of vulnerability."
   },
   {
     "name_": "Flame Atronach",
     "form_": "__formData|Skyrim.esm|0x131f5",
-    "speech_": "cannot use human words, only emits elemental sounds corresponding to its type."
+    "speech_": "cannot use human words, only emits elemental sounds corresponding to its type.",
+    "description_": "Intimate contact with a Flame Atronach would result in an immediate burning sensation on hot, obsidian-like rock, causing intense pain and terror as your flesh began to char."
   },
   {
     "name_": "Fox",
     "form_": "__formData|Skyrim.esm|0x109c7c",
-    "speech_": "cannot use human words, only makes animal sounds like yips and barks."
+    "speech_": "cannot use human words, only makes animal sounds like yips and barks.",
+    "description_": "Touching a Fox would feel like dense, soft fur over a lithe, quick body, evoking a feeling of caution and a sense of wild, elusive energy."
   },
   {
     "name_": "Frost Atronach",
     "form_": "__formData|Skyrim.esm|0x131f6",
-    "speech_": "cannot use human words, only emits elemental sounds corresponding to its type."
+    "speech_": "cannot use human words, only emits elemental sounds corresponding to its type.",
+    "description_": "Touching a Frost Atronach would be like pressing against rough, jagged chunks of intensely cold ice, causing instant numbing pain and a deep, chilling dread."
   },
   {
     "name_": "Frostbite Spider",
     "form_": "__formData|Skyrim.esm|0x4e507",
-    "speech_": "cannot use human words, only makes hissing and skittering sounds."
+    "speech_": "cannot use human words, only makes hissing and skittering sounds.",
+    "description_": "Intimate contact with a Frostbite Spider would involve brushing against tough, bristly chitin over a solid, squirming body, causing a powerful wave of revulsion and overwhelming arachnophobia."
   },
   {
     "name_": "gargoyle",
     "form_": "__formData|Dawnguard.esm|0x10d00",
-    "speech_": "cannot use human words, only communicates through stony groans and the grinding of rock."
+    "speech_": "cannot use human words, only communicates through stony groans and the grinding of rock.",
+    "description_": "Touching a Gargoyle would feel like cold, rough, unyielding stone, possibly gritty, instilling a chilling sense of lifelessness and ancient malevolence."
   },
   {
     "name_": "Giant",
     "form_": "__formData|Skyrim.esm|0x131f9",
-    "speech_": "can only use simple human words and phrases."
+    "speech_": "can only use simple human words and phrases.",
+    "description_": "Contact with a Giant would involve touching rough, sun-weathered skin stretched over immense, hard muscle, likely eliciting a feeling of immense intimidation and powerlessness."
   },
   {
     "name_": "goat",
     "form_": "__formData|Skyrim.esm|0x131fa",
-    "speech_": "cannot use human words, only makes bleating sounds."
+    "speech_": "cannot use human words, only makes bleating sounds.",
+    "description_": "Contact with a Goat would involve coarse, shaggy hair over solid, muscular flesh, possibly feeling its wiry beard, inspiring a sense of rugged simplicity and slight amusement."
   },
   {
     "name_": "Hagraven",
     "form_": "__formData|Skyrim.esm|0x131fb",
-    "speech_": "can use human words, speaking in a harsh, cackling, and cruel voice."
+    "speech_": "can use human words, speaking in a harsh, cackling, and cruel voice.",
+    "description_": "Contact with a Hag would be like touching cold, withered, unnaturally pale skin over frail bone, generating an immediate, profound sense of revulsion and dread."
   },
   {
     "name_": "highlandcow",
     "form_": "__formData|Skyrim.esm|0x4e785",
-    "speech_": "cannot use human words, only makes mooing sounds."
+    "speech_": "cannot use human words, only makes mooing sounds.",
+    "description_": "Touching a Highland Cow would feel like long, thick, shaggy hair over warm, immense, solid mass, evoking a sense of gentle stability and rustic power."
   },
   {
     "name_": "HMDaedra",
     "form_": "__formData|Dragonborn.esm|0x1dcb9",
-    "speech_": "cannot use human words, only communicates through quiet, otherworldly whispers."
+    "speech_": "cannot use human words, only communicates through quiet, otherworldly whispers.",
+    "description_": "Intimate contact with a HMDaedra (Seeker) would involve surprisingly soft, papery skin over its tentacles and a rigid, almost parchment-like body, eliciting an eerie sense of discomfort and alien strangeness."
   },
   {
     "name_": "Horker",
     "form_": "__formData|Skyrim.esm|0x131fc",
-    "speech_": "cannot use human words, only makes loud, barking grunts."
+    "speech_": "cannot use human words, only makes loud, barking grunts.",
+    "description_": "Touching a Horker would feel like thick, tough blubber over solid mass, potentially slimy and cold, evoking a feeling of mild curiosity and a desire to retreat due to its large, imposing size."
   },
   {
     "name_": "Horse",
     "form_": "__formData|Skyrim.esm|0x131fd",
-    "speech_": "cannot use human words, only makes animal sounds like neighs and snorts."
+    "speech_": "cannot use human words, only makes animal sounds like neighs and snorts.",
+    "description_": "Touching a Horse would involve stroking warm, smooth fur over powerful, rippling muscle, eliciting a feeling of gentle connection and robust companionship."
   },
   {
     "name_": "Ice Wraith",
     "form_": "__formData|Skyrim.esm|0x131fe",
-    "speech_": "cannot use human words, only emits a chilling, ethereal hissing sound."
+    "speech_": "cannot use human words, only emits a chilling, ethereal hissing sound.",
+    "description_": "Intimate contact with an Ice Wraith would be intensely cold and intangible, like touching swirling, freezing air, causing an immediate chilling dread and sense of helplessness."
   },
   {
     "name_": "Lurker",
     "form_": "__formData|Dragonborn.esm|0x14495",
-    "speech_": "cannot use human words, only emits deep, gurgling, and monstrous roars."
+    "speech_": "cannot use human words, only emits deep, gurgling, and monstrous roars.",
+    "description_": "Intimate contact with a Lurker would involve slimy, cold, and strangely firm tentacles over coarse, scaly skin, provoking immediate revulsion and primal fear due to its monstrous form and unsettling texture."
   },
   {
     "name_": "Mammoth",
     "form_": "__formData|Skyrim.esm|0x131ff",
-    "speech_": "cannot use human words, only makes powerful, trumpeting calls."
+    "speech_": "cannot use human words, only makes powerful, trumpeting calls.",
+    "description_": "Contact with a Mammoth would be like pressing against thick, coarse fur covering warm, solid flesh, inspiring a feeling of profound respect and immense insignificance."
   },
   {
     "name_": "mudcrab",
     "form_": "__formData|Skyrim.esm|0xba545",
-    "speech_": "cannot use human words, only makes clicking and scuttling sounds."
+    "speech_": "cannot use human words, only makes clicking and scuttling sounds.",
+    "description_": "Touching a mudcrab would feel like damp, rigid shell over a small, scuttling body, evoking a sense of slight annoyance and caution due to its pinches."
   },
   {
     "name_": "Netch",
     "form_": "__formData|Dragonborn.esm|0x1feb8",
-    "speech_": "cannot use human words, only communicates through low, humming drones and gurgling sounds."
+    "speech_": "cannot use human words, only communicates through low, humming drones and gurgling sounds.",
+    "description_": "Intimate contact with a Netch would involve touching large, squishy, almost rubbery skin that feels strangely alive, provoking curiosity mixed with apprehension due to its alien, floating form."
   },
   {
     "name_": "rabbit",
     "form_": "__formData|Skyrim.esm|0x6dc99",
-    "speech_": "cannot use human words, only makes quiet squeaks and thumping sounds with its feet."
+    "speech_": "cannot use human words, only makes quiet squeaks and thumping sounds with its feet.",
+    "description_": "Touching a Rabbit would feel like soft, fluffy fur over a tiny, rapidly trembling body, evoking a gentle feeling of tenderness and fragile innocence."
   },
   {
     "name_": "Sabre Cat",
     "form_": "__formData|Dawnguard.esm|0xd0b6",
-    "speech_": "cannot use human words, only makes animal sounds like snarls and deep roars."
+    "speech_": "cannot use human words, only makes animal sounds like snarls and deep roars.",
+    "description_": "Touching a Sabre Cat would feel like sleek, warm fur over lean, explosive muscle, immediately provoking an intense instinctual fear due to its predatory nature."
   },
   {
     "name_": "Scrib",
     "form_": "__formData|Dragonborn.esm|0x1b658",
-    "speech_": "cannot use human words, only makes insect-like chirps and skittering noises."
+    "speech_": "cannot use human words, only makes insect-like chirps and skittering noises.",
+    "description_": "Contact with a Scrib would be like touching a small, hard, dry shell over a surprisingly slow-moving body, causing a blend of mild revulsion and curiosity."
   },
   {
     "name_": "skeever",
     "form_": "__formData|Skyrim.esm|0xc3edf",
-    "speech_": "cannot use human words, only makes squeaking and chittering sounds."
+    "speech_": "cannot use human words, only makes squeaking and chittering sounds.",
+    "description_": "Touching a Skeever would involve coarse, possibly matted fur over a small, squirming, surprisingly dense body, likely causing a rapid surge of revulsion and a desire to recoil."
   },
   {
     "name_": "Skeleton",
     "form_": "__formData|Skyrim.esm|0xb7998",
-    "speech_": "cannot use human words, only makes sounds of rattling bones."
+    "speech_": "cannot use human words, only makes sounds of rattling bones.",
+    "description_": "Contact with a Skeleton would be like touching cold, brittle, dry bone, generating a chilling sense of lifelessness and macabre unease."
   },
   {
     "name_": "SlaughterFish",
     "form_": "__formData|Skyrim.esm|0x13203",
-    "speech_": "cannot use human words and makes no discernible sounds."
+    "speech_": "cannot use human words and makes no discernible sounds.",
+    "description_": "Intimate contact with a Slaughterfish would involve slimy, cold scales and sharp, rigid fins, immediately provoking revulsion and alarm due to its predatory nature."
   },
   {
     "name_": "Snow Bear",
     "form_": "__formData|Skyrim.esm|0x131e9",
-    "speech_": "cannot use human words, only animal sounds such as growls and roars."
+    "speech_": "cannot use human words, only animal sounds such as growls and roars.",
+    "description_": "Touching a Snow Bear would feel like incredibly thick, cold fur over powerful, dense muscle, evoking a complex mix of awe at its strength and instinctual caution, amplified by the numbing cold."
   },
   {
     "name_": "Snow Troll",
     "form_": "__formData|Dawnguard.esm|0x117f4",
-    "speech_": "cannot use human words, only communicates through deep, guttural roars and grunts."
+    "speech_": "cannot use human words, only communicates through deep, guttural roars and grunts.",
+    "description_": "Contact with a Snow Troll would involve matted, ice-caked fur over thick, resilient skin and muscle, likely eliciting a blend of primal fear and disgust due to its monstrous, freezing presence."
   },
   {
     "name_": "Snowy Sabre Cat",
     "form_": "__formData|Skyrim.esm|0x13202",
-    "speech_": "cannot use human words, only makes animal sounds like snarls and deep roars."
+    "speech_": "cannot use human words, only makes animal sounds like snarls and deep roars.",
+    "description_": "Touching a Snowy Sabre Cat would feel like immensely thick, cold fur over lean, explosive muscle, immediately provoking an intense instinctual fear due to its predatory nature and chilling presence."
   },
   {
     "name_": "Spectral Dragon",
     "form_": "__formData|Dragonborn.esm|0x1f98f",
-    "speech_": "can use human words and their own powerful language known as the Dragon Tongue."
+    "speech_": "can use human words and their own powerful language known as the Dragon Tongue.",
+    "description_": "Touching a Spectral Dragon would be like cold, ephemeral mist passing through your hand, generating an overwhelming sense of awe and spiritual dread."
   },
   {
     "name_": "Spriggan",
     "form_": "__formData|Skyrim.esm|0xf3903",
-    "speech_": "cannot use human words, only communicates through nature-based magic and hissing."
+    "speech_": "cannot use human words, only communicates through nature-based magic and hissing.",
+    "description_": "Contact with a Spriggan would involve rough, woody bark and leafy textures, strangely warm to the touch, inspiring a sense of unsettling beauty mixed with a primal, protective fear for nature."
   },
   {
     "name_": "Storm Atronach",
     "form_": "__formData|Dragonborn.esm|0x27bfc",
-    "speech_": "cannot use human words, only emits elemental sounds corresponding to its type."
+    "speech_": "cannot use human words, only emits elemental sounds corresponding to its type.",
+    "description_": "Touching a Storm Atronach would be like encountering crackling electricity over rough, jagged stone, provoking overwhelming awe mixed with extreme caution and potential panic due to its volatile nature."
   },
   {
     "name_": "The Forgemaster",
     "form_": "__formData|Dawnguard.esm|0x15c34",
-    "speech_": "cannot use human words, only communicates through mechanical whirs, hisses, and clanks."
+    "speech_": "cannot use human words, only communicates through mechanical whirs, hisses, and clanks.",
+    "description_": "Touching The Forgemaster would be like encountering immense, hot, unyielding brass that radiates intense heat, inspiring awe at its scale and profound intimidation from its raw, mechanical power."
   },
   {
     "name_": "Troll",
     "form_": "__formData|Dawnguard.esm|0x117f5",
-    "speech_": "cannot use human words, only communicates through deep, guttural roars and grunts."
+    "speech_": "cannot use human words, only communicates through deep, guttural roars and grunts.",
+    "description_": "Contact with a Troll would involve coarse, matted fur over thick, resilient skin and muscle, likely eliciting a blend of primal fear and disgust due to its monstrous appearance and aggressive demeanor."
   },
   {
     "name_": "Vampire Lord",
     "form_": "__formData|Dawnguard.esm|0x283a",
-    "speech_": "can use human words, often with a sophisticated, hypnotic, or predatory tone."
+    "speech_": "can use human words, often with a sophisticated, hypnotic, or predatory tone.",
+    "description_": "Contact with a Vampire Lord would be like touching unnaturally cold, taut skin over powerful, inhuman muscle, generating an overwhelming sense of terror and desperate repulsion."
   },
   {
     "name_": "Werebear",
     "form_": "__formData|Dragonborn.esm|0x1e17b",
-    "speech_": "can use human words in beast form, combined with savage growls and deep roars."
+    "speech_": "can use human words in beast form, combined with savage growls and deep roars.",
+    "description_": "Intimate contact with a Werebear would involve thick, coarse, matted fur over immense, rock-hard muscle, sparking overwhelming primal terror and a desperate urge to escape its raw power."
   },
   {
     "name_": "Werewolf",
     "form_": "__formData|Skyrim.esm|0xcdd84",
-    "speech_": "can use human words in beast form, combined with savage growls and deep roars."
+    "speech_": "can use human words in beast form, combined with savage growls and deep roars.",
+    "description_": "Intimate contact with a Werewolf would involve thick, coarse, matted fur over immense, rock-hard muscle, sparking overwhelming primal terror and a desperate urge to escape."
   },
   {
     "name_": "Wisp",
     "form_": "__formData|Skyrim.esm|0x13208",
-    "speech_": "cannot use human words, emits a soft, ethereal chime or hum."
+    "speech_": "cannot use human words, emits a soft, ethereal chime or hum.",
+    "description_": "Touching a Wisp would feel like nothing more than cold, electric air, giving an immediate, eerie sensation of intangible, dangerous magic."
   },
   {
     "name_": "Witchlight",
     "form_": "__formData|Dawnguard.esm|0x2ae0",
-    "speech_": "cannot use human words, communicates through flickering lights and faint, magical whispers."
+    "speech_": "cannot use human words, communicates through flickering lights and faint, magical whispers.",
+    "description_": "Intimate contact with a Witchlight would be like touching cold, tingling air with an internal flicker of fire, causing a sense of magical displacement and quiet danger."
   },
   {
     "name_": "wolf",
     "form_": "__formData|Skyrim.esm|0x1320a",
-    "speech_": "cannot use human words, only animal sounds like howls, barks, and growls."
+    "speech_": "cannot use human words, only animal sounds like howls, barks, and growls.",
+    "description_": "Touching a wolf would feel like coarse, wild fur over lean, warm muscle, evoking a complex mix of respect, caution, and a sense of untamed wilderness."
   }
 ]
