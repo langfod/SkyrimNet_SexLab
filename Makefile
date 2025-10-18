@@ -1,4 +1,4 @@
-VERSION=0.22.0
+VERSION=0.22.1
 NAM0=SkyrimNet_SexLab
 
 RELEASE_FILE=versions/SkyrimNet_SexLab ${VERSION}.zip
@@ -24,6 +24,8 @@ release:
 		fomod/info.json \
 		SkyrimNet_SexLab/info.json \
 		SkyrimNet_SexLab/group_tags.json \
+		SkyrimNet_SexLab/race_to_speech.json \
+		SkyrimNet_SexLab/animations \
 		SKSE/Plugins/SkyrimNet
 
 group_tags:

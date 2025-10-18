@@ -161,9 +161,14 @@ String Function Get_Threads(Actor speaker) global
         endif 
         i += 1
     endwhile
+
+
+    ; Speaker Information 
+    ; ------------------------
     String json = "{\"speaker_having_sex\":"+speaker_having_sex
-    json +=       ",\"speaker_name\":\""+speaker.GetDisplayName()+"\""
     json +=       ",\"threads\":["+threads_str+"]}"
+
+    Trace("Get_Threads",json)
     return json
 EndFunction 
 
@@ -321,6 +326,7 @@ String Function GetLocation(sslBaseAnimation anim, int bed) global
 EndFunction 
 
 String Function GetCreatures(sslThreadController thread) global
+    SkyrimNet_SexLab_Main main = Game.GetFormFromFile(0x800, "SkyrimNet_SexLab.esp") as SkyrimNet_SexLab_Main
     Actor[] actors = thread.Positions
     String names = "" 
     int i = 0
@@ -328,7 +334,9 @@ String Function GetCreatures(sslThreadController thread) global
     while i < count
         Race r = actors[i].GetRace() 
         if sslCreatureAnimationSlots.HasRaceType(r) 
-            names += actors[i].GetDisplayName()+" is a "+r.GetName()+". "
+            String name = actors[i].GetDisplayName()
+            String race_name = r.GetName() 
+            names += name+" is a "+race_name+". "
         endif 
         i += 1
     endwhile

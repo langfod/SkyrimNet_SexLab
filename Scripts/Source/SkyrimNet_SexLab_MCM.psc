@@ -362,7 +362,6 @@ Event OnKeyDown(int key_code)
     endif 
 
     if sex_edit_key == key_code
-
         ; Both players need to be in the crosshair to have SkyrimNet load them into the cache
         ; so the parseJsonActor works
         Actor target = Game.GetCurrentCrosshairRef() as Actor 
@@ -617,7 +616,7 @@ Event OnKeyDown(int key_code)
 
             listMenu.OpenMenu()
             index = listMenu.GetResultInt()
-            if index == 0 
+            if index <= 0 
                 if 0 < next 
                     finished = True 
                 endif 

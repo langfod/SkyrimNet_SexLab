@@ -20,6 +20,7 @@
         <Import>@ModsFolder\SKSE64\Scripts\Source</Import>
         <Import>@ModsFolder\SkyrimNet\Source\Scripts</Import>
         <Import>@ModsFolder\powerofthree's Tweaks\Source\Scripts</Import>
+        <Import>@ModsFolder\powerofthree's Papyrus Extender\Source\Scripts</Import>
         <Import>@ModsFolder\Papyrus MessageBox - SKSE NG\Scripts\Source</Import>
 
 

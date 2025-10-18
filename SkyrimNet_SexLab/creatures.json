@@ -1,0 +1,273 @@
+Convert the JSON into the target inja, have the races ordered alphabetically:
+
+~~~ target inja example
+{% if race == "Bear" %} 
+    {% set speech = "cannot use human words, only animal sounds such as growls and roars." %}
+{% else if race == "Troll" %} 
+    {% set speech = "cannot use human words, only communicates through deep, guttural roars and grunts." %} 
+{% endif %} 
+~~~
+
+
+[
+  {
+    "name_": "Bear",
+    "form_": "__formData|Skyrim.esm|0x131e7",
+    "speech_": "cannot use human words, only animal sounds such as growls and roars."
+  },
+  {
+    "name_": "Cave Bear",
+    "form_": "__formData|Skyrim.esm|0x131e8",
+    "speech_": "cannot use human words, only animal sounds such as growls and roars."
+  },
+  {
+    "name_": "Chaurus",
+    "form_": "__formData|Skyrim.esm|0xa5601",
+    "speech_": "cannot use human words, only makes insect-like chittering and clicking sounds."
+  },
+  {
+    "name_": "ChaurusFlyer",
+    "form_": "__formData|Dawnguard.esm|0x51fb",
+    "speech_": "cannot use human words, only makes insect-like chittering and clicking sounds."
+  },
+  {
+    "name_": "chicken",
+    "form_": "__formData|Skyrim.esm|0xa919d",
+    "speech_": "cannot use human words, only makes clucking and crowing sounds."
+  },
+  {
+    "name_": "Deathhound",
+    "form_": "__formData|Dawnguard.esm|0x3d02",
+    "speech_": "cannot use human words, only makes deep, guttural growls and supernatural howls."
+  },
+  {
+    "name_": "Deer",
+    "form_": "__formData|Skyrim.esm|0x104f45",
+    "speech_": "cannot use human words, only makes animal sounds like bleats."
+  },
+  {
+    "name_": "Dog",
+    "form_": "__formData|Dawnguard.esm|0x18b33",
+    "speech_": "cannot use human words, only animal sounds and body language."
+  },
+  {
+    "name_": "Dragon Priest",
+    "form_": "__formData|Dragonborn.esm|0x3911a",
+    "speech_": "can use human words and Dragon Tongue shouts, speaking with an ancient, raspy voice."
+  },
+  {
+    "name_": "Dragon Race",
+    "form_": "__formData|Skyrim.esm|0x1052a3",
+    "speech_": "can use human words and their own powerful language known as the Dragon Tongue."
+  },
+  {
+    "name_": "draugr",
+    "form_": "__formData|Dragonborn.esm|0x1b637",
+    "speech_": "can use single words of the Dragon Tongue as shouts but otherwise only groans and moans."
+  },
+  {
+    "name_": "Dwarven Centurion",
+    "form_": "__formData|Skyrim.esm|0x131f1",
+    "speech_": "cannot use human words, only communicates through mechanical whirs, hisses, and clanks."
+  },
+  {
+    "name_": "Dwarven Sphere",
+    "form_": "__formData|Skyrim.esm|0x131f2",
+    "speech_": "cannot use human words, only communicates through mechanical whirs, hisses, and clanks."
+  },
+  {
+    "name_": "Dwarven Spider",
+    "form_": "__formData|Skyrim.esm|0x131f3",
+    "speech_": "cannot use human words, only communicates through mechanical whirs, hisses, and clanks."
+  },
+  {
+    "name_": "falmer",
+    "form_": "__formData|Skyrim.esm|0x131f4",
+    "speech_": "cannot use human words, but communicate through J. R. R. Tolkien's Dark Speech."
+  },
+  {
+    "name_": "Flame Atronach",
+    "form_": "__formData|Skyrim.esm|0x131f5",
+    "speech_": "cannot use human words, only emits elemental sounds corresponding to its type."
+  },
+  {
+    "name_": "Fox",
+    "form_": "__formData|Skyrim.esm|0x109c7c",
+    "speech_": "cannot use human words, only makes animal sounds like yips and barks."
+  },
+  {
+    "name_": "Frost Atronach",
+    "form_": "__formData|Skyrim.esm|0x131f6",
+    "speech_": "cannot use human words, only emits elemental sounds corresponding to its type."
+  },
+  {
+    "name_": "Frostbite Spider",
+    "form_": "__formData|Skyrim.esm|0x4e507",
+    "speech_": "cannot use human words, only makes hissing and skittering sounds."
+  },
+  {
+    "name_": "gargoyle",
+    "form_": "__formData|Dawnguard.esm|0x10d00",
+    "speech_": "cannot use human words, only communicates through stony groans and the grinding of rock."
+  },
+  {
+    "name_": "Giant",
+    "form_": "__formData|Skyrim.esm|0x131f9",
+    "speech_": "can only use simple human words and phrases."
+  },
+  {
+    "name_": "goat",
+    "form_": "__formData|Skyrim.esm|0x131fa",
+    "speech_": "cannot use human words, only makes bleating sounds."
+  },
+  {
+    "name_": "Hagraven",
+    "form_": "__formData|Skyrim.esm|0x131fb",
+    "speech_": "can use human words, speaking in a harsh, cackling, and cruel voice."
+  },
+  {
+    "name_": "highlandcow",
+    "form_": "__formData|Skyrim.esm|0x4e785",
+    "speech_": "cannot use human words, only makes mooing sounds."
+  },
+  {
+    "name_": "HMDaedra",
+    "form_": "__formData|Dragonborn.esm|0x1dcb9",
+    "speech_": "cannot use human words, only communicates through quiet, otherworldly whispers."
+  },
+  {
+    "name_": "Horker",
+    "form_": "__formData|Skyrim.esm|0x131fc",
+    "speech_": "cannot use human words, only makes loud, barking grunts."
+  },
+  {
+    "name_": "Horse",
+    "form_": "__formData|Skyrim.esm|0x131fd",
+    "speech_": "cannot use human words, only makes animal sounds like neighs and snorts."
+  },
+  {
+    "name_": "Ice Wraith",
+    "form_": "__formData|Skyrim.esm|0x131fe",
+    "speech_": "cannot use human words, only emits a chilling, ethereal hissing sound."
+  },
+  {
+    "name_": "Lurker",
+    "form_": "__formData|Dragonborn.esm|0x14495",
+    "speech_": "cannot use human words, only emits deep, gurgling, and monstrous roars."
+  },
+  {
+    "name_": "Mammoth",
+    "form_": "__formData|Skyrim.esm|0x131ff",
+    "speech_": "cannot use human words, only makes powerful, trumpeting calls."
+  },
+  {
+    "name_": "mudcrab",
+    "form_": "__formData|Skyrim.esm|0xba545",
+    "speech_": "cannot use human words, only makes clicking and scuttling sounds."
+  },
+  {
+    "name_": "Netch",
+    "form_": "__formData|Dragonborn.esm|0x1feb8",
+    "speech_": "cannot use human words, only communicates through low, humming drones and gurgling sounds."
+  },
+  {
+    "name_": "rabbit",
+    "form_": "__formData|Skyrim.esm|0x6dc99",
+    "speech_": "cannot use human words, only makes quiet squeaks and thumping sounds with its feet."
+  },
+  {
+    "name_": "Sabre Cat",
+    "form_": "__formData|Dawnguard.esm|0xd0b6",
+    "speech_": "cannot use human words, only makes animal sounds like snarls and deep roars."
+  },
+  {
+    "name_": "Scrib",
+    "form_": "__formData|Dragonborn.esm|0x1b658",
+    "speech_": "cannot use human words, only makes insect-like chirps and skittering noises."
+  },
+  {
+    "name_": "skeever",
+    "form_": "__formData|Skyrim.esm|0xc3edf",
+    "speech_": "cannot use human words, only makes squeaking and chittering sounds."
+  },
+  {
+    "name_": "Skeleton",
+    "form_": "__formData|Skyrim.esm|0xb7998",
+    "speech_": "cannot use human words, only makes sounds of rattling bones."
+  },
+  {
+    "name_": "SlaughterFish",
+    "form_": "__formData|Skyrim.esm|0x13203",
+    "speech_": "cannot use human words and makes no discernible sounds."
+  },
+  {
+    "name_": "Snow Bear",
+    "form_": "__formData|Skyrim.esm|0x131e9",
+    "speech_": "cannot use human words, only animal sounds such as growls and roars."
+  },
+  {
+    "name_": "Snow Troll",
+    "form_": "__formData|Dawnguard.esm|0x117f4",
+    "speech_": "cannot use human words, only communicates through deep, guttural roars and grunts."
+  },
+  {
+    "name_": "Snowy Sabre Cat",
+    "form_": "__formData|Skyrim.esm|0x13202",
+    "speech_": "cannot use human words, only makes animal sounds like snarls and deep roars."
+  },
+  {
+    "name_": "Spectral Dragon",
+    "form_": "__formData|Dragonborn.esm|0x1f98f",
+    "speech_": "can use human words and their own powerful language known as the Dragon Tongue."
+  },
+  {
+    "name_": "Spriggan",
+    "form_": "__formData|Skyrim.esm|0xf3903",
+    "speech_": "cannot use human words, only communicates through nature-based magic and hissing."
+  },
+  {
+    "name_": "Storm Atronach",
+    "form_": "__formData|Dragonborn.esm|0x27bfc",
+    "speech_": "cannot use human words, only emits elemental sounds corresponding to its type."
+  },
+  {
+    "name_": "The Forgemaster",
+    "form_": "__formData|Dawnguard.esm|0x15c34",
+    "speech_": "cannot use human words, only communicates through mechanical whirs, hisses, and clanks."
+  },
+  {
+    "name_": "Troll",
+    "form_": "__formData|Dawnguard.esm|0x117f5",
+    "speech_": "cannot use human words, only communicates through deep, guttural roars and grunts."
+  },
+  {
+    "name_": "Vampire Lord",
+    "form_": "__formData|Dawnguard.esm|0x283a",
+    "speech_": "can use human words, often with a sophisticated, hypnotic, or predatory tone."
+  },
+  {
+    "name_": "Werebear",
+    "form_": "__formData|Dragonborn.esm|0x1e17b",
+    "speech_": "can use human words in beast form, combined with savage growls and deep roars."
+  },
+  {
+    "name_": "Werewolf",
+    "form_": "__formData|Skyrim.esm|0xcdd84",
+    "speech_": "can use human words in beast form, combined with savage growls and deep roars."
+  },
+  {
+    "name_": "Wisp",
+    "form_": "__formData|Skyrim.esm|0x13208",
+    "speech_": "cannot use human words, emits a soft, ethereal chime or hum."
+  },
+  {
+    "name_": "Witchlight",
+    "form_": "__formData|Dawnguard.esm|0x2ae0",
+    "speech_": "cannot use human words, communicates through flickering lights and faint, magical whispers."
+  },
+  {
+    "name_": "wolf",
+    "form_": "__formData|Skyrim.esm|0x1320a",
+    "speech_": "cannot use human words, only animal sounds like howls, barks, and growls."
+  }
+]

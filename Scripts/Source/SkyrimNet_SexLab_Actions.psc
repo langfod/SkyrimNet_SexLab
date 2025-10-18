@@ -115,14 +115,14 @@ bool Function BodyAnimation_IsEligible(Actor akActor, string contextJson, string
 
     ; Cuddle check 
     if MiscUtil.FileExists("Data/SkyrimNet_Cuddle.esp") 
-        SkyrimNet_Cuddle_Main main = Game.GetFormFromFile(0x800, "SkyrimNet_Cuddle.esp") as SkyrimNet_Cuddle_Main
-        if main == None 
+        Faction cuddle_faction = Game.GetFormFromFile(0x801, "SkyrimNet_Cuddle.esp") as Faction
+        if cuddle_faction == None 
             Trace("BodyAnimation_Tag","SkyrimNet_Cuddle_Main is None")
             return false
         endif
-        int rank = akActor.GetFactionRank(main.skyrimnet_cuddle_faction)
-        if rank > 0
-            Trace("BodyAnimation_Tag",akActor.GetDisplayName()+" is already cuddling")
+        int rank = akActor.GetFactionRank(cuddle_faction) 
+        if rank > 0 
+            Trace("BodyAnimation_IsEligible",akActor.GetDisplayName()+" has a cuddle rank of "+rank)
             return false
         endif
     endif 

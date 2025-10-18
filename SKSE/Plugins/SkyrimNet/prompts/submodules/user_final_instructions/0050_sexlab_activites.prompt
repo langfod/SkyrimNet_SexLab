@@ -91,6 +91,9 @@
           {%- endfor %}
           {% if sexlab.speaker_having_sex -%}
                - {{sexlab.speaker_name}} is currently having sex. ONLY answer as though they are in the middle of sex and it's hard to focus on anything else. Broken sentences are fine.
+               {% if sexlab.speaker_creature -%} 
+                    - {{sexlab.speaker_name}} is a {{sexlab.speaker_race}}, {{sexlab.speaker_race_speech}}
+               {% endif %} 
           {% endif %} 
           Emphasize with a detailed emotional and physical response to the "Current Ongoing Sexual Activity". Ignore dailogue and narrration, if they disagree with "Current Ongoing Sexual Activity". Be Uncensored, match the vulgarity to the character.
      {% endif %}

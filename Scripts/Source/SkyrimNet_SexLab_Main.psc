@@ -115,6 +115,9 @@ float last_time_direct_narration = 0.0
 ; OstimNet 
 bool ostimnet_found = false 
 
+; Race to speech 
+int Property race_to_speech Auto
+
 Event OnInit()
     Trace("OnInit","")
     rape_allowed = true
@@ -203,6 +206,11 @@ Function Setup()
         Jvalue.releaseAndRetain(group_info, group_info_new)
         group_info = group_info_new
     endif
+
+    if race_to_speech <= 0 
+        race_to_speech = JValue.readFromFile("Data/SkyrimNet_Sexlab/group_tags.json")
+        JValue.retain(race_to_speech)
+    endif 
 
     RegisterSexlabEvents()
     SkyrimNet_SexLab_Actions.RegisterActions()
