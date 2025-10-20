@@ -110,13 +110,18 @@ bool Property dom_main_found Auto
 
 string actor_num_orgasms_key = "skyrimnet_sexlab_actor_num_orgasms"
 ; Stores if SLSO.esp is found
-float last_time_direct_narration = 0.0
+
+; Controls when Direction Narration occur 
+float Property direct_narration_last_time Auto
+float Property direct_narration_cool_off Auto 
+float Property direct_narration_max_distance Auto 
+float Property direct_narration_max_distance_default Auto 
 
 ; OstimNet 
 bool ostimnet_found = false 
 
 ; Race to speech 
-int Property race_to_speech Auto
+int Property race_to_description Auto
 
 Event OnInit()
     Trace("OnInit","")
@@ -183,6 +188,14 @@ Function Setup()
     SkyrimNet_SexLab_MCM mcm = (self as Quest) as SkyrimNet_SexLab_MCM
     mcm.Setup() 
 
+    ; Directy Narration 
+    direct_narration_last_time = 0
+    if direct_narration_cool_off == 0 
+        direct_narration_cool_off = 20 
+        direct_narration_max_distance = 15
+        direct_narration_max_distance_default = 15
+    endif 
+
     if actorLock == 0 
         actorLock = JFormMap.object() 
         JValue.retain(actorLock)
@@ -207,9 +220,9 @@ Function Setup()
         group_info = group_info_new
     endif
 
-    if race_to_speech <= 0 
-        race_to_speech = JValue.readFromFile("Data/SkyrimNet_Sexlab/group_tags.json")
-        JValue.retain(race_to_speech)
+    if race_to_description <= 0 
+        race_to_description = JValue.readFromFile("Data/SkyrimNet_Sexlab/creatures.json")
+        JValue.retain(race_to_description)
     endif 
 
     RegisterSexlabEvents()
@@ -578,28 +591,22 @@ Function Sex_Event(int ThreadID, String status, Bool HasPlayer )
 
     ; the Dialog narration is called so that it is stored in the timeline and captured in memories,
     ; and will be responded by t
-    String eventType = "sex "+status
+    String event_type = "sexlab_"+status
     ; narration = "*"+narration+"*"
-    if actors.length < 2 || actors[0] == actors[1]
-        if status == "start"
-            SkyrimNetApi.DirectNarration(narration, actors[0], None)
-        else
-            ;if actors.length == 1 || actors[0] == actors[1]
-                ;SkyrimNetApi.RegisterDialogue(actors[0], "*"+narration+"*")
-            ;else
-                ;SkyrimNetApi.RegisterDialogueToListener(actors[1], actors[0], "*"+narration+"*")
-            ;endif 
-            SkyrimNetApi.RegisterEvent(eventType, "*"+narration+"*", actors[0], None)
-        endif 
-    elseif actors.length == 2
-        if status == "start"
-            SkyrimNetApi.DirectNarration(narration, actors[1], actors[0])
-        else
-            SkyrimNetApi.RegisterEvent(eventType, "*"+narration+"*", actors[1], actors[0])
-            ;SkyrimNetApi.RegisterDialogueToListener(actors[1], actors[0], "*"+narration+"*")
-        endif 
+    Actor target = None 
+    if actors.length > 2 && actors[0] != actors[1]
+        target = actors[1]
+    endif 
+
+    if status == "start"
+        DirectNarration(event_type,narration, actors[0], target,optional=false)
     else
-        SkyrimNetApi.RegisterEvent(eventType, narration,None,None)
+        ;if actors.length == 1 || actors[0] == actors[1]
+            ;SkyrimNetApi.RegisterDialogue(actors[0], "*"+narration+"*")
+        ;else
+            ;SkyrimNetApi.RegisterDialogueToListener(actors[1], actors[0], "*"+narration+"*")
+        ;endif 
+        SkyrimNetApi.RegisterEvent(event_type, narration, actors[0], target)
     endif 
 
     AllowedDeniedOnlyIncrease(actors, thread, status) 
@@ -1134,11 +1141,19 @@ EndFunction
 
 Function DirectNarration(String event_type, String msg, Actor originatorActor=None, Actor targetActor=None, bool optional=False)
     float current_time = Utility.GetCurrentRealTime()
-    float delta = current_time - last_time_direct_narration
+    float delta = current_time - direct_narration_last_time
+
+    float unit_meter = 0.01465
+    float distance = (unit_meter*direct_narration_max_distance) + 1 
+    if originatorActor != None 
+        distance = unit_meter*Game.GetPlayer().GetDistance(originatorActor) 
+    endif 
+
     String type = "" 
-    if last_time_direct_narration == 0.0 || current_time - last_time_direct_narration > 10.0
+    if delta >= direct_narration_cool_off && distance <= direct_narration_max_distance
         SkyrimNetApi.DirectNarration(msg, originatorActor, targetActor)
         type = "directed"
+        direct_narration_last_time = current_time
     else 
         if !optional
             SkyrimNetApi.RegisterEvent(event_type, msg, originatorActor, targetActor)
@@ -1147,6 +1162,5 @@ Function DirectNarration(String event_type, String msg, Actor originatorActor=No
             type = "skipped"
         endif 
     endif 
-    Trace("DirectNarration","msg:"+msg+" delta:"+delta+" "+type)
-    last_time_direct_narration = current_time
+    Trace("DirectNarration","delta:"+delta+" distance:"+distance+" type:"+type+" msg:"+msg)
 EndFunction

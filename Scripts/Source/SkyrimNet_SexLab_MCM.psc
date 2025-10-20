@@ -126,6 +126,12 @@ Function PageOptions()
     AddToggleOptionST("HotKeyToggle","Enable the Start Sex / Edit Stage hot key",hot_key_toggle)
     AddKeyMapOptionST("SexEditKeySet", "Start Sex / Edit Stage Description", sex_edit_key)
     AddToggleOptionST("SexEdithelpToggle","Hide Edit Stage Discription Help",stages.hide_help)
+    AddTextOption("","")
+    
+    AddHeaderOption("Direction Narration Blocking")
+    AddHeaderOption("")
+    AddSliderOptionST("NarrationCoolOff", "Narration coolown", main.direct_narration_cool_off)
+    AddSliderOptionST("NarrationMaxDistance", "Narration max distance", main.direct_narration_max_distance)
 
     if dom_main != None 
         AddHeaderOption("                              ")
@@ -139,7 +145,6 @@ Function PageOptions()
     endif 
 
     if ostimnet_found
-        AddTextOption("","")
         AddHeaderOption("OstimNet Integration")
         AddHeaderOption("")
         ostimnet_player_menu = AddMenuOption("sex framework:", sexlab_ostim_options[main.sexlab_ostim_player_index])
@@ -310,10 +315,46 @@ State SexEditHelpToggle
     EndEvent
 EndState
 
+;-----------------------------------------------------------------
+; Direct Narration 
+;-----------------------------------------------------------------
+
+State NarrationCoolOff
+    Event OnSliderOpenST()
+        SetSliderDialogStartValue(main.direct_narration_cool_off)
+        SetSliderDialogDefaultValue(20)
+        SetSliderDialogRange(5, 100)
+        SetSliderDialogInterval(1)
+    EndEvent
+    Event OnSliderAcceptST(float value) 
+        main.direct_narration_cool_off = value 
+        SetSliderDialogStartValue(main.direct_narration_cool_off)
+        ForcePageReset()
+    EndEvent
+    Event OnHighlightST()
+        SetInfoText("Cool off before sexlab activity causes a new direct narration.\n")
+    EndEvent
+EndState
+State NarrationMaxDistance
+    Event OnSliderOpenST()
+        SetSliderDialogStartValue(main.direct_narration_max_distance)
+        SetSliderDialogDefaultValue(main.direct_narration_max_distance_default)
+        SetSliderDialogRange(5, 100)
+        SetSliderDialogInterval(1)
+    EndEvent
+    Event OnSliderAcceptST(float value) 
+        main.direct_narration_max_distance = value 
+        SetSliderDialogStartValue(main.direct_narration_max_distance)
+        ForcePageReset()
+    EndEvent
+    Event OnHighlightST()
+        SetInfoText("Maximum distance in meters that could generate a new direct narration.\n")
+    EndEvent
+EndState
+
 ; --------------------------------------------
 ; Dom Debug Hotkey
 ; --------------------------------------------
-
 State DomDebugToggle
     Event OnSelectST()
         dom_debug_toggle = !dom_debug_toggle

@@ -17,6 +17,7 @@ EndFunction
 ;----------------------------------------------------------------------------------------------------
 Function RegisterDecorators() global
     SkyrimNetApi.RegisterDecorator("sexlab_get_threads", "SkyrimNet_SexLab_Decorators", "Get_Threads")
+    SkyrimNetApi.RegisterDecorator("sexlab_get_player_los_distance", "SkyrimNet_SexLab_Decorators", "Player_LOS_Distance")
     SkyrimNetApi.RegisterDecorator("sexlab_nudity", "SkyrimNet_SexLab_Decorators", "Is_Nudity")
     Trace("SkyrimNet_SexLab_Decorators","RegisterDecorattors called")
 EndFunction
@@ -61,7 +62,13 @@ EndFunction
 ; slot: 19 NoBody
 ; slot: 
 
-; 
+String Function Player_LOS_Distance(Actor akActor) global 
+    Actor player = Game.GetPlayer() 
+    float distance = player.GetDistance(akActor) 
+    bool los = player.hasLOS(akActor) 
+    return "{\"distance\":"+distance+",\"los\":"+los+"}"
+EndFunction 
+
 String Function Is_Nudity(Actor akActor) global
     ; 32 off top
     ; 52 and 49 off bottom 
@@ -132,6 +139,9 @@ String Function Get_Threads(Actor speaker) global
 
             threads_str += ",\"style\":\""+main.Thread_Narration(threads[i], "are")+"\""
 
+            String names_array = GetNamesArray(threads[i])
+            threads_str += ",\"names\":"+names_array+""
+
             String strapon_names = GetNames(threads[i])
             threads_str += ",\"strapon_names\":\""+strapon_names+"\""
 
@@ -146,18 +156,28 @@ String Function Get_Threads(Actor speaker) global
 
             String enjoyments = GetEnjoyments(threads[i])
             threads_str += ", \"enjoyments\":"+enjoyments
-
-            threads_str += "}"
-
+            
+            Float distance = speaker.GetDistance(actors[0])
+            Bool los = speaker.HasLOS(actors[0]) 
             Actor[] actors = threads[i].Positions
             bool[] denied = stages.HasDescriptionOrgasmDenied(threads[i])
             int j = actors.Length - 1
             while 0 <= j 
-                if actors[j] == speaker && !denied[j]
-                    speaker_having_sex = true
+                if actors[j] == speaker 
+                    distance = 0
+                    los = true 
+                    if !denied[j]
+                        speaker_having_sex = true
+                    endif 
                 endif 
                 j -= 1
             endwhile 
+
+            threads_str += ",\"speaker_distance\":"+distance
+            threads_str += ",\"speaker_los\":"+los
+
+            threads_str += "}"
+
         endif 
         i += 1
     endwhile
@@ -166,8 +186,8 @@ String Function Get_Threads(Actor speaker) global
     ; Speaker Information 
     ; ------------------------
     String json = "{\"speaker_having_sex\":"+speaker_having_sex
+    json +=       ",\"speaker_name\":\""+speaker.GetDisplayName()+"\""
     json +=       ",\"threads\":["+threads_str+"]}"
-
     Trace("Get_Threads",json)
     return json
 EndFunction 
@@ -337,10 +357,35 @@ String Function GetCreatures(sslThreadController thread) global
             String name = actors[i].GetDisplayName()
             String race_name = r.GetName() 
             names += name+" is a "+race_name+". "
+            int j = JArray.count(main.race_to_description) - 1 
+            while 0 <= j 
+                int creature = Jarray.getObj(main.race_to_description, j) 
+                Race creature_race = JMap.getForm(creature,"form_") as Race 
+                if creature_race == r 
+                    names += JMap.getStr(creature, "description_")
+                    j = -1 
+                else 
+                    j -= 1 
+                endif 
+            endwhile 
         endif 
         i += 1
     endwhile
     return names
+EndFunction
+
+String Function GetNamesArray(sslThreadController thread) global
+    Actor[] actors = thread.Positions
+    String names = "" 
+    int i = 0
+    while i < actors.Length
+        if names != "" 
+            names += ","
+        endif 
+        names += "\""+actors[i].GetDisplayName()+"\""
+        i += 1
+    endwhile 
+    return "["+names+"]"
 EndFunction
 
 String Function GetNames(sslThreadController thread, sslActorLibrary actorLib = None) global
