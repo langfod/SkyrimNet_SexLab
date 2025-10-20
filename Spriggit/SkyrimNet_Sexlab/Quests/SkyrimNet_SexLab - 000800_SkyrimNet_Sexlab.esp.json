@@ -94,6 +94,16 @@
             "MutagenObjectType": "ScriptObjectProperty",
             "Name": "SexLab_Active_Sex",
             "Object": "000802:SkyrimNet_Sexlab.esp"
+          },
+          {
+            "MutagenObjectType": "ScriptObjectProperty",
+            "Name": "skyrimnet_sexlab_ostim_player",
+            "Object": "000803:SkyrimNet_Sexlab.esp"
+          },
+          {
+            "MutagenObjectType": "ScriptObjectProperty",
+            "Name": "skyrimnet_sexlab_ostim_nonplayer",
+            "Object": "000804:SkyrimNet_Sexlab.esp"
           }
         ]
       }
