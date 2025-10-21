@@ -20,7 +20,7 @@ bool clear_JSON = False
 skyrimnet_UDNG_Groups group_devices = None
 
 ; DOM Support 
-DOM_api d_api = None 
+Quest d_api = None 
 SkyrimNet_DOM_Main dom_main = None 
 
 ; OstimNet Support 
@@ -46,12 +46,12 @@ int Property sexlab_ostim_player_menu Auto  ; menu id
 int Property sexlab_ostim_nonplayer_menu Auto  ; menu id 
 
 Function Setup() 
-     ;if sexlab_ostim_options.length == 0
+     if sexlab_ostim_options.length == 0
         sexlab_ostim_options = new String[2]
         sexlab_ostim_options[0] = "SexLab"
         sexlab_ostim_options[1] = "Ostim" 
        ; sexlab_ostim_options[2] = "Choose each time"
-     ;endif 
+     endif 
 
     ; -------------------------------
     ; Checks for Devious Support mod 
@@ -66,7 +66,7 @@ Function Setup()
     ; Check if SkyrimNet_DOM is installed and the target is a slave
     if MiscUtil.FileExists("Data/DiaryOfMine.esm")
         Trace("SetUp","found DiaryOfMine.esm")
-        d_api = Game.GetFormFromFile(0x00000D61, "DiaryOfMine.esm") as DOM_API
+        d_api = Game.GetFormFromFile(0x00000D61, "DiaryOfMine.esm") as Quest
     else 
         d_api = None 
     endif 
@@ -145,6 +145,7 @@ Function PageOptions()
     endif 
 
     if ostimnet_found
+        Trace("PageOptions"," index: "+main.sexlab_ostim_player_index+" label: "+sexlab_ostim_options[main.sexlab_ostim_player_index])
         AddHeaderOption("OstimNet Integration")
         AddHeaderOption("")
         ostimnet_player_menu = AddMenuOption("sex framework:", sexlab_ostim_options[main.sexlab_ostim_player_index])
@@ -384,12 +385,12 @@ endEvent
 
 
 event OnOptionMenuAccept(int menu_id, int index)
-    Trace("OnOptionMenuAccept","options: "+sexlab_ostim_options)
     if menu_id == ostimnet_player_menu
         main.sexlab_ostim_player_index = index
     else 
         main.sexlab_ostim_nonplayer_index = index
     endif 
+    Trace("OnOptionMenuAccept"," index: "+main.sexlab_ostim_player_index+" label: "+sexlab_ostim_options[main.sexlab_ostim_player_index])
     SetMenuOptionValue(menu_id, sexlab_ostim_options[index])
 endEvent
 
@@ -422,8 +423,8 @@ Event OnKeyDown(int key_code)
             elseif SkyrimNet_SexLab_Actions.BodyAnimation_IsEligible(target, "", "") && main.sexlab.IsValidActor(target)
 
                 DOM_Actor slave = None 
-                if d_api != None && d_api.IsDOMSlave(target) 
-                    slave = d_api.GetDOMActor(target) 
+                if d_api != None && (d_api as DOM_API).IsDOMSlave(target) 
+                    slave = (d_api as DOM_API).GetDOMActor(target) 
                 endif 
 
                 ;if slave != None && dom_main != None 
@@ -432,7 +433,6 @@ Event OnKeyDown(int key_code)
                 ;endif 
 
                 bool target_is_undressed = false 
-                Trace("OnKeyDown","slave:"+slave+" dom_main:"+dom_main)
                 if slave != None 
                     Trace("OnKeyDown","slave.is_naked:"+slave.is_naked+" should_be_naked:"+slave.mind.should_be_naked)
                     target_is_undressed = slave.is_naked
@@ -691,7 +691,11 @@ Event OnKeyDown(int key_code)
             i += 1 
         endwhile 
 
-        StartSex(group, type == "rape>")
+        if type == "cuddle>"
+            ;SkyrimNet_Cuddle.StageStart(
+        else 
+            StartSex(group, type == "rape>")
+        endif 
     endif 
 EndEvent 
 
@@ -760,10 +764,16 @@ String Function SexRapeSelection()
     listMenu.ResetMenu()
     listMenu.AddEntryItem("sex")
     listMenu.AddEntryItem("rape")
+    if main.cuddle_found 
+        listMenu.AddEntryItem("cuddle")
+    endif 
     listMenu.OpenMenu()
-    if listMenu.GetResultInt() == 0
+    int index = listMenu.GetResultInt() 
+    if index == 0
         return "sex>"
-    else
+    elseif index == 1
         return "rape>"
+    else 
+        return "cuddle>"
     endif
 EndFunction

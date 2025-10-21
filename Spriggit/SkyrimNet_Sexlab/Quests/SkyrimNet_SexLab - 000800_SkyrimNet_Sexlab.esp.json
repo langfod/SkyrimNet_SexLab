@@ -11,29 +11,39 @@
         "Properties": [
           {
             "MutagenObjectType": "ScriptObjectProperty",
-            "Name": "main",
+            "Name": "stages",
             "Object": "000800:SkyrimNet_Sexlab.esp"
           },
           {
             "MutagenObjectType": "ScriptObjectProperty",
-            "Name": "sexlab_public_sex_accepted",
-            "Object": "000801:SkyrimNet_Sexlab.esp"
-          },
-          {
-            "MutagenObjectType": "ScriptObjectProperty",
-            "Name": "stages",
+            "Name": "main",
             "Object": "000800:SkyrimNet_Sexlab.esp"
           },
           {
             "MutagenObjectType": "ScriptStringProperty",
             "Name": "ModName",
             "Data": "SkyrimNet SexLab"
+          },
+          {
+            "MutagenObjectType": "ScriptObjectProperty",
+            "Name": "sexlab_public_sex_accepted",
+            "Object": "000801:SkyrimNet_Sexlab.esp"
           }
         ]
       },
       {
         "Name": "SkyrimNet_SexLab_Main",
         "Properties": [
+          {
+            "MutagenObjectType": "ScriptObjectProperty",
+            "Name": "skyrimnet_sexlab_ostim_player",
+            "Object": "000803:SkyrimNet_Sexlab.esp"
+          },
+          {
+            "MutagenObjectType": "ScriptObjectProperty",
+            "Name": "skyrimnet_sexlab_ostim_nonplayer",
+            "Object": "000804:SkyrimNet_Sexlab.esp"
+          },
           {
             "MutagenObjectType": "ScriptObjectListProperty",
             "Name": "nude_refs",
@@ -92,18 +102,18 @@
           },
           {
             "MutagenObjectType": "ScriptObjectProperty",
-            "Name": "SexLab_Active_Sex",
+            "Name": "SexLab",
+            "Object": "000D62:SexLab.esm"
+          },
+          {
+            "MutagenObjectType": "ScriptObjectProperty",
+            "Name": "SkyrimNet_SexLab_Active_Sex",
             "Object": "000802:SkyrimNet_Sexlab.esp"
           },
           {
             "MutagenObjectType": "ScriptObjectProperty",
-            "Name": "skyrimnet_sexlab_ostim_player",
-            "Object": "000803:SkyrimNet_Sexlab.esp"
-          },
-          {
-            "MutagenObjectType": "ScriptObjectProperty",
-            "Name": "skyrimnet_sexlab_ostim_nonplayer",
-            "Object": "000804:SkyrimNet_Sexlab.esp"
+            "Name": "stages",
+            "Object": "000800:SkyrimNet_Sexlab.esp"
           }
         ]
       }

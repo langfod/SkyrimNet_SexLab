@@ -104,9 +104,16 @@ String Property storage_arousal_key = "skyrimnet_sexlab_arousal_level" Auto
 SkyrimNet_SexLab_Stages Property stages Auto
 SexLabFramework Property sexlab Auto 
 
-Quest Property dom_main Auto 
+; -----------------------------
+; DOM found 
+; -----------------------------
 bool Property dom_main_found Auto
+Quest Property dom_main Auto 
 
+; -----------------------------
+; Cuddle found 
+; -----------------------------
+bool Property cuddle_found Auto
 
 string actor_num_orgasms_key = "skyrimnet_sexlab_actor_num_orgasms"
 ; Stores if SLSO.esp is found
@@ -122,6 +129,33 @@ bool ostimnet_found = false
 
 ; Race to speech 
 int Property race_to_description Auto
+
+;String Function ActorsToJson(Actor[] actors) global
+;EndFunction
+;String Function Thread_Narration(sslThreadController thread, String status)
+;EndFunction
+;int Function SexStyleDialog(sslThreadController thread)
+;EndFunction
+;Bool Function IsActorLocked(Actor akActor) 
+;EndFunction
+;bool Function SetActorLock(Actor akActor) 
+;EndFunction
+;Function ReleaseActorLock(Actor akActor) 
+;EndFunction
+;int function YesNoSexDialog(String type, Bool rape, Actor domActor, Actor subActor, Actor player)
+;EndFunction
+;sslBaseAnimation[] Function AnimsDialog(SexLabFramework sexlab, Actor[] actors, String tag)
+;EndFunction
+;Function SetThreadStyle(int thread_id, int style) 
+;EndFunction
+;Function StoreStrippedItems(Actor akActor, Form[] forms)
+;EndFunction 
+;Form[] Function UnStoreStrippedItems(Actor akActor)
+;EndFunction
+;Bool Function HasStrippedItems(Actor akActor)
+;EndFunction
+;Function OstimNet_Reset() 
+;EndFunction
 
 Event OnInit()
     Trace("OnInit","")
@@ -163,12 +197,20 @@ Function Setup()
     endif 
     SexLab = Game.GetFormFromFile(0xD62, "SexLab.esm") as SexLabFramework
 
+    ; SkyrimNet DOM 
     if MiscUtil.FileExists("Data/SkyrimNet_DOM.esp")
         dom_main = Game.GetFormFromFile(0x800, "SkyrimNet_DOM.esp") as Quest
         dom_main_found = True
     else 
         dom_main = None 
         dom_main_found = False
+    endif 
+
+    ; SkyrimNet Cuddle 
+    if MiscUtil.FileExists("Data/SkyrimNet_Cuddle.esp")
+        cuddle_found = True
+    else 
+        cuddle_found = False
     endif 
 
     ; Set up the Buttons 
@@ -228,7 +270,6 @@ Function Setup()
     RegisterSexlabEvents()
     SkyrimNet_SexLab_Actions.RegisterActions()
     SkyrimNet_SexLab_Decorators.RegisterDecorators() 
-
 EndFunction
 
 
