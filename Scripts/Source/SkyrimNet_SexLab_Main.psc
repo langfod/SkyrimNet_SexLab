@@ -468,8 +468,8 @@ Event StageStart(int ThreadID, bool HasPlayer)
         reciever = actors[1] 
     endif 
 
-    String narration = Thread_Narration(thread, "are")
-    DirectNarration("sexlab_stage_change", narration, sender, reciever, True)
+;    String narration = Thread_Narration(thread, "are")
+;    DirectNarration("sexlab_stage_change", narration, sender, reciever, True)
 
     ; This provides the animation updates below this point
     if !stages.IsThreadTracking(ThreadID)
@@ -614,7 +614,7 @@ event AnimationEnd(int ThreadID, bool HasPlayer)
             j -= 1 
         endwhile 
         if after != ""
-            DirectNarration("sexlab_orgasm", after, None, None)
+            ;DirectNarration("sexlab_orgasm", after, None, None)
             Trace("AnimationEnd",after)
         endif 
     endif 

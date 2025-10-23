@@ -456,8 +456,13 @@ Event OnKeyDown(int key_code)
                 int clothing = 4
                 int cancel = 5
 
+                int cuddle = -2 
                 int bondage = -2
                 int dom_debug = -2 
+                if main.cuddle_found 
+                    cuddle = cancel
+                    cancel += 1
+                endif 
                 if group_devices != None 
                     bondage = cancel
                     cancel += 1 
@@ -473,6 +478,9 @@ Event OnKeyDown(int key_code)
                 buttons[raped_by] = "raped by player"
                 buttons[rapes] = "rapes the player"
                 buttons[clothing] = clothing_string
+                if cuddle != -2 
+                    buttons[cuddle] = "cuddle"
+                endif
                 if bondage != -2 
                     buttons[bondage] = "bondage"
                 endif 
@@ -539,6 +547,8 @@ Event OnKeyDown(int key_code)
                         endif
                     endif 
 
+                elseif button == cuddle 
+                    SkyrimNet_Cuddle_API.OpenMenu(player, target) 
                 elseif button == bondage 
                     group_devices.UpdateDevices(target) 
                 elseif button == dom_debug
