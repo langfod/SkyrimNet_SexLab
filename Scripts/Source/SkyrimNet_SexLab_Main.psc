@@ -599,22 +599,24 @@ event AnimationEnd(int ThreadID, bool HasPlayer)
     sslSystemConfig config = (SexLab as Quest) as sslSystemConfig
     Actor[] actors = thread.Positions
     Trace("AnimationEnd","checking orgasms for "+ActorsToString(actors))
+    bool orgasm_denied = false
     if config.SeparateOrgasms
         String after = "" 
         int j = actors.length - 1 
         while 0 <= j 
             int num_orgasms = StorageUtil.GetIntValue(actors[j],actor_num_orgasms_key, 0)
             if num_orgasms < 1
-                after += actors[j].GetDisplayName()+" was denied an orgasm "
+                after += actors[j].GetDisplayName()+" was denied an orgasm. "
+                orgasm_denied = true
             elseif num_orgasms < 2
                 after += actors[j].GetDisplayName()+"'s body glows in post orgasm. "
             else 
                 after += actors[j].GetDisplayName()+"'s body is recovering from "+num_orgasms+" orgasms. "
             endif 
             j -= 1 
-        endwhile 
-        if after != ""
-            ;DirectNarration("sexlab_orgasm", after, None, None)
+        endwhile ;
+        if orgasm_denied ; after != ""
+            DirectNarration("sexlab_orgasm", after, None, None)
             Trace("AnimationEnd",after)
         endif 
     endif 
