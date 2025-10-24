@@ -1,0 +1,7 @@
+{% if not isTimePaused and isValidActor(actorUUID) and (render_mode == "full" or render_mode == "thoughts" or render_mode == "dialogue_target" or render_mode == "transform") %}
+{% set nudity = sexlab_nudity(actorUUID) %} 
+{% if nudity and nudity.topless and nudity.bottomless %} 
+{{ "###" }} {{decnpc(actorUUID).name}}'s Nudity Level and Rules
+- {{ decnpc(actorUUID).name }} is currently nude. {% if is_narration_enabled() %} Their narration can only include explicitly equipped items. {% endif %} 
+{% endif %}
+{% endif %}
