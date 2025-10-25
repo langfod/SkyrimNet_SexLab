@@ -119,7 +119,6 @@ string actor_num_orgasms_key = "skyrimnet_sexlab_actor_num_orgasms"
 ; Stores if SLSO.esp is found
 
 ; Controls when Direction Narration occur 
-float Property direct_narration_last_time Auto
 float Property direct_narration_cool_off Auto 
 float Property direct_narration_max_distance Auto 
 float Property direct_narration_max_distance_default Auto 
@@ -231,7 +230,6 @@ Function Setup()
     mcm.Setup() 
 
     ; Directy Narration 
-    direct_narration_last_time = 0
     if direct_narration_cool_off == 0 
         direct_narration_cool_off = 20 
         direct_narration_max_distance = 15
@@ -451,16 +449,34 @@ Event StageStart(int ThreadID, bool HasPlayer)
         return  
     endif
 
-    if !thread_started[ThreadID]
-        active_sex = true
-        Sex_Event(ThreadID, "start", HasPlayer )
-        thread_started[ThreadID] = True
+    sslThreadController thread = SexLab.GetController(ThreadID)
+    Actor[] actors = thread.Positions
+    Actor[] actors = thread.Positions
+
+    Actor target = None 
+    if actors.length > 2 && actors[0] != actors[1]
+        target = actors[1]
     endif 
 
-    sslThreadController thread = SexLab.GetController(ThreadID)
-    AllowedDeniedOnlyIncrease(thread.positions, thread, "stage") 
 
-    Actor[] actors = thread.Positions
+    ; Send a DN if its a start and includes a player
+    ; if not player send DN if allowedb by cool off 
+    String event_type = "sexlab_event"
+    if !thread_started[ThreadID]
+        active_sex = true
+        thread_started[ThreadID] = True
+        AllowedDeniedOnlyIncrease(actors, thread, "start") 
+        String narration = Thread_Narration(thread, "start")
+        if HasPlayer
+            SkyrimNetAPI.DirectNarration(narration, actors[0], target)
+        else
+            DirectNarration(event_type, narration, actors[0], target)
+        endif 
+    else 
+        DirectNarration(event_type, "", actors[0], target)
+    endif 
+
+    AllowedDeniedOnlyIncrease(thread.positions, thread, "stage") 
 
     Actor sender = actors[0] 
     Actor reciever = None 
@@ -468,28 +484,23 @@ Event StageStart(int ThreadID, bool HasPlayer)
         reciever = actors[1] 
     endif 
 
-;    String narration = Thread_Narration(thread, "are")
-;    DirectNarration("sexlab_stage_change", narration, sender, reciever, True)
-
-    ; This provides the animation updates below this point
-    if !stages.IsThreadTracking(ThreadID)
-        return
+    ; If this thread is being tracked print the thread's status 
+    if stages.IsThreadTracking(ThreadID)
+        bool[] desc_denied = stages.HasDescriptionOrgasmDenied(thread)
+        String desc = "" 
+        if desc_denied[0]
+            desc = "has description"
+        endif
+        if desc_denied[1]
+            if desc != ""
+                desc += " and "
+            endif 
+            desc += "orgasm denied"        
+        endif
+        Debug.Notification("stage "+thread.stage+" of "+ thread.animation.StageCount()+" "+desc)
     endif 
-    bool[] desc_denied = stages.HasDescriptionOrgasmDenied(thread)
-    String desc = "" 
-    if desc_denied[0]
-        desc = "has description"
-    endif
-    if desc_denied[1]
-        if desc != ""
-            desc += " and "
-        endif 
-        desc += "orgasm denied"        
-    endif
-    Debug.Notification("stage "+thread.stage+" of "+ thread.animation.StageCount()+" "+desc)
 
-        ; DOM Slaves have thier own orasm system 
-
+    ; DOM Slaves have thier own orasm system 
     if dom_main != None 
         int k = actors.length - 1
         while 0 <= k 
@@ -503,7 +514,6 @@ Event StageStart(int ThreadID, bool HasPlayer)
             k -= 1 
         endwhile
     endif 
-
 EndEvent
 
 ; Used for default orgasm
@@ -622,38 +632,6 @@ event AnimationEnd(int ThreadID, bool HasPlayer)
     endif 
     Trace("AnimationEnd","got to 4")
 endEvent
-
-Function Sex_Event(int ThreadID, String status, Bool HasPlayer )
-    if SexLab == None
-        return  
-    endif
-    sslThreadController thread = SexLab.GetController(ThreadID)
-    Actor[] actors = thread.Positions
-
-    String narration = Thread_Narration(thread, status)
-
-    ; the Dialog narration is called so that it is stored in the timeline and captured in memories,
-    ; and will be responded by t
-    String event_type = "sexlab_"+status
-    ; narration = "*"+narration+"*"
-    Actor target = None 
-    if actors.length > 2 && actors[0] != actors[1]
-        target = actors[1]
-    endif 
-
-    if status == "start"
-        DirectNarration(event_type,narration, actors[0], target,optional=false)
-    else
-        ;if actors.length == 1 || actors[0] == actors[1]
-            ;SkyrimNetApi.RegisterDialogue(actors[0], "*"+narration+"*")
-        ;else
-            ;SkyrimNetApi.RegisterDialogueToListener(actors[1], actors[0], "*"+narration+"*")
-        ;endif 
-        SkyrimNetApi.RegisterEvent(event_type, narration, actors[0], target)
-    endif 
-
-    AllowedDeniedOnlyIncrease(actors, thread, status) 
-EndFunction
 
 Function AllowedDeniedOnlyIncrease(Actor[] actors, sslThreadController thread, String status)
     if !MiscUtil.FileExists("Data/SexLabAroused.esm") 
@@ -1183,9 +1161,6 @@ String Function GroupDialog(int group_tags, String group)  global
 EndFunction
 
 Function DirectNarration(String event_type, String msg, Actor originatorActor=None, Actor targetActor=None, bool optional=False)
-    float current_time = Utility.GetCurrentRealTime()
-    float delta = current_time - direct_narration_last_time
-
     float unit_meter = 0.01465
     float distance = (unit_meter*direct_narration_max_distance) + 1 
     if originatorActor != None 
@@ -1193,17 +1168,17 @@ Function DirectNarration(String event_type, String msg, Actor originatorActor=No
     endif 
 
     String type = "" 
-    if delta >= direct_narration_cool_off && distance <= direct_narration_max_distance
+    int last_audio_secs = SkrimNetAPI.GetTimeSinceLastAudioEnded()/1000
+    if last_audio >= direct_narration_cool_off && distance <= direct_narration_max_distance
         SkyrimNetApi.DirectNarration(msg, originatorActor, targetActor)
         type = "directed"
-        direct_narration_last_time = current_time
     else 
-        if !optional
+        if !optional and msg != ""
             SkyrimNetApi.RegisterEvent(event_type, msg, originatorActor, targetActor)
             type = "event"
         else 
             type = "skipped"
         endif 
     endif 
-    Trace("DirectNarration","delta:"+delta+" distance:"+distance+" type:"+type+" msg:"+msg)
+    Trace("DirectNarration","last_audio_secs:"+last_audio_secs+" distance:"+distance+" type:"+type+" msg:"+msg)
 EndFunction
