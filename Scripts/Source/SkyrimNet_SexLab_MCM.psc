@@ -323,9 +323,9 @@ EndState
 State NarrationCoolOff
     Event OnSliderOpenST()
         SetSliderDialogStartValue(main.direct_narration_cool_off)
-        SetSliderDialogDefaultValue(20)
-        SetSliderDialogRange(5, 100)
-        SetSliderDialogInterval(1)
+        SetSliderDialogDefaultValue(5)
+        SetSliderDialogRange(0.5, 20)
+        SetSliderDialogInterval(0.5)
     EndEvent
     Event OnSliderAcceptST(float value) 
         main.direct_narration_cool_off = value 
@@ -333,7 +333,7 @@ State NarrationCoolOff
         ForcePageReset()
     EndEvent
     Event OnHighlightST()
-        SetInfoText("Cool off before sexlab activity causes a new direct narration.\n")
+        SetInfoText("Mininum number of seconds since laster audio ended before next optional Direct Narration.\n")
     EndEvent
 EndState
 State NarrationMaxDistance
@@ -416,7 +416,8 @@ Event OnKeyDown(int key_code)
                 if player_having_sex 
                     target = player 
                 endif 
-                sslThreadController thread = stages.GetThread(target)
+                sslThreadController thread = main.GetThread(target)
+                
                 if thread != None 
                     stages.EditDescriptions(thread) 
                 endif 
@@ -525,7 +526,7 @@ Event OnKeyDown(int key_code)
                             style = " forcefully "
                         endif 
                         msg = player.GetDisplayName()+style+clothing_string+"es "+target.GetDisplayName()+"."
-                        main.DirectNarration(msg, player, target) 
+                        main.DirectNarration_Optional(msg, player, target) 
                     endif 
 
                     ;--------------------------------------------------

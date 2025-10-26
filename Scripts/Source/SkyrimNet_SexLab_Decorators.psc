@@ -89,10 +89,19 @@ String Function Is_Nudity(Actor akActor) global
     return "{\"topless\":"+topless+",\"bottomless\":"+bottomless+"}"
 EndFunction
 
+String Function BooleanString(bool b) global
+    if b 
+        return ":true"
+    else 
+        return ":false"
+    endif
+EndFunction 
+
 String Function Get_Threads(Actor speaker) global
-    Trace("Get_Threads", speaker.GetDisplayName())
     SkyrimNet_SexLab_Main main = Game.GetFormFromFile(0x800, "SkyrimNet_SexLab.esp") as SkyrimNet_SexLab_Main
     SkyrimNet_SexLab_Stages stages = (main as Quest) as SkyrimNet_SexLab_Stages
+
+    Trace("Get_Threads", main.counter+" "+speaker.GetDisplayName())
 
     if main == None
         Trace("Get_Threads","main is None")
@@ -107,7 +116,7 @@ String Function Get_Threads(Actor speaker) global
     sslThreadSlots ThreadSlots = Game.GetFormFromFile(0xD62, "SexLab.esm") as sslThreadSlots
     if ThreadSlots == None
         Trace("Get_Threads","ThreadSlots is None",true)
-        return ""
+        return "{\"threads\":[]}"
     endif
 
     sslThreadController[] threads = ThreadSlots.Threads
@@ -157,9 +166,13 @@ String Function Get_Threads(Actor speaker) global
             String enjoyments = GetEnjoyments(threads[i])
             threads_str += ", \"enjoyments\":"+enjoyments
             
-            Float distance = speaker.GetDistance(actors[0])
-            Bool los = speaker.HasLOS(actors[0]) 
             Actor[] actors = threads[i].Positions
+            Float distance = 0 
+            bool los = True
+            if speaker != actors[0]
+                distance = speaker.GetDistance(actors[0])
+                los = speaker.HasLOS(actors[0]) 
+            endif 
             bool[] denied = stages.HasDescriptionOrgasmDenied(threads[i])
             int j = actors.Length - 1
             while 0 <= j 
@@ -174,7 +187,8 @@ String Function Get_Threads(Actor speaker) global
             endwhile 
 
             threads_str += ",\"speaker_distance\":"+distance
-            threads_str += ",\"speaker_los\":"+los
+            threads_str += ",\"speaker_los\""+BooleanString(los)
+            main.counter += 1
 
             threads_str += "}"
 
@@ -185,9 +199,11 @@ String Function Get_Threads(Actor speaker) global
 
     ; Speaker Information 
     ; ------------------------
-    String json = "{\"speaker_having_sex\":"+speaker_having_sex
+    String json = "{\"speaker_having_sex\""+BooleanString(speaker_having_sex)
     json +=       ",\"speaker_name\":\""+speaker.GetDisplayName()+"\""
-    json +=       ",\"threads\":["+threads_str+"]}"
+    json +=       ",\"threads\":["+threads_str+"]"
+    json +=       ",\"counter\":"+main.counter
+    json +=       "}"
     Trace("Get_Threads",json)
     return json
 EndFunction 

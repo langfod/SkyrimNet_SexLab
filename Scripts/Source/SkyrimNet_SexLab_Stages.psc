@@ -5,7 +5,6 @@ import StorageUtil
 
 Bool Property hide_help = false Auto
 
-sslThreadSlots ThreadSlots = None
 Actor player = None 
 
 String Property animations_folder = "Data/SkyrimNet_SexLab/animations" Auto
@@ -52,14 +51,9 @@ Function Setup()
     desc_input = ""
     animations_folder = "Data/SkyrimNet_SexLab/animations"
     local_folder =      animations_folder+"/_local_"
-    if ThreadSlots == None 
-        ThreadSlots = Game.GetFormFromFile(0xD62, "SexLab.esm") as sslThreadSlots
+    if player == None 
         player = Game.GetPlayer()
     endif 
-    if ThreadSlots == None
-        Trace("Thread_Dialog: ThreadSlots is None")
-        return  
-    endif
 
     if tracking_thread_id <= 0 
         tracking_thread_id = JIntMap.object() 
@@ -203,10 +197,10 @@ Function EditDescriptions(sslThreadController thread)
             buttons[tracking] = Button_Start_Tracking
         endif 
 
-        String msg = "" 
+        String msg = fname+"\n"\
+               +"tags:"+SkyrimNet_SexLab_Decorators.GetTagsString(anim)+"\n"
         if desc == "" 
             msg = "You may enter a description for stage "+thread.stage+".\n"
-            msg += "tags:"+SkyrimNet_SexLab_Decorators.GetTagsString(anim)+"\n"
             msg += "ex: " + BuildExample(actors)
         else 
             if desc_stage != thread.stage
@@ -438,34 +432,6 @@ bool[] Function HasDescriptionOrgasmDenied(sslThreadController thread)
     return desc_denied
 EndFunction
 
-sslThreadcontroller Function GetThread(Actor target)
-    if threadSlots == None 
-        return None 
-    endif 
-    sslThreadController[] threads = ThreadSlots.Threads
-
-    ; Get the active thread that contains the player or actor in the crossHair
-    sslThreadController thread = None
-    bool has_player = false 
-    int i = threads.length - 1
-    while 0 <= i 
-        if (threads[i] as sslThreadModel).GetState() == "animating"
-            Actor[] actors = threads[i].Positions
-            int j = actors.Length - 1
-            while 0 <= j 
-                if !has_player && actors[j] == target
-                    thread = threads[i]
-                elseif actors[j] == player 
-                    thread = threads[i]
-                    has_player = true 
-                endif
-                j -= 1 
-            endwhile 
-        endif 
-        i -= 1
-    endwhile
-    return thread
-EndFunction 
 
 int Function GetAnim_Info(sslThreadController thread, Bool force_load=False)
 
