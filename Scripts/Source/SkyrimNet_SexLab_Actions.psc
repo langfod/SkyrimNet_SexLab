@@ -15,19 +15,7 @@ Function RegisterActions() global
     Trace("RegisterActions","started")
     SkyrimNet_SexLab_Main main = Game.GetFormFromFile(0x800, "SkyrimNet_SexLab.esp") as SkyrimNet_SexLab_Main
 
-    String[] types = GetTypes()
-    int i = 0
-    int count = types.Length 
-    String type = ""
-    while i < count 
-        if type != "any"
-            if type != "" 
-                type += "|"
-            endif 
-            type += types[i]
-        endif 
-        i += 1
-    endwhile 
+    String type = GetTypesStrings()
 
     ; ------------------------
     ; This also has a undress/dress action
@@ -61,7 +49,19 @@ Function RegisterActions() global
             "")
 
     ; ------------------------
-    if main.rape_allowed
+    RapeRegistration(main.rape_allowed)
+
+    ; ------------------------
+    SkyrimNetApi.RegisterTag("BodyAnimation", "SkyrimNet_SexLab_Actions","BodyAnimation_IsEligible")
+
+EndFunction
+
+
+Function RapeRegistration(bool rape_allowed) global
+    if rape_allowed
+        Trace("RapeRegistration","Resgistering SexLab_RapeStart and SexLab_RapedByStart actions")
+        
+        String type = GetTypesStrings()
         SkyrimNetApi.RegisterAction("SexLab_RapeStart", \
                 "Start to sexually assualt {target}.",\
                 "SkyrimNet_SexLab_Actions", "SexStart_IsEligible",  \
@@ -74,11 +74,30 @@ Function RegisterActions() global
                 "SkyrimNet_SexLab_Actions", "SexStart_Execute",  \
                 "", "PAPYRUS", 1, \
                 "{\"target\": \"Actor\", \"type\":\""+type+"\", \"rape\":true, \"target_victim\":false}","","BodyAnimation")
+    else 
+        Trace("RapeRegistration","Unresgistering SexLab_RapeStart and SexLab_RapedByStart actions")
+        SkyrimNetApi.UnregisterAction("SexLab_RapeStart")
+        SkyrimNetApi.UnregisterAction("SexLab_RapedByStart")
     endif 
-
-    SkyrimNetApi.RegisterTag("BodyAnimation", "SkyrimNet_SexLab_Actions","BodyAnimation_IsEligible")
-
 EndFunction
+
+String Function GetTypesStrings() global 
+    String[] types = GetTypes()
+    int i = 0
+    int count = types.Length 
+    String type = ""
+    while i < count 
+        if type != "any"
+            if type != "" 
+                type += "|"
+            endif 
+            type += types[i]
+        endif 
+        i += 1
+    endwhile 
+    return type 
+EndFunction
+
 ; -------------------------------------------------
 ; Tag 
 ; -------------------------------------------------

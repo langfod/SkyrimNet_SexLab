@@ -1121,11 +1121,15 @@ sslBaseAnimation[] Function AnimsDialog(SexLabFramework sexlab, Actor[] actors, 
     if groups == 0
         groups = JMap.allKeys(group_tags)
     endif 
+    count = JArray.count(groups)
 
+    JValue.retain(groups)
+    uilistmenu listMenu = uiextensions.GetMenu("UIListMenu") AS uilistmenu
     while True
         bool finished = false
         String tags_str= ""
         while next < count_max && !finished
+            listMenu.ResetMenu()
 
             ; build the current tags
             tags_str = "" 
@@ -1137,27 +1141,22 @@ sslBaseAnimation[] Function AnimsDialog(SexLabFramework sexlab, Actor[] actors, 
                 tags_str += tags[i]
                 i += 1
             endwhile 
-
-
-            uilistmenu listMenu = uiextensions.GetMenu("UIListMenu") AS uilistmenu
-            listMenu.ResetMenu()
             ; Use the current set of tags 
             String use_tags = names + " tags: "+tags_str
             listMenu.AddEntryItem(use_tags)
+
             ; Remove one tag 
             if 0 < next 
                 listMenu.AddEntryItem("<remove")
             endif 
 
             ; Add groups
-            count = JArray.count(groups)
             i =  0
             while i < count
                 String group = JArray.getStr(groups,i)
                 listMenu.AddEntryItem(group)
                 i += 1
             endwhile
-
 
             ; add the actions 
             ;ListAddTags(listMenu, group_tags, "actions>") 
@@ -1184,12 +1183,14 @@ sslBaseAnimation[] Function AnimsDialog(SexLabFramework sexlab, Actor[] actors, 
         endwhile 
         sslBaseAnimation[] anims =  SexLab.GetAnimationsByTags(actors.length, tags_str, "", true)
         if anims.length > 0
+            JValue.release(groups)
             return anims 
         else
             Trace("AnimsDialog","No animations found for: "+tags_str)
             Debug.Notification("No animations found for: "+tags_str)
         endif 
     endwhile 
+    JValue.release(groups)
     return empty
 EndFunction
 

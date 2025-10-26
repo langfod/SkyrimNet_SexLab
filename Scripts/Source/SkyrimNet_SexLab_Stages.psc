@@ -236,13 +236,28 @@ EndFunction
 ; ------------------------------------
 ; Editor Functions 
 ; ------------------------------------
+string Function GetPlayerInput() global
+    Trace("GetPlayerInput","GetPlayerInput called")
+    UIExtensions.OpenMenu("UITextEntryMenu")
+    ; Don't do this if we're in VR
+    if SkyrimNetApi.IsRunningVR()
+        Trace("SkyrimNetInternal","GetPlayerInput: Skipping input in VR")
+        Debug.Notification("Text input is disabled in VR")
+        return ""
+    endif
+    string messageText = UIExtensions.GetMenuResultString("UITextEntryMenu")
+    Trace("GetPlayerInput","GetPlayerInput returned: " + messageText)
+    return messageText
+EndFunction
+
 Function EditorDescription(sslThreadController thread)
     int thread_id = thread.tid
     Actor[] actors = thread.Positions
     String stage_id = "stage "+thread.stage
-    uiextensions.InitMenu("UITextEntryMenu")
-    uiextensions.OpenMenu("UITextEntryMenu")
-    desc_input = UIExtensions.GetMenuResultString("UITextEntryMenu")
+  ;  uiextensions.InitMenu("UITextEntryMenu")
+    ;uiextensions.OpenMenu("UITextEntryMenu")
+    ;    desc_input = UIExtensions.GetMenuResultString("UITextEntryMenu")
+    desc_input = GetPlayerInput()
     String version = VERSION_2_0
     if desc_input != ""
         String desc = Description_Add_Actors(version, actors, desc_input)
