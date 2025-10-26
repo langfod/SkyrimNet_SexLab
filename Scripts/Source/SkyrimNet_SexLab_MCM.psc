@@ -527,7 +527,7 @@ Event OnKeyDown(int key_code)
                             style = " forcefully "
                         endif 
                         msg = player.GetDisplayName()+style+clothing_string+"es "+target.GetDisplayName()+"."
-                        main.DirectNarration_Optional(msg, player, target) 
+                        main.DirectNarration(msg, player, target) 
                     endif 
 
                     ;--------------------------------------------------
