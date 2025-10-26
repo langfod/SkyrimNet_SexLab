@@ -1,6 +1,0 @@
-{% if not isTimePaused and is_narration_enabled() %}
-     {% set los_distance = sexlab_get_player_los_distance(npc.UUID) %}
-     {% if not los_distance.los %} 
-          - Write the narration to reflect how the events would appear to {{player.name}}.  {{player.name}} can not see these events, only include sound narration. 
-     {% endif %} 
-{% endif %}
