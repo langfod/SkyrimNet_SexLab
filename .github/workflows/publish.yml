@@ -60,14 +60,16 @@ jobs:
 
       - name: Copy files to dist
         run: |          
+          New-Item -ItemType Directory -Force -Path dist
+
           # Copy fomod directory if it exists
           if (Test-Path "fomod") {
             Copy-Item -Path "fomod" -Destination "dist\fomod" -Recurse -Force
           }
 
-          # Copy scripts directory if it exists
-          if (Test-Path "scripts") {
-            Copy-Item -Path "scripts" -Destination "dist\scripts" -Recurse -Force
+          # Copy Scripts directory if it exists
+          if (Test-Path "Scripts") {
+            Copy-Item -Path "Scripts" -Destination "dist\Scripts" -Recurse -Force
           }
 
           # Copy SKSE directory if it exists
