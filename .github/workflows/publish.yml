@@ -51,17 +51,14 @@ jobs:
         run: | 
           Write-Host "VERSION_TAG=$env:VERSION_TAG"
         shell: pwsh
-      
 
-      - name: Convert Spriggit to plugin (deserialize)
-        run: |
-          .\SpriggitCLI\Spriggit.CLI.exe convert-to-plugin -i "Spriggit\SkyrimNet_Sexlab" -o "dist\SkyrimNet_Sexlab.esp" 
-        shell: cmd
+      - name: Ensure dist directory exists
+        run: |          
+          New-Item -ItemType Directory -Force -Path dist
+        shell: pwsh
 
       - name: Copy files to dist
         run: |          
-          New-Item -ItemType Directory -Force -Path dist
-
           # Copy fomod directory if it exists
           if (Test-Path "fomod") {
             Copy-Item -Path "fomod" -Destination "dist\fomod" -Recurse -Force
@@ -87,6 +84,11 @@ jobs:
             Copy-Item -Path "SkyrimNet_SexLab" -Destination "dist\SkyrimNet_SexLab" -Recurse -Force
           }
         shell: pwsh
+
+      - name: Convert Spriggit to plugin (deserialize)
+        run: |
+          .\SpriggitCLI\Spriggit.CLI.exe convert-to-plugin -i "Spriggit\SkyrimNet_Sexlab" -o "dist\SkyrimNet_Sexlab.esp" 
+        shell: cmd
  
       - name: Get current FOMOD version
         id: fomod_version
