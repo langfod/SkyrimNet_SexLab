@@ -49,7 +49,7 @@ crash-*.log
 # Log review snapshots (.claude/skills/review-logs)
 review-logs/
 bug-logs
-extern 
+ 
 /checkpoints
 /logs
 /output
